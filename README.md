@@ -22,6 +22,7 @@ branch `main` is always deployable.
    by running `sudo apt-get install make scsitools parted e2fsprogs`, and
    install [Ansible](https://www.ansible.com) as explained on
    [Installing Ansible on Debian](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#installing-ansible-on-debian).
+1. Enter a shell on the production machine using `ssh`.
 1. Create a symbolic link from `/app` to `~` by running `sudo ln -s ~ /app`.
 1. Format and mount hard disk for data to the directory `/app/data` as follows:
    1. Scan for the data disk by running `make scan`.
