@@ -70,6 +70,12 @@
           name: e2fsprogs
           state: present
 
+    - name: Install Apache 2 utils to manage passwords for HTTP Basic Authentication using htpasswd
+      become: yes
+      package:
+        name: apache2-utils
+        state: present
+
     - name: Backup database
       cron:
         name: database-backup

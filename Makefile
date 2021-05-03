@@ -17,6 +17,10 @@ scan : ## Scan for additional hard disks without restarting the virtual machine
 	sudo rescan-scsi-bus.sh
 .PHONY : scan
 
+user : ## Add user `${USER}` (he/she will have access to restricted areas like staging with the correct password), for example, `make USER=jdoe user`
+	sudo htpasswd ./nginx/.htpasswd ${USER}
+.PHONY : user
+
 setup : ## Setup machine
 	ansible-playbook local.yml
 .PHONY : setup
