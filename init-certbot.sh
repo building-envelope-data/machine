@@ -9,7 +9,7 @@ fi
 
 domains=(buildingenvelopedata.org www.buildingenvelopedata.org staging.buildingenvelopedata.org)
 email="simon.wacker@ise.fraunhofer.de"
-staging=1 # Set to 1 if you're testing your setup to avoid hitting request limits
+staging=0 # Set to 1 if you're testing your setup to avoid hitting request limits
 
 if [ -d "./certbot" ]; then
   read -p "Existing data found. Continue and replace existing certificate(s)? (y/N) " decision
