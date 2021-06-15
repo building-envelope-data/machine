@@ -50,3 +50,31 @@ down : ## Stop containers and remove containers, networks, volumes, and images c
 	${docker_compose} down \
 		--remove-orphans
 .PHONY : down
+
+dummy-certificates : ## Create dummy certificates for `${PATH}`
+	${docker_compose} run \
+		--rm \
+		--entrypoint " \
+			openssl req \
+				-x509 \
+				-nodes \
+				-newkey rsa:4096 \
+				-days 1 \
+				-keyout '${PATH}/privkey.pem' \
+				-out '${PATH}/fullchain.pem' \
+				-subj '/CN=localhost' \
+		" \
+		certbot
+.PHONY : dummy-certificates
+
+delete-dummy-certificates : ## Delete dummy certificates for `${DOMAINS}`
+	${docker_compose} run \
+		--rm \
+		--entrypoint "
+			rm -R -f \
+				/etc/letsencrypt/live/${DOMAINS} \
+				/etc/letsencrypt/archive/${DOMAINS} \
+				/etc/letsencrypt/renewal/${DOMAINS}.conf \
+		" \
+		certbot
+.PHONY : delete-dummy-certificates

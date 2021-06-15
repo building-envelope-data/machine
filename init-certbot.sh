@@ -8,42 +8,27 @@ if ! [ -x "$(command -v docker-compose)" ]; then
 fi
 
 domains=(buildingenvelopedata.org www.buildingenvelopedata.org staging.buildingenvelopedata.org)
-rsa_key_size=4096
-data_path="./certbot"
 email="simon.wacker@ise.fraunhofer.de"
-staging=0 # Set to 1 if you're testing your setup to avoid hitting request limits
+staging=1 # Set to 1 if you're testing your setup to avoid hitting request limits
 
-if [ -d "$data_path" ]; then
-  read -p "Existing data found for $domains. Continue and replace existing certificate? (y/N) " decision
+if [ -d "./certbot" ]; then
+  read -p "Existing data found. Continue and replace existing certificate(s)? (y/N) " decision
   if [ "$decision" != "Y" ] && [ "$decision" != "y" ]; then
     exit
   fi
 fi
 
-if [ ! -e "$data_path/conf/options-ssl-nginx.conf" ] || [ ! -e "$data_path/conf/ssl-dhparams.pem" ]; then
+if [ ! -e "./certbot/conf/options-ssl-nginx.conf" ] || [ ! -e "./certbot/conf/ssl-dhparams.pem" ]; then
   echo "### Downloading recommended TLS parameters ..."
-  mkdir -p "$data_path/conf"
-  curl -s https://raw.githubusercontent.com/certbot/certbot/master/certbot-nginx/certbot_nginx/_internal/tls_configs/options-ssl-nginx.conf > "$data_path/conf/options-ssl-nginx.conf"
-  curl -s https://raw.githubusercontent.com/certbot/certbot/master/certbot/certbot/ssl-dhparams.pem > "$data_path/conf/ssl-dhparams.pem"
+  mkdir -p "./certbot/conf"
+  curl -s https://raw.githubusercontent.com/certbot/certbot/master/certbot-nginx/certbot_nginx/_internal/tls_configs/options-ssl-nginx.conf > "./certbot/conf/options-ssl-nginx.conf"
+  curl -s https://raw.githubusercontent.com/certbot/certbot/master/certbot/certbot/ssl-dhparams.pem > "./certbot/conf/ssl-dhparams.pem"
   echo
 fi
 
 echo "### Creating dummy certificate for $domains ..."
-path="/etc/letsencrypt/live/$domains"
-mkdir -p "$data_path/conf/live/$domains"
-docker-compose run \
-  --rm \
-  --entrypoint "\
-    openssl req \
-      -x509 \
-      -nodes \
-      -newkey rsa:$rsa_key_size \
-      -days 1 \
-      -keyout '$path/privkey.pem' \
-      -out '$path/fullchain.pem' \
-      -subj '/CN=localhost' \
-  " \
-  certbot
+mkdir -p "./certbot/conf/live/$domains"
+make PATH="/etc/letsencrypt/live/$domains" dummy-certificates
 echo
 
 echo "### Starting nginx ..."
@@ -54,15 +39,7 @@ docker-compose up \
 echo
 
 echo "### Deleting dummy certificate for $domains ..."
-docker-compose run \
-  --rm \
-  --entrypoint "
-    rm -R -f \
-      /etc/letsencrypt/live/$domains \
-      /etc/letsencrypt/archive/$domains \
-      /etc/letsencrypt/renewal/$domains.conf \
-  " \
-  certbot
+make DOMAINS="${domains}" delete-dummy-certificates
 echo
 
 echo "### Requesting Let's Encrypt certificate for $domains ..."
