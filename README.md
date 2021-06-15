@@ -36,7 +36,7 @@ branch `main` is always deployable.
       aligned for best performance: 1s % 2048s != 0s,
       `sudo parted --align=opt /dev/sdx mkpart primary 2048s XG`.
       If the number of sectors, 2048 above, is not resported, consult
-      https://rainbow.chard.org/2013/01/30/how-to-align-partitions-for-best-performance-using-parted/
+      [How to align partitions for best performance using parted](https://rainbow.chard.org/2013/01/30/how-to-align-partitions-for-best-performance-using-parted/)
       for details on how to compute that number.
    1. Format the partition `/dev/sdx1` of hard disk `/dev/sdx` by running
       `sudo mkfs.ext4 -L data /dev/sdx1`
@@ -55,6 +55,10 @@ branch `main` is always deployable.
 1. Change into the clone by running `cd ./machine`.
 1. Prepare the machine environment by running `cp .env.sample .env` and adapt
    the `.env` file as needed for example inside `vi .env`.
+1. Fetch Transport Security Protocol (TLS) certificates from [Let's
+   Encrypt](https://letsencrypt.org) used for HTTPS by running
+   `./init-certbot.sh` (if you are unsure whether the script will work, set the
+   variable `staging` inside that script to `1` for a trial run).
 1. Set-up everything else with Ansible by running `make setup`.
 
 ## Deploying the latest version
