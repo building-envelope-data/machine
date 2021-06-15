@@ -28,7 +28,7 @@ fi
 
 echo "### Creating dummy certificate for $domains ..."
 mkdir -p "./certbot/conf/live/$domains"
-make PATH="/etc/letsencrypt/live/$domains" dummy-certificates
+make OUT_PATH="/etc/letsencrypt/live/$domains" dummy-certificates
 echo
 
 echo "### Starting nginx ..."

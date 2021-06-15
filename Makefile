@@ -51,7 +51,7 @@ down : ## Stop containers and remove containers, networks, volumes, and images c
 		--remove-orphans
 .PHONY : down
 
-dummy-certificates : ## Create dummy certificates for `${PATH}`
+dummy-certificates : ## Create dummy certificates for `${OUT_PATH}`
 	${docker_compose} run \
 		--rm \
 		--entrypoint " \
@@ -60,8 +60,8 @@ dummy-certificates : ## Create dummy certificates for `${PATH}`
 				-nodes \
 				-newkey rsa:4096 \
 				-days 1 \
-				-keyout '${PATH}/privkey.pem' \
-				-out '${PATH}/fullchain.pem' \
+				-keyout '${OUT_PATH}/privkey.pem' \
+				-out '${OUT_PATH}/fullchain.pem' \
 				-subj '/CN=localhost' \
 		" \
 		certbot
