@@ -25,14 +25,20 @@ setup : ## Setup machine
 	ansible-playbook local.yml
 .PHONY : setup
 
-deploy : ## Deploy services
+pull : ## Pull images
 	${docker_compose} pull
+.PHONY : pull
+
+up : ## (Re)build, (re)create, and (re)start services
 	${docker_compose} up \
 		--build \
 		--force-recreate \
 		--renew-anon-volumes \
 		--remove-orphans \
 		--detach
+.PHONY : up
+
+deploy : pull up ## Deploy services
 .PHONY : deploy
 
 logs : ## Follow logs
