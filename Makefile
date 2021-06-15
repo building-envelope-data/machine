@@ -70,7 +70,7 @@ dummy-certificates : ## Create dummy certificates for `${PATH}`
 delete-dummy-certificates : ## Delete dummy certificates for `${DOMAINS}`
 	${docker_compose} run \
 		--rm \
-		--entrypoint "
+		--entrypoint " \
 			rm -R -f \
 				/etc/letsencrypt/live/${DOMAINS} \
 				/etc/letsencrypt/archive/${DOMAINS} \
