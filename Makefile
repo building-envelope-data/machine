@@ -36,7 +36,7 @@ up : ## (Re)build, (re)create, and (re)start services
 		--renew-anon-volumes \
 		--remove-orphans \
 		--detach \
-		nginx
+		reverse_proxy
 .PHONY : up
 
 deploy : pull up ## Deploy services
