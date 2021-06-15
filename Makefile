@@ -35,7 +35,7 @@ up : ## (Re)build, (re)create, and (re)start services
 		--force-recreate \
 		--renew-anon-volumes \
 		--remove-orphans \
-		--detach
+		--detach \
 		nginx
 .PHONY : up
 
