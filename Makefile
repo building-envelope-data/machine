@@ -83,7 +83,7 @@ delete-dummy-certificates : ## Delete dummy certificates for `${DOMAINS}`
 request-certificates : ## Request certificates
 	docker-compose run \
 		--rm \
-		--entrypoint "\
+		--entrypoint " \
 			certbot certonly \
 				--webroot \
 				-w /var/www/certbot \
@@ -98,3 +98,12 @@ request-certificates : ## Request certificates
 		" \
 		certbot
 .PHONY : request-certificate
+
+renew-certificates : ## Renew certificates
+	docker-compose run \
+		--rm \
+		--entrypoint " \
+			certbot renew \
+		" \
+		certbot
+.PHONY: renew-certificates

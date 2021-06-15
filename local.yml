@@ -82,6 +82,13 @@
         weekday: '0'
         job: 'cd /app/production && mkdir --parents /app/data/backups && make --file Makefile.production DUMP_FILE=/app/data/backups/dump_$(date +"%Y-%m-%d_%H_%M_%S").gz backup'
 
+    - name: Renew Transport Layer Security (TLS) certificates needed for the `S` in `HTTPS`
+      cron:
+        name: tls-renewal
+        special_time: daily
+        # TODO Deploy only when renewal took actually place by using certbot's `--deploy-hook` to run `make deploy`.
+        job: 'cd /app/machine && make renew-certificates && make deploy'
+
     - name: Docker
       # Inspired by https://ops.tips/blog/docker-ansible-role/
       become: yes
