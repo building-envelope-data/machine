@@ -33,7 +33,7 @@ services:
     extra_hosts:
       - host.docker.internal:host-gateway
 
-  certbot:
+  certbot: # https://hub.docker.com/r/certbot/certbot
     restart: always
     image: certbot/certbot:v1.16.0
     volumes:
