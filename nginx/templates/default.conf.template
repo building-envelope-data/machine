@@ -13,6 +13,10 @@ proxy_busy_buffers_size 256k;
 
 ssl_certificate /etc/letsencrypt/live/buildingenvelopedata.org/fullchain.pem;
 ssl_certificate_key /etc/letsencrypt/live/buildingenvelopedata.org/privkey.pem;
+
+ssl_stapling on;
+ssl_stapling_verify on;
+
 include /etc/letsencrypt/options-ssl-nginx.conf;
 ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
 
