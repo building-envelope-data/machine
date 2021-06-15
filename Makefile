@@ -36,6 +36,7 @@ up : ## (Re)build, (re)create, and (re)start services
 		--renew-anon-volumes \
 		--remove-orphans \
 		--detach
+		nginx
 .PHONY : up
 
 deploy : pull up ## Deploy services
@@ -78,3 +79,22 @@ delete-dummy-certificates : ## Delete dummy certificates for `${DOMAINS}`
 		" \
 		certbot
 .PHONY : delete-dummy-certificates
+
+request-certificates : ## Request certificates
+	docker-compose run \
+		--rm \
+		--entrypoint "\
+			certbot certonly \
+				--webroot \
+				-w /var/www/certbot \
+				${STAGING_ARG} \
+				${DOMAIN_ARGS} \
+				--email ${EMAIL} \
+				--key-type ecdsa \
+				--elliptic-curve secp256r1 \
+				--must-staple \
+				--agree-tos \
+				--force-renewal \
+		" \
+		certbot
+.PHONY : request-certificate

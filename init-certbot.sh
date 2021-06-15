@@ -31,11 +31,8 @@ mkdir -p "./certbot/conf/live/$domains"
 make OUT_PATH="/etc/letsencrypt/live/$domains" dummy-certificates
 echo
 
-echo "### Starting nginx ..."
-docker-compose up \
-  --force-recreate \
-  --detach \
-  reverse_proxy
+echo "### (Re)deploying nginx ..."
+make deploy
 echo
 
 echo "### Deleting dummy certificate for $domains ..."
@@ -49,34 +46,15 @@ for domain in "${domains[@]}"; do
   domain_args="$domain_args -d $domain"
 done
 
-# Select appropriate email arg
-case "$email" in
-  "") email_arg="--register-unsafely-without-email" ;;
-  *) email_arg="--email $email" ;;
-esac
-
 # Enable staging mode if needed
 if [ $staging != "0" ]; then staging_arg="--staging"; fi
 
-docker-compose run \
-  --rm \
-  --entrypoint "\
-    certbot certonly \
-      --webroot \
-      -w /var/www/certbot \
-      $staging_arg \
-      $email_arg \
-      $domain_args \
-      --key-type ecdsa \
-      --elliptic-curve secp256r1 \
-      --must-staple \
-      --agree-tos \
-      --force-renewal \
-  " \
-  certbot
+make \
+  ${STAGING_ARG}=$staging_arg \
+  ${DOMAIN_ARGS}=$domain_args \
+  ${EMAIL}=$email \
+  request-certificates
 echo
 
-echo "### Reloading nginx ..."
-docker-compose exec \
-  reverse_proxy \
-  nginx -s reload
+echo "### (Re)deploying nginx ..."
+make deploy
