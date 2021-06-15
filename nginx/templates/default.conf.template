@@ -11,8 +11,36 @@ proxy_buffer_size       128k;
 proxy_buffers           4 256k;
 proxy_busy_buffers_size 256k;
 
+ssl_certificate /etc/letsencrypt/live/example.org/fullchain.pem;
+ssl_certificate_key /etc/letsencrypt/live/example.org/privkey.pem;
+include /etc/letsencrypt/options-ssl-nginx.conf;
+ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+# Enable HSTS
+add_header Strict-Transport-Security "max-age=63072000; includeSubdomains; preload" always;
+# Avoid click-jacking attacks: https://developer.mozilla.org/en-US/docs/Web/Security/Types_of_attacks#click-jacking
+add_header X-Frame-Options DENY;
+# Secure from MIME-type sniffing: https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/linux-nginx?view=aspnetcore-3.1#mime-type-sniffing
+add_header X-Content-Type-Options nosniff;
+
 server {
+    listen *:80;
+    server_tokens off;
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    listen *:443 ssl;
     server_name ${STAGING_HOST};
+    server_tokens off;
+
     auth_basic "Restricted Area";
     auth_basic_user_file /etc/apache2/.htpasswd;
     location / {
@@ -21,7 +49,10 @@ server {
 }
 
 server {
+    listen *:443 ssl;
     server_name ${PRODUCTION_HOST};
+    server_tokens off;
+
     location / {
         proxy_pass http://host.docker.internal:${PRODUCTION_HTTP_PORT};
     }
