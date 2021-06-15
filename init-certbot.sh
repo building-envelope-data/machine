@@ -50,9 +50,9 @@ done
 if [ $staging != "0" ]; then staging_arg="--staging"; fi
 
 make \
-  ${STAGING_ARG}=$staging_arg \
-  ${DOMAIN_ARGS}=$domain_args \
-  ${EMAIL}=$email \
+  STAGING_ARG="$staging_arg" \
+  DOMAIN_ARGS="$domain_args" \
+  EMAIL="$email" \
   request-certificates
 echo
 
