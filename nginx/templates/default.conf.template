@@ -72,6 +72,10 @@ server {
     location / {
         proxy_pass http://host.docker.internal:${PRODUCTION_HTTP_PORT};
     }
+
+    location /email {
+        return 404;
+    }
 }
 
 # For the redirection from non-www to www see
