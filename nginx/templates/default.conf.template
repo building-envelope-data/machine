@@ -27,6 +27,11 @@ add_header X-Frame-Options DENY;
 # Secure from MIME-type sniffing: https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/linux-nginx?view=aspnetcore-3.1#mime-type-sniffing
 add_header X-Content-Type-Options nosniff;
 
+map $http_upgrade $connection_upgrade {
+  default upgrade;
+  '' close;
+}
+
 server {
     listen *:80;
     server_tokens off;
@@ -47,8 +52,16 @@ server {
 
     auth_basic "Restricted Area";
     auth_basic_user_file /etc/apache2/.htpasswd;
+
     location / {
         proxy_pass http://host.docker.internal:${STAGING_HTTP_PORT};
+    }
+
+    location /email/hubs {
+        proxy_pass http://host.docker.internal:${STAGING_HTTP_PORT};
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection $connection_upgrade;
+        limit_req  zone=one burst=10 nodelay;
     }
 }
 
