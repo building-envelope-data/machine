@@ -61,7 +61,6 @@ server {
         proxy_pass http://host.docker.internal:${STAGING_HTTP_PORT};
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection $connection_upgrade;
-        limit_req  zone=one burst=10 nodelay;
     }
 }
 
