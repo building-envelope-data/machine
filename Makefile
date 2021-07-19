@@ -39,7 +39,7 @@ up : ## (Re)build, (re)create, and (re)start services
 		reverse_proxy
 .PHONY : up
 
-deploy : pull up ## Deploy services
+deploy : setup pull up ## Deploy services
 .PHONY : deploy
 
 logs : ## Follow logs
@@ -51,6 +51,10 @@ down : ## Stop containers and remove containers, networks, volumes, and images c
 	${docker_compose} down \
 		--remove-orphans
 .PHONY : down
+
+crontab : ## List user's contab
+	crontab -l
+.PHONY : crontab
 
 dummy-certificates : ## Create dummy certificates for `${OUT_PATH}`
 	${docker_compose} run \
