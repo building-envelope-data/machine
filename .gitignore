@@ -2,3 +2,4 @@
 .htpasswd
 /certbot
 *.bak
+*.log
