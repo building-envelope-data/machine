@@ -187,5 +187,5 @@
             mode: 'u+x,g+x,o+x'
             # checksum: sha256:TODO https://github.com/docker/compose/releases/tag/1.29.0
           when: >
-            docker_compose_current_version.stdout is defined
-            and docker_compose_version not in docker_compose_current_version.stdout
+            (docker_compose_current_version.stdout is not defined)
+            or (docker_compose_current_version.stdout is defined and docker_compose_version not in docker_compose_current_version.stdout)
