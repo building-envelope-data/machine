@@ -57,15 +57,29 @@ branch `main` is always deployable.
       Note that to list block devices and whether and where they are
       mounted run `lsblk` and you could mount partitions temporarily by running
       `sudo mount /dev/sdx1 /app/data`.
+   1. Change owner and group of `/app/data` to user and group `cloud` by
+      running `sudo chown cloud:cloud /app/data`.
+   1. Create the directory `/app/data/backups` by running
+      `mkdir /app/data/backups`.
 1. Fetch Transport Security Protocol (TLS) certificates from [Let's
    Encrypt](https://letsencrypt.org) used for HTTPS by running
    `./init-certbot.sh` (if you are unsure whether the script will work, set the
    variable `staging` inside that script to `1` for a trial run).
 1. Set-up everything else with Ansible by running `make setup`.
+1. Restart Docker by running `sudo systemctl restart docker`. If you do not do
+   that, you will encounter the error: "Cannot start service database: OCI
+   runtime create failed: /app/data/docker/overlay2/.../merged is not an
+   absolute path or is a symlink: unknown".
 1. Before you try to interact with Docker in any way, log-out and log-in again
    such that the system knows that the user `cloud` is in the group `docker`
    (this was taken care of by Ansible). You could for example exit the SSH
    session by running `exit` and start a fresh one as you did in the beginning.
+   If you do not do that, you will encounter a permission denied error. For
+   example, when running `docker ps` the error reads "Got permission denied
+   while trying to connect to the Docker daemon socket at
+   unix:///var/run/docker.sock: Get
+   "http://%2Fvar%2Frun%2Fdocker.sock/v1.24/containers/json": dial unix
+   /var/run/docker.sock: connect: permission denied".
 
 ## Deploying the latest version
 1. Fetch and checkout the latest version by running `git fetch` and
