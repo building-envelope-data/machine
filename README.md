@@ -62,6 +62,10 @@ branch `main` is always deployable.
    `./init-certbot.sh` (if you are unsure whether the script will work, set the
    variable `staging` inside that script to `1` for a trial run).
 1. Set-up everything else with Ansible by running `make setup`.
+1. Before you try to interact with Docker in any way, log-out and log-in again
+   such that the system knows that the user `cloud` is in the group `docker`
+   (this was taken care of by Ansible). You could for example exit the SSH
+   session by running `exit` and start a fresh one as you did in the beginning.
 
 ## Deploying the latest version
 1. Fetch and checkout the latest version by running `git fetch` and
