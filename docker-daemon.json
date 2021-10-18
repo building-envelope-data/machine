@@ -1,6 +1,6 @@
 {
     "data-root": "/app/data/docker",
     "live-restore": true,
-    "log-driver": "local",
+    "log-driver": "journald",
     "storage-driver": "overlay2"
 }
