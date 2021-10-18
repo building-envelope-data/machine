@@ -83,6 +83,14 @@
         # For the preferred way to redirect stdout and stderr to log files used below see https://tldp.org/LDP/abs/html/io-redirection.html
         job: '{ PATH=/usr/local/bin/:/usr/bin:${PATH} && cd /app/production && mkdir --parents /app/data/backups && make --file Makefile.production DUMP_FILE=/app/data/backups/dump_$(date +"\%Y-\%m-\%d_\%H_\%M_\%S").gz backup && make --file Makefile.production prune-backups ; } > /app/production/database-backup.log 2>&1'
 
+    - name: Vacuum `journald`
+      become: yes
+      cron:
+        name: journald-vacuuming
+        special_time: daily
+        # For the preferred way to redirect stdout and stderr to log files used below see https://tldp.org/LDP/abs/html/io-redirection.html
+        job: '{ journalctl --rotate && journalctl --vacuum-time=7d ; } > /app/machine/journald-vacuuming.log 2>&1'
+
     - name: Renew Transport Layer Security (TLS) certificates needed for the `S` in `HTTPS`
       cron:
         name: tls-renewal
