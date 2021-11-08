@@ -10,7 +10,7 @@ version: '3.3'
 services:
   reverse_proxy: # https://hub.docker.com/_/nginx
     restart: always
-    image: nginx:1.21.1
+    image: nginx:1.21.3
     command: [
       "nginx",
       "-g", "daemon off;"
