@@ -1,5 +1,7 @@
 # Debian Production Machine
 
+The network of databases [buildingenvelopedata.org](https://www.buildingenvelopedata.org/) is based on databases and one metabase. This repository can be used to set up the machine either to deploy a [database](https://github.com/ise621/database) or to deploy the [metabase](https://github.com/ise621/metabase).
+
 The machine has two ext4 disks namely one root disk running Debian and one
 initially empty data disk.  The data disk is partitioned, formatted, and
 mounted to `/app/data` as described below.  The machine setup is mostly done by
