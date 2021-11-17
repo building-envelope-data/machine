@@ -111,3 +111,39 @@ renew-certificates : ## Renew certificates
 		" \
 		certbot
 .PHONY: renew-certificates
+
+begin-maintenance : ## Begin maintenance
+	for environment in staging production ; do \
+		make --directory=/app/$${environment} --file=Makefile.production begin-maintenance ; \
+	done
+.PHONY : begin-maintenance
+
+end-maintenance : ## End maintenance
+	if [ -f /var/run/reboot-required ] ; then \
+		echo 'Reboot and run `make end-maintenance`' ; \
+	else \
+		for environment in staging production ; do \
+			make --directory=/app/$${environment} --file=Makefile.production end-maintenance ; \
+		done ; \
+	fi
+.PHONY : end-maintenance
+
+upgrade-system : ## Upgrade system (Is used to install the newest versions of all packages currently installed on the system from the sources enumerated in /etc/apt/sources.list. Packages currently installed with new versions available are retrieved and upgraded. Under no circumstances are currently installed packages removed, or packages not already installed retrieved and installed. New versions of currently installed packages that cannot be upgraded without changing the install status of another package will be left at their current version.)
+	make begin-maintenance
+	sudo apt-get --assume-yes update
+	sudo apt-get --assume-yes upgrade
+	sudo apt-get --assume-yes auto-remove
+	sudo apt-get --assume-yes clean
+	sudo apt-get --assume-yes auto-clean
+	make end-maintenance
+.PHONY : upgrade-system
+
+dist-upgrade-system : ## Upgrade system (In addition to performing the function of `upgrade-system`, also intelligently handles changing dependencies with new versions of packages. It will attempt to upgrade the most important packages at the expense of less important ones if necessary. It may therefore remove some packages.)
+	make begin-maintenance
+	sudo apt-get --assume-yes update
+	sudo apt-get --assume-yes dist-upgrade
+	sudo apt-get --assume-yes auto-remove
+	sudo apt-get --assume-yes clean
+	sudo apt-get --assume-yes auto-clean
+	make end-maintenance
+.PHONY : dist-upgrade-system

@@ -83,6 +83,10 @@ branch `main` is always deployable.
    "http://%2Fvar%2Frun%2Fdocker.sock/v1.24/containers/json": dial unix
    /var/run/docker.sock: connect: permission denied".
 
+## Upgrading the system
+
+Run `make upgrade-system` daily and `make dist-upgrade-system` weekly.
+
 ## Deploying the latest version
 1. Fetch and checkout the latest version by running `git fetch` and
    `git checkout --force main`.
