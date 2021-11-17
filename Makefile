@@ -147,3 +147,9 @@ dist-upgrade-system : ## Upgrade system (In addition to performing the function 
 	sudo apt-get --assume-yes auto-clean
 	make end-maintenance
 .PHONY : dist-upgrade-system
+
+dry-run-unattended-upgrades : Dry-run unattended upgrades for testing purposes
+	sudo unattended-upgrades \
+		--dry-run \
+		--debug
+.PHONY : dry-run-unattended-upgrades
