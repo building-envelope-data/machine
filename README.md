@@ -85,7 +85,7 @@ branch `main` is always deployable.
 
 ## Upgrading the system
 
-Run `make upgrade-system` daily and `make dist-upgrade-system` weekly.
+Run `make dist-upgrade-system` weekly.
 
 ## Deploying the latest version
 1. Fetch and checkout the latest version by running `git fetch` and
