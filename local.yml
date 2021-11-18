@@ -198,7 +198,7 @@
       become: yes
       vars:
         docker_compose_path: /usr/local/bin/docker-compose
-        docker_compose_version: 1.29.0
+        docker_compose_version: 1.29.2
       block:
         - name: Check current docker-compose version.
           command: '{{ docker_compose_path }} --version'
@@ -219,7 +219,7 @@
             url: https://github.com/docker/compose/releases/download/{{ docker_compose_version }}/docker-compose-{{ ansible_system }}-{{ ansible_userspace_architecture }}
             dest: '{{ docker_compose_path }}'
             mode: 'u+x,g+x,o+x'
-            # checksum: sha256:TODO https://github.com/docker/compose/releases/tag/1.29.0
+            # checksum: sha256:TODO https://github.com/docker/compose/releases/tag/1.29.2
           when: >
             (docker_compose_current_version.stdout is not defined)
             or (docker_compose_current_version.stdout is defined and docker_compose_version not in docker_compose_current_version.stdout)
