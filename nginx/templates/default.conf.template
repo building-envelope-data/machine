@@ -47,6 +47,30 @@ server {
     }
 }
 
+# For the redirection from non-www to www see
+# http://nginx.org/en/docs/http/converting_rewrite_rules.html
+server {
+    listen *:80;
+    listen *:443 ssl;
+    server_name ${NON_WWW_PRODUCTION_HOST};
+    server_tokens off;
+    return 301 https://${PRODUCTION_HOST}$request_uri;
+}
+
+server {
+    listen *:443 ssl;
+    server_name ${PRODUCTION_HOST};
+    server_tokens off;
+
+    location / {
+        proxy_pass http://host.docker.internal:${PRODUCTION_HTTP_PORT};
+    }
+
+    location /email {
+        return 404;
+    }
+}
+
 server {
     listen *:443 ssl;
     server_name ${STAGING_HOST};
@@ -64,28 +88,4 @@ server {
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection $connection_upgrade;
     }
-}
-
-server {
-    listen *:443 ssl;
-    server_name ${PRODUCTION_HOST};
-    server_tokens off;
-
-    location / {
-        proxy_pass http://host.docker.internal:${PRODUCTION_HTTP_PORT};
-    }
-
-    location /email {
-        return 404;
-    }
-}
-
-# For the redirection from non-www to www see
-# http://nginx.org/en/docs/http/converting_rewrite_rules.html
-server {
-    listen *:80;
-    listen *:443 ssl;
-    server_name ${NON_WWW_PRODUCTION_HOST};
-    server_tokens off;
-    return 301 https://${PRODUCTION_HOST}$request_uri;
 }
