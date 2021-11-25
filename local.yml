@@ -121,7 +121,6 @@
       cron:
         name: tls-renewal
         special_time: daily
-        # TODO Deploy only when renewal took actually place by using certbot's `--deploy-hook` to run `make deploy`.
         # For the preferred way to redirect stdout and stderr to log files used below see https://tldp.org/LDP/abs/html/io-redirection.html
         job: '{ PATH=/usr/local/bin/:/usr/bin:${PATH} && cd /app/machine && make renew-certificates && make deploy ; } > /app/machine/tls-renewal.log 2>&1'
 
