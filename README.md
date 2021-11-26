@@ -85,7 +85,20 @@ branch `main` is always deployable.
 
 ## Upgrading the system
 
-Run `make dist-upgrade-system` weekly.
+Security upgrades are installed automatically and unattendedly by
+[`unattended-upgrades`](https://packages.debian.org/search?keywords=unattended-upgrades)
+as configured in the Ansible playbook `local.yml`. Non-security upgrades should
+be done weekly by running `make upgrade-system`. Only run the possibly
+destructive command `make dist-upgrade-system` when you know what you are
+doing. See the entries `upgrade` and `dist-upgrade` in the `apt-get` manual
+`man apt-get`.
+
+Additionally, to upgrade `docker-compose`, you need to bump the version number
+in the Ansible playbook `local.yml` and run `make setup` as explained in [issue
+#12](https://github.com/ise621/machine/issues/12)). And, to keep HTTPS, that
+is, HTTP over TLS, secure, regularly fetch SSL configuration and Diffie–Hellman
+parameters from certbot as explained in [issue
+#5](https://github.com/ise621/machine/issues/5).
 
 ## Deploying the latest version
 1. Fetch and checkout the latest version by running `git fetch` and
