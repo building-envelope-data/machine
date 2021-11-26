@@ -100,6 +100,25 @@ is, HTTP over TLS, secure, regularly fetch SSL configuration and Diffie–Hellma
 parameters from certbot as explained in [issue
 #5](https://github.com/ise621/machine/issues/5).
 
+## Periodic jobs
+
+In the Ansible playbook `local.yml`, periodic jobs are set-up.
+
+* System logs are are vacuumed daily keeping logs of the latest seven days. The
+  logs of the vacuuming process itself are kept in
+  `/app/machine/journald-vacuuming.log`.
+* The Transport Layer Security (TLS) certificates used by HTTPS, that is, HTTP
+  over TLS, are renewed daily if necessary. The respective logs are kept in
+  `/app/machine/tls-renewal.log`.
+* The database is backed-up daily keeping the latest seven backups. To do so,
+  the production GNU Make targets `backup` and `prune-backups` of the
+  [`metabase`'s `Makefile.production`](https://github.com/ise621/metabase/blob/develop/Makefile.production)
+  and
+  [`database`'s `Makefile.production`](https://github.com/ise621/database/blob/develop/Makefile.production)
+  are used. The respective logs are kept in `/app/production/database-backup.log`.
+* The docker system is pruned daily without touching anything that is younger
+  than one day. The respective logs are kept in `/app/machine/docker-prune.log`.
+
 ## Deploying the latest version
 1. Fetch and checkout the latest version by running `git fetch` and
    `git checkout --force main`.
