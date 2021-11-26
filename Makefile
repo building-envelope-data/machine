@@ -40,7 +40,7 @@ up : ## (Re)create and (re)start services
 		reverse_proxy
 .PHONY : up
 
-deploy : setup build up ## Deploy services
+deploy : setup build up ## Deploy services, that is, setup machine, pull and build images, and (re)create and (re)start services
 .PHONY : deploy
 
 logs : ## Follow logs
