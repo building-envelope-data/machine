@@ -90,6 +90,5 @@ Run `make dist-upgrade-system` weekly.
 ## Deploying the latest version
 1. Fetch and checkout the latest version by running `git fetch` and
    `git checkout --force main`.
-1. Update the set-up by running `make setup`.
 1. Deploy the new version by running `make deploy`.
 1. Check that everything works by scanning the output of `make logs`.
