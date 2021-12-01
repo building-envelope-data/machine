@@ -88,10 +88,11 @@ branch `main` is always deployable.
 Security upgrades are installed automatically and unattendedly by
 [`unattended-upgrades`](https://packages.debian.org/search?keywords=unattended-upgrades)
 as configured in the Ansible playbook `local.yml`. Non-security upgrades should
-be done weekly by running `make upgrade-system`. Only run the possibly
-destructive command `make dist-upgrade-system` when you know what you are
-doing. See the entries `upgrade` and `dist-upgrade` in the `apt-get` manual
-`man apt-get`.
+be done weekly by running `make upgrade-system`. If the command asks you to
+reboot, then please do so and run `make end-maintenance` afterwards. Only run
+the possibly destructive command `make dist-upgrade-system` when you know what
+you are doing. See the entries `upgrade` and `dist-upgrade` in the `apt-get`
+manual `man apt-get`.
 
 Additionally, to upgrade `docker-compose`, you need to bump the version number
 in the Ansible playbook `local.yml` and run `make setup` as explained in [issue
