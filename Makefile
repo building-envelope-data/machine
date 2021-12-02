@@ -53,8 +53,9 @@ down : ## Stop containers and remove containers, networks, volumes, and images c
 		--remove-orphans
 .PHONY : down
 
-crontab : ## List user's contab
+crontab : ## List user's and root's contab
 	crontab -l
+	sudo crontab -u root -l
 .PHONY : crontab
 
 dummy-certificates : ## Create dummy certificates for `${OUT_PATH}`
