@@ -1,6 +1,8 @@
 # Concise introduction to GNU Make:
 # https://swcarpentry.github.io/make-novice/reference.html
 
+include .env
+
 docker_compose = \
 	docker-compose \
 		--file docker-compose.yml
@@ -22,7 +24,11 @@ user : ## Add user `${USER}` (he/she will have access to restricted areas like s
 .PHONY : user
 
 setup : ## Setup machine
-	ansible-playbook local.yml
+	NON_WWW_PRODUCTION_HOST=${NON_WWW_PRODUCTION_HOST} \
+	EMAIL_ADDRESS=${EMAIL_ADDRESS} \
+	SMTP_HOST=${SMTP_HOST} \
+	SMTP_PORT=${SMTP_PORT} \
+		ansible-playbook local.yml
 .PHONY : setup
 
 build : ## Pull and build images

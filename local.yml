@@ -8,6 +8,13 @@
         name: docker
         state: restarted
 
+    - name: Send test mail as root
+      become: yes
+      shell: echo "Test mail as root user from new/updated MSTMP at" `hostname` | mail --subject "Test SMTP `hostname`" root
+
+    - name: Send test mail as cloud
+      shell: echo "Test mail as cloud user from new/updated MSTMP at" `hostname` | mail --subject "Test SMTP `hostname`" cloud
+
   pre_tasks:
     - name: Update package information
       become: yes
@@ -102,27 +109,110 @@
         name: apache2-utils
         state: present
 
+    - name: Install `moreutils` as it includes `chronic` that we use to cure Cron's chronic email problem
+      # For details on the problem see https://habilis.net/cronic/
+      become: yes
+      package:
+        name: moreutils
+        state: present
+
+    - name: Install and configure `msmtp` to be used by Cron and other services to send emails
+      vars:
+        from_email_address: 'server@{{ lookup("env", "NON_WWW_PRODUCTION_HOST") }}'
+        email_address: '{{ lookup("env", "EMAIL_ADDRESS") }}'
+        smtp_host: '{{ lookup("env", "SMTP_HOST") }}'
+        smtp_port: '{{ lookup("env", "SMTP_PORT") }}'
+      block:
+        - name: Install `mailutils` to be able to use `mail`
+          become: yes
+          package:
+            name: mailutils
+            state: present
+
+        - name: Install `msmtp` to send emails
+          # For details see https://wiki.debian.org/msmtp
+          # We do not use `sSMTP` because it is unmaintained according to https://wiki.debian.org/sSMTP
+          become: yes
+          package:
+            name: msmtp
+            state: present
+
+        - name: Copy `mail.rc` configuration file
+          become: yes
+          template:
+            src: mail.rc.j2
+            dest: /etc/mail.rc
+            owner: root
+            group: root
+            mode: 0644
+          notify:
+            - Send test mail as root
+            - Send test mail as cloud
+
+        - name: Copy system-wide `mstprc` configuration file
+          become: yes
+          vars:
+            msmtp_logfile: /app/machine/msmtp.root.log
+          template:
+            src: msmtprc.j2
+            dest: /etc/msmtprc
+            owner: root
+            group: root
+            mode: 0644
+          notify: Send test mail as root
+
+        - name: Copy user-specific `mstprc` configuration file
+          vars:
+            msmtp_logfile: /app/machine/msmtp.cloud.log
+          template:
+            src: msmtprc.j2
+            dest: /app/.msmtprc
+            mode: 0644
+          notify: Send test mail as cloud
+
+        - name: Copy `aliases` configuration file
+          become: yes
+          template:
+            src: aliases.j2
+            dest: /etc/aliases
+            owner: root
+            group: root
+            mode: 0644
+          notify:
+            - Send test mail as root
+            - Send test mail as cloud
+
+        - name: Make `sendmail` symbolically link to `msmtp`
+          become: yes
+          file:
+            src: /usr/bin/msmtp
+            dest: /usr/sbin/sendmail
+            owner: root
+            group: root
+            mode: 0755
+            state: link
+          notify:
+            - Send test mail as root
+            - Send test mail as cloud
+
     - name: Backup database
       cron:
         name: database-backup
         special_time: daily
-        # For the preferred way to redirect stdout and stderr to log files used below see https://tldp.org/LDP/abs/html/io-redirection.html
-        job: '{ PATH=/usr/local/bin/:/usr/bin:${PATH} && cd /app/production && mkdir --parents /app/data/backups && make --file Makefile.production DUMP_FILE=/app/data/backups/dump_$(date +"\%Y-\%m-\%d_\%H_\%M_\%S").gz backup && make --file Makefile.production prune-backups ; } > /app/production/database-backup.log 2>&1'
+        job: 'chronic { PATH=/usr/local/bin/:/usr/bin:${PATH} && cd /app/production && mkdir --parents /app/data/backups && make --file Makefile.production DUMP_FILE=/app/data/backups/dump_$(date +"\%Y-\%m-\%d_\%H_\%M_\%S").gz backup && make --file Makefile.production prune-backups ; }'
 
     - name: Vacuum `journald`
       become: yes
       cron:
         name: journald-vacuuming
         special_time: daily
-        # For the preferred way to redirect stdout and stderr to log files used below see https://tldp.org/LDP/abs/html/io-redirection.html
-        job: '{ journalctl --rotate && journalctl --vacuum-time=7d ; } > /app/machine/journald-vacuuming.log 2>&1'
+        job: 'chronic { journalctl --rotate && journalctl --vacuum-time=7d ; }'
 
     - name: Renew Transport Layer Security (TLS) certificates needed for the `S` in `HTTPS`
       cron:
         name: tls-renewal
         special_time: daily
-        # For the preferred way to redirect stdout and stderr to log files used below see https://tldp.org/LDP/abs/html/io-redirection.html
-        job: '{ PATH=/usr/local/bin/:/usr/bin:${PATH} && cd /app/machine && make renew-certificates && make deploy ; } > /app/machine/tls-renewal.log 2>&1'
+        job: 'chronic { PATH=/usr/local/bin/:/usr/bin:${PATH} && cd /app/machine && make renew-certificates && make deploy ; }'
 
     - name: Docker
       # Inspired by https://ops.tips/blog/docker-ansible-role/
@@ -186,7 +276,7 @@
           cron:
             name: docker-prune
             special_time: daily
-            job: '{ PATH=/usr/local/bin/:/usr/bin:${PATH} && docker system prune --force --filter "until=24h" ; } > /app/machine/docker-prune.log 2>&1'
+            job: 'chronic { PATH=/usr/local/bin/:/usr/bin:${PATH} && docker system prune --force --filter "until=24h" ; }'
 
         - name: Flush handlers
           meta: flush_handlers
