@@ -123,18 +123,37 @@
         smtp_host: '{{ lookup("env", "SMTP_HOST") }}'
         smtp_port: '{{ lookup("env", "SMTP_PORT") }}'
       block:
-        - name: Install `mailutils` to be able to use `mail`
+        - name: Uninstall `mailutils` which includes GNU `mail`
+          # The problem with GNU `mail` combined with `msmtp` is that aliases
+          # in `/etc/aliases` are ignored. For example, when sending an email
+          # by running `echo 'body' | mail -s 'subject' root`, the recipient
+          # address is `root@hostname` instead of whatever email address is
+          # given in `/etc/aliases` for `root`.
           become: yes
           package:
             name: mailutils
+            state: absent
+
+        - name: Install `bsd-mailx` which provides the `mail` command
+          # An alternative would be `s-nail`
+          become: yes
+          package:
+            name: bsd-mailx
             state: present
 
-        - name: Install `msmtp` to send emails
+        - name: Install `msmtp` to send emails from mail user agents
           # For details see https://wiki.debian.org/msmtp
+          # The manual is published under https://marlam.de/msmtp/msmtp.html
           # We do not use `sSMTP` because it is unmaintained according to https://wiki.debian.org/sSMTP
           become: yes
           package:
             name: msmtp
+            state: present
+
+        - name: Install `msmtp-mta` to symbolically link `/usr/sbin/sendmail` to `msmtp` that other software can use to send mail
+          become: yes
+          package:
+            name: msmtp-mta
             state: present
 
         - name: Copy `mail.rc` configuration file
@@ -152,9 +171,11 @@
         - name: Copy system-wide `mstprc` configuration file
           become: yes
           vars:
-            msmtp_logfile: /app/machine/msmtp.root.log
+            # The system-wide logfile must be `/var/log/msmtp` according to
+            # msmtp's AppArmor configuration `/etc/apparmor.d/usr.bin.msmtp`
+            msmtp_logfile: /var/log/msmtp
           template:
-            src: msmtprc.j2
+            src: msmtprc-system.j2
             dest: /etc/msmtprc
             owner: root
             group: root
@@ -163,10 +184,12 @@
 
         - name: Copy user-specific `mstprc` configuration file
           vars:
-            msmtp_logfile: /app/machine/msmtp.cloud.log
+            # The user-specific logfile must be `~/.msmtp*.log` according to
+            # msmtp's AppArmor configuration `/etc/apparmor.d/usr.bin.msmtp`
+            msmtp_logfile: ~/.msmtp.log
           template:
-            src: msmtprc.j2
-            dest: /app/.msmtprc
+            src: msmtprc-user.j2
+            dest: ~/.msmtprc
             mode: 0644
           notify: Send test mail as cloud
 
@@ -178,19 +201,6 @@
             owner: root
             group: root
             mode: 0644
-          notify:
-            - Send test mail as root
-            - Send test mail as cloud
-
-        - name: Make `sendmail` symbolically link to `msmtp`
-          become: yes
-          file:
-            src: /usr/bin/msmtp
-            dest: /usr/sbin/sendmail
-            owner: root
-            group: root
-            mode: 0755
-            state: link
           notify:
             - Send test mail as root
             - Send test mail as cloud
