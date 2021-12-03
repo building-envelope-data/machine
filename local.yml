@@ -205,24 +205,32 @@
             - Send test mail as root
             - Send test mail as cloud
 
-    - name: Backup database
-      cron:
-        name: database-backup
-        special_time: daily
-        job: 'chronic { PATH=/usr/local/bin/:/usr/bin:${PATH} && cd /app/production && mkdir --parents /app/data/backups && make --file Makefile.production DUMP_FILE=/app/data/backups/dump_$(date +"\%Y-\%m-\%d_\%H_\%M_\%S").gz backup && make --file Makefile.production prune-backups ; }'
+    - name: Configure Cron
+      block:
+        - name: Add paths to environment variable `PATH` to be used by Cron
+          cronvar:
+            name: PATH
+            value: /usr/local/bin/:/usr/bin:/bin
+            state: present
 
-    - name: Vacuum `journald`
-      become: yes
-      cron:
-        name: journald-vacuuming
-        special_time: daily
-        job: 'chronic { journalctl --rotate && journalctl --vacuum-time=7d ; }'
+        - name: Backup database
+          cron:
+            name: database-backup
+            special_time: daily
+            job: 'chronic make --directory=/app/machine backup-database'
 
-    - name: Renew Transport Layer Security (TLS) certificates needed for the `S` in `HTTPS`
-      cron:
-        name: tls-renewal
-        special_time: daily
-        job: 'chronic { PATH=/usr/local/bin/:/usr/bin:${PATH} && cd /app/machine && make renew-certificates && make deploy ; }'
+        - name: Vacuum `journald`
+          become: yes
+          cron:
+            name: journald-vacuuming
+            special_time: daily
+            job: 'chronic make --directory=/app/machine vacuum-journald'
+
+        - name: Renew Transport Layer Security (TLS) certificates needed for the `S` in `HTTPS`
+          cron:
+            name: tls-renewal
+            special_time: daily
+            job: 'chronic make --directory=/app/machine renew-tls'
 
     - name: Docker
       # Inspired by https://ops.tips/blog/docker-ansible-role/
@@ -286,7 +294,7 @@
           cron:
             name: docker-prune
             special_time: daily
-            job: 'chronic { PATH=/usr/local/bin/:/usr/bin:${PATH} && docker system prune --force --filter "until=24h" ; }'
+            job: 'chronic make --directory=/app/machine prune-docker'
 
         - name: Flush handlers
           meta: flush_handlers

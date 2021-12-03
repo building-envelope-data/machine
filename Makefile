@@ -64,6 +64,30 @@ crontab : ## List user's and root's contab
 	sudo crontab -u root -l
 .PHONY : crontab
 
+vacuum-journald : ## Vaccum journald logs keeping seven days worth of logs
+	journalctl --rotate
+	journalctl --vacuum-time=7d
+.PHONY : vacuum-journald
+
+renew-tls : renew-certificates deploy ## Renew Transport Layer Security (TLS) certificates needed for the `S` in `HTTPS`
+.PHONY : renew-tls
+
+backup-database : ## Backup production database and prunce backups
+	mkdir --parents /app/data/backups
+	make \
+		--directory=/app/production \
+		--file /app/production/Makefile.production \
+		DUMP_FILE=/app/data/backups/dump_$(shell date +"\%Y-\%m-\%d_\%H_\%M_\%S").gz \
+		backup \
+		prune-backups
+.PHONY : backup-database
+
+prune-docker : ## Prune docker
+	docker system prune \
+		--force \
+		--filter "until=24h"
+.PHONY : prune-docker
+
 dummy-certificates : ## Create dummy certificates for `${OUT_PATH}`
 	${docker_compose} run \
 		--rm \
