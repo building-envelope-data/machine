@@ -207,7 +207,14 @@
 
     - name: Configure Cron
       block:
-        - name: Add paths to environment variable `PATH` to be used by Cron
+        - name: Add paths to environment variable `PATH` for root's crontab
+          become: yes
+          cronvar:
+            name: PATH
+            value: /usr/local/bin/:/usr/bin:/bin
+            state: present
+
+        - name: Add paths to environment variable `PATH` for user's crontab
           cronvar:
             name: PATH
             value: /usr/local/bin/:/usr/bin:/bin
