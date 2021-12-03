@@ -10,10 +10,10 @@
 
     - name: Send test mail as root
       become: yes
-      shell: echo "Test mail as root user from new/updated MSTMP at" `hostname` | mail --subject "Test SMTP `hostname`" root
+      shell: echo "Test mail as root user from new/updated MSTMP at" `hostname` | mail -s "Test SMTP `hostname`" root
 
     - name: Send test mail as cloud
-      shell: echo "Test mail as cloud user from new/updated MSTMP at" `hostname` | mail --subject "Test SMTP `hostname`" cloud
+      shell: echo "Test mail as cloud user from new/updated MSTMP at" `hostname` | mail -s "Test SMTP `hostname`" cloud
 
   pre_tasks:
     - name: Update package information
@@ -175,7 +175,7 @@
             # msmtp's AppArmor configuration `/etc/apparmor.d/usr.bin.msmtp`
             msmtp_logfile: /var/log/msmtp
           template:
-            src: msmtprc-system.j2
+            src: msmtprc.j2
             dest: /etc/msmtprc
             owner: root
             group: root
@@ -188,7 +188,7 @@
             # msmtp's AppArmor configuration `/etc/apparmor.d/usr.bin.msmtp`
             msmtp_logfile: ~/.msmtp.log
           template:
-            src: msmtprc-user.j2
+            src: msmtprc.j2
             dest: ~/.msmtprc
             mode: 0644
           notify: Send test mail as cloud
