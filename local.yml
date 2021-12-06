@@ -205,6 +205,9 @@
             - Send test mail as root
             - Send test mail as cloud
 
+        - name: Flush handlers
+          meta: flush_handlers
+
     - name: Configure Cron
       block:
         - name: Add paths to environment variable `PATH` for root's crontab
