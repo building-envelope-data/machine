@@ -1,6 +1,6 @@
 # Debian Production Machine
 
-The network of databases [buildingenvelopedata.org](https://www.buildingenvelopedata.org/) is based on databases and one metabase. This repository can be used to set up the machine either to deploy a [database](https://github.com/ise621/database) or to deploy the [metabase](https://github.com/ise621/metabase).
+The network of databases [buildingenvelopedata.org](https://www.buildingenvelopedata.org/) is based on databases and one metabase. This repository can be used to set up the machine either to deploy a [database](https://github.com/building-envelope-data/database) or to deploy the [metabase](https://github.com/building-envelope-data/metabase).
 
 The machine has two ext4 disks namely one root disk running Debian and one
 initially empty data disk.  The data disk is partitioned, formatted, and
@@ -29,7 +29,7 @@ branch `main` is always deployable.
 1. Create a symbolic link from `/app` to `~` by running `sudo ln -s ~ /app`.
 1. Change into the app directory by running `cd /app`.
 1. Clone the repository by running
-   `git clone git@github.com:ise621/machine.git`.
+   `git clone git@github.com:building-envelope-data/machine.git`.
 1. Change into the clone by running `cd ./machine`.
 1. Prepare the machine environment by running `cp .env.sample .env` and adapt
    the `.env` file as needed for example inside `vi .env`.
@@ -96,10 +96,10 @@ manual `man apt-get`.
 
 Additionally, to upgrade `docker-compose`, you need to bump the version number
 in the Ansible playbook `local.yml` and run `make setup` as explained in [issue
-#12](https://github.com/ise621/machine/issues/12). And, to keep HTTPS, that
+#12](https://github.com/building-envelope-data/machine/issues/12). And, to keep HTTPS, that
 is, HTTP over TLS, secure, regularly fetch SSL configuration and Diffie–Hellman
 parameters from certbot as explained in [issue
-#5](https://github.com/ise621/machine/issues/5).
+#5](https://github.com/building-envelope-data/machine/issues/5).
 
 ## Periodic jobs
 
@@ -113,9 +113,9 @@ In the Ansible playbook `local.yml`, periodic jobs are set-up.
   `/app/machine/tls-renewal.log`.
 * The database is backed-up daily keeping the latest seven backups. To do so,
   the production GNU Make targets `backup` and `prune-backups` of the
-  [`metabase`'s `Makefile.production`](https://github.com/ise621/metabase/blob/develop/Makefile.production)
+  [`metabase`'s `Makefile.production`](https://github.com/building-envelope-data/metabase/blob/develop/Makefile.production)
   and
-  [`database`'s `Makefile.production`](https://github.com/ise621/database/blob/develop/Makefile.production)
+  [`database`'s `Makefile.production`](https://github.com/building-envelope-data/database/blob/develop/Makefile.production)
   are used. The respective logs are kept in `/app/production/database-backup.log`.
 * The docker system is pruned daily without touching anything that is younger
   than one day. The respective logs are kept in `/app/machine/docker-prune.log`.
