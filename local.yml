@@ -254,11 +254,13 @@
       block:
         - name: Add Debian backports
           # https://backports.debian.org/
+          become: yes
           apt_repository:
             repo: deb [arch=amd64] http://deb.debian.org/debian {{ ansible_distribution_release }}-backports main
             state: present
 
         - name: Install Monit
+          become: yes
           package:
             name: monit
             state: present
