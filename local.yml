@@ -242,6 +242,13 @@
             special_time: daily
             job: 'chronic make --directory=/app/machine renew-tls'
 
+        - name: Set periodic docker system prune
+          # See https://docs.docker.com/config/pruning/#prune-everything
+          cron:
+            name: docker-prune
+            special_time: daily
+            job: 'chronic make --directory=/app/machine prune-docker'
+
     - name: Docker
       # Inspired by https://ops.tips/blog/docker-ansible-role/
       become: yes
@@ -298,13 +305,6 @@
             name: docker
             enabled: yes
             state: started
-
-        - name: Set periodic docker system prune
-          # See https://docs.docker.com/config/pruning/#prune-everything
-          cron:
-            name: docker-prune
-            special_time: daily
-            job: 'chronic make --directory=/app/machine prune-docker'
 
         - name: Flush handlers
           meta: flush_handlers
