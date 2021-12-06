@@ -8,6 +8,12 @@
         name: docker
         state: restarted
 
+    - name: Reload Monit
+      become: yes
+      service:
+        name: monit
+        state: reloaded
+
     - name: Send test mail as root
       become: yes
       shell: echo "Test mail as root user from new/updated MSTMP at" `hostname` | mail -s "Test SMTP `hostname`" root
@@ -251,6 +257,10 @@
 
     - name: Monitor system with Monit
       # https://mmonit.com/monit/
+      vars:
+        email_address: '{{ lookup("env", "EMAIL_ADDRESS") }}'
+        smtp_host: '{{ lookup("env", "SMTP_HOST") }}'
+        smtp_port: '{{ lookup("env", "SMTP_PORT") }}'
       block:
         - name: Add Debian backports
           # https://backports.debian.org/
@@ -264,6 +274,20 @@
           package:
             name: monit
             state: present
+
+        - name: Configure Monit
+          become: yes
+          template:
+            src: monitrc.j2
+            dest: /etc/monit/monitrc
+            owner: root
+            group: root
+            mode: 0600
+          notify:
+            - Reload Monit
+
+        - name: Flush handlers
+          meta: flush_handlers
 
     - name: Docker
       # Inspired by https://ops.tips/blog/docker-ansible-role/
