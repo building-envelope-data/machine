@@ -249,6 +249,20 @@
             special_time: daily
             job: 'chronic make --directory=/app/machine prune-docker'
 
+    - name: Monitor system with Monit
+      # https://mmonit.com/monit/
+      block:
+        - name: Add Debian backports
+          # https://backports.debian.org/
+          apt_repository:
+            repo: deb [arch=amd64] http://deb.debian.org/debian {{ ansible_distribution_release }}-backports main
+            state: present
+
+        - name: Install Monit
+          package:
+            name: monit
+            state: present
+
     - name: Docker
       # Inspired by https://ops.tips/blog/docker-ansible-role/
       become: yes
