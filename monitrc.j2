@@ -15,7 +15,7 @@ set alert {{ email_address }}
 # Not necessary according to
 # https://serverfault.com/questions/328657/sending-a-test-example-alert-from-monit/656190#656190
 
-check system $HOST
+check system {{ host }}
     if loadavg (5min) > 3 then alert
     if loadavg (15min) > 1 then alert
     if memory usage > 80% for 4 cycles then alert
