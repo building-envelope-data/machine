@@ -8,6 +8,19 @@
         name: docker
         state: restarted
 
+    - name: Reload Monit
+      become: yes
+      service:
+        name: monit
+        state: reloaded
+
+    - name: Send test mail as root
+      become: yes
+      shell: echo "Test mail as root user from new/updated MSTMP at" `hostname` | mail -s "Test SMTP `hostname`" root
+
+    - name: Send test mail as cloud
+      shell: echo "Test mail as cloud user from new/updated MSTMP at" `hostname` | mail -s "Test SMTP `hostname`" cloud
+
   pre_tasks:
     - name: Update package information
       become: yes
@@ -102,27 +115,180 @@
         name: apache2-utils
         state: present
 
-    - name: Backup database
-      cron:
-        name: database-backup
-        special_time: daily
-        # For the preferred way to redirect stdout and stderr to log files used below see https://tldp.org/LDP/abs/html/io-redirection.html
-        job: '{ PATH=/usr/local/bin/:/usr/bin:${PATH} && cd /app/production && mkdir --parents /app/data/backups && make --file Makefile.production DUMP_FILE=/app/data/backups/dump_$(date +"\%Y-\%m-\%d_\%H_\%M_\%S").gz backup && make --file Makefile.production prune-backups ; } > /app/production/database-backup.log 2>&1'
-
-    - name: Vacuum `journald`
+    - name: Install `moreutils` as it includes `chronic` that we use to cure Cron's chronic email problem
+      # For details on the problem see https://habilis.net/cronic/
       become: yes
-      cron:
-        name: journald-vacuuming
-        special_time: daily
-        # For the preferred way to redirect stdout and stderr to log files used below see https://tldp.org/LDP/abs/html/io-redirection.html
-        job: '{ journalctl --rotate && journalctl --vacuum-time=7d ; } > /app/machine/journald-vacuuming.log 2>&1'
+      package:
+        name: moreutils
+        state: present
 
-    - name: Renew Transport Layer Security (TLS) certificates needed for the `S` in `HTTPS`
-      cron:
-        name: tls-renewal
-        special_time: daily
-        # For the preferred way to redirect stdout and stderr to log files used below see https://tldp.org/LDP/abs/html/io-redirection.html
-        job: '{ PATH=/usr/local/bin/:/usr/bin:${PATH} && cd /app/machine && make renew-certificates && make deploy ; } > /app/machine/tls-renewal.log 2>&1'
+    - name: Install and configure `msmtp` to be used by Cron and other services to send emails
+      vars:
+        from_email_address: 'server@{{ lookup("env", "NON_WWW_PRODUCTION_HOST") }}'
+        email_address: '{{ lookup("env", "EMAIL_ADDRESS") }}'
+        smtp_host: '{{ lookup("env", "SMTP_HOST") }}'
+        smtp_port: '{{ lookup("env", "SMTP_PORT") }}'
+      block:
+        - name: Uninstall `mailutils` which includes GNU `mail`
+          # The problem with GNU `mail` combined with `msmtp` is that aliases
+          # in `/etc/aliases` are ignored. For example, when sending an email
+          # by running `echo 'body' | mail -s 'subject' root`, the recipient
+          # address is `root@hostname` instead of whatever email address is
+          # given in `/etc/aliases` for `root`.
+          become: yes
+          package:
+            name: mailutils
+            state: absent
+
+        - name: Install `bsd-mailx` which provides the `mail` command
+          # An alternative would be `s-nail`
+          become: yes
+          package:
+            name: bsd-mailx
+            state: present
+
+        - name: Install `msmtp` to send emails from mail user agents
+          # For details see https://wiki.debian.org/msmtp
+          # The manual is published under https://marlam.de/msmtp/msmtp.html
+          # We do not use `sSMTP` because it is unmaintained according to https://wiki.debian.org/sSMTP
+          become: yes
+          package:
+            name: msmtp
+            state: present
+
+        - name: Install `msmtp-mta` to symbolically link `/usr/sbin/sendmail` to `msmtp` that other software can use to send mail
+          become: yes
+          package:
+            name: msmtp-mta
+            state: present
+
+        - name: Copy `mail.rc` configuration file
+          become: yes
+          template:
+            src: mail.rc.j2
+            dest: /etc/mail.rc
+            owner: root
+            group: root
+            mode: 0644
+          notify:
+            - Send test mail as root
+            - Send test mail as cloud
+
+        - name: Copy system-wide `mstprc` configuration file
+          become: yes
+          vars:
+            # The system-wide logfile must be `/var/log/msmtp` according to
+            # msmtp's AppArmor configuration `/etc/apparmor.d/usr.bin.msmtp`
+            msmtp_logfile: /var/log/msmtp
+          template:
+            src: msmtprc.j2
+            dest: /etc/msmtprc
+            owner: root
+            group: root
+            mode: 0644
+          notify: Send test mail as root
+
+        - name: Copy user-specific `mstprc` configuration file
+          vars:
+            # The user-specific logfile must be `~/.msmtp*.log` according to
+            # msmtp's AppArmor configuration `/etc/apparmor.d/usr.bin.msmtp`
+            msmtp_logfile: ~/.msmtp.log
+          template:
+            src: msmtprc.j2
+            dest: ~/.msmtprc
+            mode: 0644
+          notify: Send test mail as cloud
+
+        - name: Copy `aliases` configuration file
+          become: yes
+          template:
+            src: aliases.j2
+            dest: /etc/aliases
+            owner: root
+            group: root
+            mode: 0644
+          notify:
+            - Send test mail as root
+            - Send test mail as cloud
+
+        - name: Flush handlers
+          meta: flush_handlers
+
+    - name: Configure Cron
+      block:
+        - name: Add paths to environment variable `PATH` for root's crontab
+          become: yes
+          cronvar:
+            name: PATH
+            value: /usr/local/bin/:/usr/bin:/bin
+            state: present
+
+        - name: Add paths to environment variable `PATH` for user's crontab
+          cronvar:
+            name: PATH
+            value: /usr/local/bin/:/usr/bin:/bin
+            state: present
+
+        - name: Backup database
+          cron:
+            name: database-backup
+            special_time: daily
+            job: 'chronic make --directory=/app/machine backup-database'
+
+        - name: Vacuum `journald`
+          become: yes
+          cron:
+            name: journald-vacuuming
+            special_time: daily
+            job: 'chronic make --directory=/app/machine vacuum-journald'
+
+        - name: Renew Transport Layer Security (TLS) certificates needed for the `S` in `HTTPS`
+          cron:
+            name: tls-renewal
+            special_time: daily
+            job: 'chronic make --directory=/app/machine renew-tls'
+
+        - name: Set periodic docker system prune
+          # See https://docs.docker.com/config/pruning/#prune-everything
+          cron:
+            name: docker-prune
+            special_time: daily
+            job: 'chronic make --directory=/app/machine prune-docker'
+
+    - name: Monitor system with Monit
+      # https://mmonit.com/monit/
+      vars:
+        host: '{{ lookup("env", "NON_WWW_PRODUCTION_HOST") }}'
+        email_address: '{{ lookup("env", "EMAIL_ADDRESS") }}'
+        smtp_host: '{{ lookup("env", "SMTP_HOST") }}'
+        smtp_port: '{{ lookup("env", "SMTP_PORT") }}'
+      block:
+        - name: Add Debian backports
+          # https://backports.debian.org/
+          become: yes
+          apt_repository:
+            repo: deb [arch=amd64] http://deb.debian.org/debian {{ ansible_distribution_release }}-backports main
+            state: present
+
+        - name: Install Monit
+          become: yes
+          package:
+            name: monit
+            state: present
+
+        - name: Configure Monit
+          become: yes
+          template:
+            src: monitrc.j2
+            dest: /etc/monit/monitrc
+            owner: root
+            group: root
+            mode: 0600
+          notify:
+            - Reload Monit
+
+        - name: Flush handlers
+          meta: flush_handlers
 
     - name: Docker
       # Inspired by https://ops.tips/blog/docker-ansible-role/
@@ -180,13 +346,6 @@
             name: docker
             enabled: yes
             state: started
-
-        - name: Set periodic docker system prune
-          # See https://docs.docker.com/config/pruning/#prune-everything
-          cron:
-            name: docker-prune
-            special_time: daily
-            job: '{ PATH=/usr/local/bin/:/usr/bin:${PATH} && docker system prune --force --filter "until=24h" ; } > /app/machine/docker-prune.log 2>&1'
 
         - name: Flush handlers
           meta: flush_handlers

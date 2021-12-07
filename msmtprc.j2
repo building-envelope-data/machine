@@ -1,0 +1,13 @@
+# {{ ansible_managed }}
+# /etc/msmtprc or ~/.msmtprc
+
+account default
+
+auth off
+tls off
+host {{ smtp_host }}
+port {{ smtp_port }}
+from {{ from_email_address }}
+logfile {{ msmtp_logfile }}
+
+aliases /etc/aliases

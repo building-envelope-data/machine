@@ -1,0 +1,64 @@
+# {{ ansible_managed }}
+# /etc/monit/monitrc
+# Inspired by https://mmonit.com/wiki/Monit/ConfigurationExamples
+
+# Configure email alerts
+set mailserver {{ smtp_host }} port {{ smtp_port }}
+set alert {{ email_address }}
+
+# Test email alerts
+# Inspired by https://serverfault.com/questions/328657/sending-a-test-example-alert-from-monit/328672#328672
+# ```
+# check file alerttest with path /.nonexistent
+#     if does not exist then alert with reminder on 500 cycles
+# ```
+# Not necessary according to
+# https://serverfault.com/questions/328657/sending-a-test-example-alert-from-monit/656190#656190
+
+check system {{ host }}
+    if loadavg (5min) > 3 then alert
+    if loadavg (15min) > 1 then alert
+    if memory usage > 80% for 4 cycles then alert
+    if swap usage > 20% for 4 cycles then alert
+    # Test the user part of CPU usage
+    if cpu usage (user) > 80% for 2 cycles then alert
+    # Test the system part of CPU usage
+    if cpu usage (system) > 20% for 2 cycles then alert
+    # Test the i/o wait part of CPU usage
+    if cpu usage (wait) > 80% for 2 cycles then alert
+    # Test CPU usage including user, system and wait. Note that multi-core
+    # systems can generate 100% per core so total CPU usage can be more than
+    # 100%
+    if cpu usage > 80% for 4 cycles then alert
+
+check filesystem data with path /app/data/
+    if space usage > 95% then alert
+    if service time > 300 milliseconds for 5 cycles then alert
+
+check directory certificates with path /etc/ssl/certs/
+    if changed timestamp then alert
+
+check directory secrets with path /app/production/secrets/
+    if changed timestamp then alert
+
+check file environment with path /app/production/.env
+    if failed checksum then alert
+    if changed timestamp then alert
+
+# In metabase the network is called `eth0`, in database it is called `ens160`.
+# List all with `ip a`.
+# check network eth0 with interface eth0
+#     if failed link then alert
+#     if changed link then alert
+
+# check network en0 with address "fe80::aa20:66ff:fe50:4f6%en0"
+#     if failed link then alert
+#     if changed link then alert
+#     if saturation > 80% then alert
+#     if total upload > 10 GB in last hour then exec "/usr/local/bin/script.sh"
+
+check program docker with path "/usr/bin/systemctl --quiet is-active docker"
+    if status != 0 then alert
+
+check program docker_healthcheck with path /app/machine/monit_docker_healthcheck.sh
+    if status != 0 then alert
