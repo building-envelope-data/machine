@@ -64,6 +64,10 @@ crontab : ## List user's and root's contab
 	sudo crontab -u root -l
 .PHONY : crontab
 
+monit : ## Follow monit logs
+	sudo tail --follow /var/log/monit.log
+.PHONY : monit
+
 vacuum-journald : ## Vaccum journald logs keeping seven days worth of logs
 	journalctl --rotate
 	journalctl --vacuum-time=7d
