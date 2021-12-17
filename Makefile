@@ -59,6 +59,17 @@ down : ## Stop containers and remove containers, networks, volumes, and images c
 		--remove-orphans
 .PHONY : down
 
+list : ## List all containers with health status
+	${docker_compose} ps \
+		--no-trunc \
+		--all
+.PHONY : list
+
+list-services : ## List all services specified in the docker-compose file (used by Monit)
+	${docker_compose} config \
+		--services
+.PHONY : list-services
+
 crontab : ## List user's and root's contab
 	crontab -l
 	sudo crontab -u root -l
