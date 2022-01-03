@@ -27,6 +27,7 @@
       apt:
         update_cache: yes
       changed_when: false
+
     - name: Install access control list utilities (needed to escalate privileges, see https://github.com/ansible/ansible/issues/16052)
       become: yes
       package:

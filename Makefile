@@ -92,8 +92,10 @@ backup-database : ## Backup production database and prunce backups
 	make \
 		--directory=/app/production \
 		--file /app/production/Makefile.production \
-		DUMP_FILE=/app/data/backups/dump_$(shell date +"\%Y-\%m-\%d_\%H_\%M_\%S").gz \
+		BACKUP_DIRECTORY=/app/data/backups/$(shell date +"\%Y-\%m-\%d_\%H_\%M_\%S")/ \
+		begin-maintenance \
 		backup \
+		end-maintenance \
 		prune-backups
 .PHONY : backup-database
 
