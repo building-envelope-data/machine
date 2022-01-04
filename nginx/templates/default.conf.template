@@ -38,12 +38,12 @@ server {
     listen *:80;
     server_tokens off;
 
-    location /.well-known/acme-challenge/ {
-        root /var/www/certbot;
-    }
-
     location / {
         return 301 https://$host$request_uri;
+    }
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
     }
 }
 
@@ -69,6 +69,10 @@ server {
     location /email {
         return 404;
     }
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
 }
 
 server {
@@ -87,5 +91,9 @@ server {
         proxy_pass http://host.docker.internal:${STAGING_HTTP_PORT};
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection $connection_upgrade;
+    }
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
     }
 }

@@ -40,7 +40,7 @@ services:
 
   certbot: # https://hub.docker.com/r/certbot/certbot
     restart: always
-    image: certbot/certbot:v1.21.0
+    image: certbot/certbot:v1.22.0
     volumes:
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
