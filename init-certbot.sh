@@ -12,7 +12,7 @@ if ! [ -x "$(command -v docker-compose)" ]; then
   exit 1
 fi
 
-domains=("${NON_WWW_PRODUCTION_HOST}" "${PRODUCTION_HOST}" "${STAGING_HOST}")
+domains=("${NON_WWW_PRODUCTION_HOST}" "${PRODUCTION_HOST}" "${STAGING_HOST}" "${FRAUNHOFER_HOST}")
 email="${EMAIL_ADDRESS}"
 staging=0 # Set to 1 if you're testing your setup to avoid hitting request limits
 
