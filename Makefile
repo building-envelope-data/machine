@@ -34,7 +34,8 @@ setup : ## Setup machine
 build : ## Pull and build images
 	${docker_compose} pull
 	${docker_compose} build \
-		--pull
+		--pull \
+		--no-cache
 .PHONY : build
 
 up : ## (Re)create and (re)start services
