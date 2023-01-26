@@ -1,5 +1,6 @@
 .env
 .htpasswd
 /certbot
+/tags*
 *.bak
 *.log
