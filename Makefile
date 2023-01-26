@@ -4,7 +4,7 @@
 include .env
 
 docker_compose = \
-	docker-compose \
+	docker compose \
 		--file docker-compose.yml
 
 # Taken from https://www.client9.com/self-documenting-makefiles/
@@ -31,11 +31,20 @@ setup : ## Setup machine
 		ansible-playbook local.yml
 .PHONY : setup
 
-build : ## Pull and build images
-	${docker_compose} pull
-	${docker_compose} build \
-		--pull \
-		--no-cache
+pull : ## Pull images
+	COMPOSE_DOCKER_CLI_BUILD=1 \
+		DOCKER_BUILDKIT=1 \
+			${docker_compose} pull
+.PHONY : pull
+
+# To debug errors during build add `--progress plain \` to get additional
+# output.
+build : pull ## Build images
+	COMPOSE_DOCKER_CLI_BUILD=1 \
+		DOCKER_BUILDKIT=1 \
+			${docker_compose} build \
+				--pull \
+				--no-cache
 .PHONY : build
 
 up : ## (Re)create and (re)start services
