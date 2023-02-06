@@ -5,7 +5,7 @@ include .env
 
 docker_compose = \
 	docker compose \
-		--file docker-compose.yml
+		--file ./docker-compose.yml
 
 # Taken from https://www.client9.com/self-documenting-makefiles/
 help : ## Print this help
@@ -144,7 +144,7 @@ delete-dummy-certificates : ## Delete dummy certificates for `${DOMAINS}`
 .PHONY : delete-dummy-certificates
 
 request-certificates : ## Request certificates
-	docker-compose run \
+	${docker_compose} run \
 		--rm \
 		--entrypoint " \
 			certbot certonly \
@@ -160,10 +160,10 @@ request-certificates : ## Request certificates
 				--force-renewal \
 		" \
 		certbot
-.PHONY : request-certificate
+.PHONY : request-certificates
 
 renew-certificates : ## Renew certificates
-	docker-compose run \
+	${docker_compose} run \
 		--rm \
 		--entrypoint " \
 			certbot renew \

@@ -94,12 +94,9 @@ the possibly destructive command `make dist-upgrade-system` when you know what
 you are doing. See the entries `upgrade` and `dist-upgrade` in the `apt-get`
 manual `man apt-get`.
 
-Additionally, to upgrade `docker-compose`, you need to bump the version number
-in the Ansible playbook `local.yml` and run `make setup` as explained in [issue
-#12](https://github.com/building-envelope-data/machine/issues/12). And, to keep HTTPS, that
-is, HTTP over TLS, secure, regularly fetch SSL configuration and Diffie–Hellman
-parameters from certbot as explained in [issue
-#5](https://github.com/building-envelope-data/machine/issues/5).
+Additionally, to keep HTTPS, that is, HTTP over TLS, secure, regularly fetch
+SSL configuration and Diffie–Hellman parameters from certbot as explained in
+[issue #5](https://github.com/building-envelope-data/machine/issues/5).
 
 ## Periodic jobs
 
