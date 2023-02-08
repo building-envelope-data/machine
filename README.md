@@ -117,6 +117,18 @@ In the Ansible playbook `local.yml`, periodic jobs are set-up.
 * The docker system is pruned daily without touching anything that is younger
   than one day. The respective logs are kept in `/app/machine/docker-prune.log`.
 
+## Logs
+
+For logs of periodic jobs see above.
+
+* Docker services logs are collected and stored by `journald` and can be
+  followed by running `make logs`.
+* Docker daemon logs are collected and stored by `journald` and can be
+  followed by running `make daemon-logs`.
+* Monitoring logs are written to `/var/log/monit.log` and can be followed by
+  running `make monit`.
+* SMTP client logs are written to `/var/log/msmtp` and `~/.msmtp.log`.
+
 ## Deploying the latest version
 1. Fetch and checkout the latest version by running `git fetch` and
    `git checkout --force main`.
