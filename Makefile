@@ -80,6 +80,20 @@ list-services : ## List all services specified in the docker-compose file (used 
 		--services
 .PHONY : list-services
 
+# See https://docs.docker.com/config/daemon/#view-stack-traces
+daemon-logs : ## View Docker daemon logs
+	sudo journalctl --unit docker.service
+.PHONY : daemon-logs
+
+reload-daemon : ## Reload Docker daemon
+	sudo systemctl reload docker
+.PHONY : reload-daemon
+
+# See https://docs.docker.com/config/containers/runmetrics/
+docker-stats : ## Show Docker run-time metrics
+	docker stats
+.PHONY : docker-stats
+
 crontab : ## List user's and root's contab
 	crontab -l
 	sudo crontab -u root -l
