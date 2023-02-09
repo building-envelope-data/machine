@@ -125,9 +125,12 @@ For logs of periodic jobs see above.
   followed by running `make logs`.
 * Docker daemon logs are collected and stored by `journald` and can be
   followed by running `make daemon-logs`.
+* Cron logs are collected and stored by `journald` and can be
+  followed by running `make cron-logs`.
 * Monitoring logs are written to `/var/log/monit.log` and can be followed by
-  running `make monit`.
-* SMTP client logs are written to `/var/log/msmtp` and `~/.msmtp.log`.
+  running `make monit-logs`.
+* SMTP client logs are written to `/var/log/msmtp` and `~/.msmtp.log` and can
+  be followed by running `make smtp-logs`
 
 ## Deploying the latest version
 1. Fetch and checkout the latest version by running `git fetch` and

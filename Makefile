@@ -81,8 +81,8 @@ list-services : ## List all services specified in the docker-compose file (used 
 .PHONY : list-services
 
 # See https://docs.docker.com/config/daemon/#view-stack-traces
-daemon-logs : ## View Docker daemon logs
-	sudo journalctl --unit docker.service
+daemon-logs : ## Follow Docker daemon logs
+	sudo journalctl --follow --unit docker.service
 .PHONY : daemon-logs
 
 reload-daemon : ## Reload Docker daemon
@@ -99,9 +99,19 @@ crontab : ## List user's and root's contab
 	sudo crontab -u root -l
 .PHONY : crontab
 
-monit : ## Follow monit logs
+cron-logs : ## Follow cron logs
+	sudo journalctl --follow --unit cron.service
+.PHONY : cron-logs
+
+monit-logs : ## Follow monit logs
 	sudo tail --follow /var/log/monit.log
-.PHONY : monit
+.PHONY : monit-logs
+
+smtp-logs : ## Follow monit logs
+	sudo tail --follow \
+		/var/log/msmtp \
+		~/.msmtp.log
+.PHONY : smtp-logs
 
 vacuum-journald : ## Vaccum journald logs keeping seven days worth of logs
 	journalctl --rotate
