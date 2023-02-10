@@ -36,7 +36,7 @@ services:
       - STAGING_HTTP_PORT=${STAGING_HTTP_PORT}
       - STAGING_HOST=${STAGING_HOST}
     extra_hosts:
-      - host.docker.internal:172.17.0.1
+      - host.docker.internal:host-gateway
 
   certbot: # https://hub.docker.com/r/certbot/certbot
     restart: always
