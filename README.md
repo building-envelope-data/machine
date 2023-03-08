@@ -1,6 +1,11 @@
 # Debian Production Machine
 
-The network of databases [buildingenvelopedata.org](https://www.buildingenvelopedata.org/) is based on databases and one metabase. This repository can be used to set up the machine either to deploy a [database](https://github.com/building-envelope-data/database) or to deploy the [metabase](https://github.com/building-envelope-data/metabase).
+The network of databases
+[buildingenvelopedata.org](https://www.buildingenvelopedata.org/) is based on
+databases and one metabase. This repository can be used to set up the machine
+either to deploy
+a [database](https://github.com/building-envelope-data/database) or to deploy
+the [metabase](https://github.com/building-envelope-data/metabase).
 
 The machine has two ext4 disks namely one root disk running Debian and one
 initially empty data disk.  The data disk is partitioned, formatted, and
@@ -131,6 +136,37 @@ For logs of periodic jobs see above.
   running `make monit-logs`.
 * SMTP client logs are written to `/var/log/msmtp` and `~/.msmtp.log` and can
   be followed by running `make smtp-logs`
+
+## Troubleshooting
+
+If the website is not reachable, then check whether the reverse proxy is up and
+healthy by running `make list`.
+
+- If not, identify the reason by studying the logs printed by `make logs`, fix
+  any issues if necessary, and [redeploy the reverse
+  proxy](#deploying-the-latest-version).
+- If yes, check whether the reverse proxy receives requests by studying the
+  logs printed by `make logs`.
+  - If not, there may be an issue with the mapping
+    of the URL to the server managed by
+    [Fraunhofer ISE](https://www.ise.fraunhofer.de)
+    (you can find out more as elaborated in
+    [Linux troubleshooting commands: 4 tools for DNS name resolution problems](https://www.redhat.com/sysadmin/DNS-name-resolution-troubleshooting-tools))
+    or an issue with the firewall settings or port forwardings configured in
+    the network settings for the public IP addresses in the
+    [Fraunhofer cloudportal](https://cloudportal.fraunhofer.de) (the firewall
+    must allow the protocol TCP for ports 80 and 443 and the public ports 80
+    and 443 must be forwarded to the HTTP and HTTPS ports configured in `.env`;
+    note that for secure shell access port 22 must be allowed and forwarded to
+    22).
+  - If yes, the reverse proxy may not be configured properly, for example, the
+    ports of the production and staging web servers may not match the ones
+    configured in `.env` in `/app/production` and `/app/staging`, or the
+    production and staging web servers may be down or unhealthy, which you can
+    check by running `make list` in `/app/production` and `/app/staging` and
+    troubleshoot as elaborated in the READMEs of the
+    [metabase](https://github.com/building-envelope-data/metabase) and
+    [database](https://github.com/building-envelope-data/database) projects.
 
 ## Deploying the latest version
 1. Fetch and checkout the latest version by running `git fetch` and
