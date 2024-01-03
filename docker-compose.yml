@@ -10,7 +10,7 @@ version: '3.3'
 services:
   reverse_proxy: # https://hub.docker.com/_/nginx
     restart: always
-    image: nginx:1.23
+    image: nginx:1.25-bookworm
     command: [
       "nginx",
       "-g", "daemon off;"
@@ -40,7 +40,7 @@ services:
 
   certbot: # https://hub.docker.com/r/certbot/certbot
     restart: always
-    image: certbot/certbot:v2.2.0
+    image: certbot/certbot:v2.8.0
     volumes:
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
