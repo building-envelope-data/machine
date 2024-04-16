@@ -24,11 +24,12 @@ user : ## Add user `${USER}` (he/she will have access to restricted areas like s
 .PHONY : user
 
 setup : ## Setup machine
+	LC_ALL=C.UTF-8 \
 	NON_WWW_PRODUCTION_HOST=${NON_WWW_PRODUCTION_HOST} \
 	EMAIL_ADDRESS=${EMAIL_ADDRESS} \
 	SMTP_HOST=${SMTP_HOST} \
 	SMTP_PORT=${SMTP_PORT} \
-		ansible-playbook local.yml
+		ansible-playbook ./local.yml
 .PHONY : setup
 
 pull : ## Pull images
