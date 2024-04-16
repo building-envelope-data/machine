@@ -5,8 +5,6 @@
 # See also
 # https://certbot.eff.org/docs/install.html#running-with-docker
 
-version: '3.3'
-
 services:
   reverse_proxy: # https://hub.docker.com/_/nginx
     restart: always
