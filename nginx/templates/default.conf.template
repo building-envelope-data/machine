@@ -87,7 +87,7 @@ server {
         proxy_pass http://host.docker.internal:${STAGING_HTTP_PORT};
     }
 
-    location /.well-known/openid-configuration {
+    location /.well-known/ {
         auth_basic "off";
         proxy_pass http://host.docker.internal:${STAGING_HTTP_PORT};
     }
