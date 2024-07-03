@@ -87,6 +87,11 @@ server {
         proxy_pass http://host.docker.internal:${STAGING_HTTP_PORT};
     }
 
+    location /.well-known/openid-configuration {
+        auth_basic "off";
+        proxy_pass http://host.docker.internal:${STAGING_HTTP_PORT};
+    }
+
     location /email/hubs {
         proxy_pass http://host.docker.internal:${STAGING_HTTP_PORT};
         proxy_set_header Upgrade $http_upgrade;
