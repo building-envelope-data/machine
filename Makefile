@@ -169,21 +169,29 @@ delete-dummy-certificates : ## Delete dummy certificates for `${DOMAINS}`
 		certbot
 .PHONY : delete-dummy-certificates
 
+# For certbot options see
+# https://eff-certbot.readthedocs.io/en/latest/using.html#certbot-commands
 request-certificates : ## Request certificates
 	${docker_compose} run \
 		--rm \
 		--entrypoint " \
 			certbot certonly \
+				--non-interactive \
 				--webroot \
 				-w /var/www/certbot \
 				${STAGING_ARG} \
 				${DOMAIN_ARGS} \
 				--email ${EMAIL} \
+				--keep-until-expiring \
+				--expand \
+				--renew-with-new-domains \
+				--no-reuse-key \
+				--agree-tos \
 				--key-type ecdsa \
 				--elliptic-curve secp256r1 \
-				--must-staple \
-				--agree-tos \
-				--force-renewal \
+				--hsts \
+				--uir \
+				--strict-permissions \
 		" \
 		certbot
 .PHONY : request-certificates
