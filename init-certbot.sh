@@ -7,7 +7,7 @@ set -o allexport
 source .env
 set +o allexport
 
-if docker compose version; then
+if ! docker compose version; then
   echo 'Error: docker compose is not installed.' >&2
   exit 1
 fi
