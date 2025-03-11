@@ -62,6 +62,7 @@ deploy : setup build up ## Deploy services, that is, setup machine, pull and bui
 
 logs : ## Follow logs
 	${docker_compose} logs \
+		--since=24h \
 		--follow
 .PHONY : logs
 
@@ -83,11 +84,14 @@ list-services : ## List all services specified in the docker-compose file (used 
 
 # See https://docs.docker.com/config/daemon/#view-stack-traces
 daemon-logs : ## Follow Docker daemon logs
-	sudo journalctl --follow --unit docker.service
+	sudo journalctl \
+		--follow \
+		--unit docker.service
 .PHONY : daemon-logs
 
 reload-daemon : ## Reload Docker daemon
-	sudo systemctl reload docker
+	sudo systemctl \
+		reload docker
 .PHONY : reload-daemon
 
 # See https://docs.docker.com/config/containers/runmetrics/
@@ -101,15 +105,20 @@ crontab : ## List user's and root's contab
 .PHONY : crontab
 
 cron-logs : ## Follow cron logs
-	sudo journalctl --follow --unit cron.service
+	sudo journalctl \
+		--follow \
+		--unit cron.service
 .PHONY : cron-logs
 
 monit-logs : ## Follow monit logs
-	sudo tail --follow /var/log/monit.log
+	sudo tail \
+		--follow \
+		/var/log/monit.log
 .PHONY : monit-logs
 
-smtp-logs : ## Follow monit logs
-	sudo tail --follow \
+smtp-logs : ## Follow msmtp logs
+	sudo tail \
+		--follow \
 		/var/log/msmtp \
 		~/.msmtp.log
 .PHONY : smtp-logs
@@ -122,7 +131,7 @@ vacuum-journald : ## Vaccum journald logs keeping seven days worth of logs
 renew-tls : renew-certificates deploy ## Renew Transport Layer Security (TLS) certificates needed for the `S` in `HTTPS`
 .PHONY : renew-tls
 
-backup-database : ## Backup production database and prunce backups
+backup-database : ## Backup production database and prune backups
 	mkdir --parents /app/data/backups
 	make \
 		--directory=/app/production \
