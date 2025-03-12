@@ -220,9 +220,13 @@ begin-maintenance : ## Begin maintenance
 	done
 .PHONY : begin-maintenance
 
+reboot : ## Reboot
+	sudo systemctl reboot
+.PHONY : reboot
+
 end-maintenance : ## End maintenance
 	if [ -f /var/run/reboot-required ] ; then \
-		echo 'Reboot and run `make end-maintenance`' ; \
+		echo 'Reboot by running `make reboot` and afterwards run `cd /app/machine && make end-maintenance`' ; \
 	else \
 		for environment in staging production ; do \
 			make --directory=/app/$${environment} --file=Makefile.production end-maintenance ; \
