@@ -26,7 +26,7 @@ both run on machines provided by
 [Fraunhofer Cloud](https://cloudportal.fraunhofer.de) and some of the set-up
 information below may still be Fraunhofer Cloud specific. If you find that that
 is the case, please
-[report it on GitHub](https://github.com/building-envelope-data/machine/issues)
+[report it on GitHub](https://github.com/building-envelope-data/machine/issues/new)
 and we will try to generalize it.
 
 This project follows the
