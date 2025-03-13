@@ -53,31 +53,32 @@ branch `main` is always deployable.
 1. Change into the clone by running `cd ./machine`.
 1. Prepare the machine environment by running `cp ./.env.sample ./.env` and adapt
    the dotenv file as needed for example inside `vi ./.env` or `nano ./.env`.
-   The dotenv variables `HTTP_PORT` and `HTTPS_PORT` are the HTTP and HTTPS
-   ports on which the NGINX reverse proxy is listening. The variables
-   `PRODUCTION_HTTP_PORT`, `PRODUCTION_HOST`, and `NON_WWW_PRODUCTION_HOST` are
-   the HTTP port on which the production instance `/app/production` is
-   listening, its domain name with sub-domain `www`, and its domain name
-   without sub-domain (note that the reverse proxy NGINX redirects requests
-   without the sub-domain `www` to such with this sub-domain). The variables
-   `STAGING_HTTP_PORT` and `STAGING_HOST` are the HTTP port on which the
-   staging instance `/app/staging` is listening and the domain name with
-   sub-domain of the staging environment (this is usually
-   `staging.${NON_WWW_PRODUCTION_HOST}`). The variable `FRAUNHOFER_HOST` is the
-   domain at Fraunhofer cloud for the
-   [metabase](https://www.buildingenvelopedata.org) or
-   [TestLab Solar Facades](https://www.solarbuildingenvelopes.com)
-   product-data database, which is `192-102-163-92.vm.c.fraunhofer.de`
-   or `192-102-162-39.vm.c.fraunhofer.de` (in other uses of this project the
-   variable can be left empty or set to some domain name for which the
-   TLS certificate fetched from [Let's Encrypt](https://letsencrypt.org) shall
-   also be valid apart from `${NON_WWW_PRODUCTION_HOST}`). The variable
-   `EMAIL_ADDRESS` is the email address of the person to be notified when there
-   is some system-administration issue (for example
-   [Monit](https://mmonit.com/monit/) sends such notifications). And the
-   variables `SMTP_HOST` and `SMTP_PORT` are host and port of the message
-   transfer agent to be used to send emails through the Simple Mail Transfer
-   Protocol (SMTP).
+   The dotenv variables
+   - `HTTP_PORT` and `HTTPS_PORT` are the HTTP and HTTPS ports on which the
+     NGINX reverse proxy is listening;
+   - `PRODUCTION_HTTP_PORT`, `PRODUCTION_HOST`, and `NON_WWW_PRODUCTION_HOST`
+     are the HTTP port on which the production instance `/app/production` is
+     listening, its domain name with sub-domain `www`, and its domain name
+     without sub-domain (note that the reverse proxy NGINX redirects requests
+     without the sub-domain `www` to such with this sub-domain);
+   - `STAGING_HTTP_PORT` and `STAGING_HOST` are the HTTP port on which the
+     staging instance `/app/staging` is listening and the domain name with
+     sub-domain of the staging environment (this is usually
+     `staging.${NON_WWW_PRODUCTION_HOST}`);
+   - `FRAUNHOFER_HOST` is the domain at Fraunhofer cloud for the
+     [metabase](https://www.buildingenvelopedata.org) or
+     [TestLab Solar Facades](https://www.solarbuildingenvelopes.com)
+     product-data database, which is `192-102-163-92.vm.c.fraunhofer.de`
+     or `192-102-162-39.vm.c.fraunhofer.de` (in other uses of this project the
+     variable can be left empty or set to some domain name for which the
+     TLS certificate fetched from [Let's Encrypt](https://letsencrypt.org) shall
+     also be valid apart from `${NON_WWW_PRODUCTION_HOST}`);
+   - `EMAIL_ADDRESS` is the email address of the person to be notified when
+     there is some system-administration issue (for example
+     [Monit](https://mmonit.com/monit/) sends such notifications)
+   - `SMTP_HOST` and `SMTP_PORT` are host and port of the message transfer
+     agent to be used to send emails through the Simple Mail Transfer
+     Protocol (SMTP).
 1. Format and mount hard disk for data to the directory `/app/data` as follows:
    1. Create the directory `/app/data` by running `mkdir /app/data`.
    1. Scan for the data disk by running `make scan`.
