@@ -63,7 +63,13 @@ branch `main` is always deployable.
      are the HTTP port on which the production instance `/app/production` is
      listening, its domain name with sub-domain `www`, and its domain name
      without sub-domain (note that the reverse proxy NGINX redirects requests
-     without the sub-domain `www` to such with this sub-domain);
+     without the sub-domain `www` to such with this sub-domain). If the domain
+     name is too long, then NGINX will fail to start, for example, with the
+     error message `"Could not build the server_names_hash. You should increase
+     server_names_hash_bucket_size."` and it becomes necessary to
+     [tune the `server_names_hash_max_size` or `server_names_hash_bucket_size` directives](https://nginx.org/en/docs/http/server_names.html#optimization),
+     in the above example just increase `server_names_hash_bucket_size` to the
+     next power of two;
    - `STAGING_HTTP_PORT` and `STAGING_HOST` are the HTTP port on which the
      staging instance `/app/staging` is listening and the domain name with
      sub-domain of the staging environment (this is usually
