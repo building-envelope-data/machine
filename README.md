@@ -35,6 +35,9 @@ branch `main` is always deployable.
 
 ## Setting up the machine
 
+1. If there is a firewall, configure it such that it allows secure shell (ssh)
+   access on port 22. And if there are explicit port forwardings, forward the
+   public port 22 to port 22.
 1. Enter a shell on the production machine using `ssh` as the user `cloud`.
 1. Install
    [GNU Make](https://www.gnu.org/software/make/),
@@ -52,8 +55,8 @@ branch `main` is always deployable.
    `git clone git@github.com:building-envelope-data/machine.git`.
 1. Change into the clone by running `cd ./machine`.
 1. Prepare the machine environment by running `cp ./.env.sample ./.env` and adapt
-   the dotenv file as needed for example inside `vi ./.env` or `nano ./.env`.
-   The dotenv variables
+   the `.env` file as needed for example inside `vi ./.env` or `nano ./.env`.
+   The `.env` variables
    - `HTTP_PORT` and `HTTPS_PORT` are the HTTP and HTTPS ports on which the
      NGINX reverse proxy is listening;
    - `PRODUCTION_HTTP_PORT`, `PRODUCTION_HOST`, and `NON_WWW_PRODUCTION_HOST`
@@ -79,6 +82,11 @@ branch `main` is always deployable.
    - `SMTP_HOST` and `SMTP_PORT` are host and port of the message transfer
      agent to be used to send emails through the Simple Mail Transfer
      Protocol (SMTP).
+1. If there is a firewall, configure it such that it allows the protocol TCP
+   for ports 80 and 443.
+1. If the HTTP and HTTPS port configured in `.env` are not 80 and 443, then the
+   public ports 80 and 443 must be forwarded to the configured ports
+   `${HTTP_PORT}` and `${HTTPS_PORT}`.
 1. Format and mount hard disk for data to the directory `/app/data` as follows:
    1. Create the directory `/app/data` by running `mkdir /app/data`.
    1. Scan for the data disk by running `make scan`.
