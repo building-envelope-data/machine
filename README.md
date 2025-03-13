@@ -22,7 +22,7 @@ branch `main` is always deployable.
 
 ## Setting up the machine
 
-1. Enter a shell on the production machine using `ssh`.
+1. Enter a shell on the production machine using `ssh` as the user `cloud`.
 1. Install
    [GNU Make](https://www.gnu.org/software/make/),
    [Git](https://git-scm.com),
