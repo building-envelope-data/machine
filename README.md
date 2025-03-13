@@ -7,14 +7,27 @@ either to deploy
 a [database](https://github.com/building-envelope-data/database) or to deploy
 the [metabase](https://github.com/building-envelope-data/metabase).
 
-The machine has two ext4 disks namely one root disk running Debian and one
-initially empty data disk. The data disk is partitioned, formatted, and
-mounted to `/app/data` as described below. The machine setup is mostly done by
-running the Ansible playbook `./local.yml` with `make setup`. The machine runs
-two instances of the application, one for staging in `/app/staging` and the
-other for production in `/app/production`. Using [NGINX](https://nginx.org) as
-reverse proxy it directs traffic coming from the sub-domain `staging` or `www`
-to the staging or production instance.
+The machine has two ext4 disks namely one root disk running [Debian
+bookworm](https://www.debian.org/releases/bookworm/) and one initially empty
+data disk. The data disk is partitioned, formatted, and mounted to `/app/data`
+as described below. There is a Debian user `cloud` with superuser privileges
+and a corresponding group `cloud`. The machine setup is mostly done by running
+the Ansible playbook `./local.yml` with `make setup` as the user `cloud`. The
+machine runs two instances of the application, one for staging in
+`/app/staging` and the other for production in `/app/production`. Using
+[NGINX](https://nginx.org) as reverse proxy it directs traffic coming from the
+sub-domain `staging` or `www` to the staging or production instance.
+
+Note that the
+[network of databases buildingenvelopedata.org](https://www.buildingenvelopedata.org)
+and the
+[TestLab Solar Facades product-data server](https://www.solarbuildingenvelopes.com)
+both run on machines provided by
+[Fraunhofer Cloud](https://cloudportal.fraunhofer.de) and some of the set-up
+information below may still be Fraunhofer Cloud specific. If you find that that
+is the case, please
+[report it on GitHub](https://github.com/building-envelope-data/machine/issues)
+and we will try to generalize it.
 
 This project follows the
 [GitHub Flow](https://guides.github.com/introduction/flow/), in particular, the
@@ -52,7 +65,7 @@ branch `main` is always deployable.
    sub-domain of the staging environment (this is usually
    `staging.${NON_WWW_PRODUCTION_HOST}`). The variable `FRAUNHOFER_HOST` is the
    domain at Fraunhofer cloud for the
-   [metabase](https://www.buildingenvelopedata.org/) or
+   [metabase](https://www.buildingenvelopedata.org) or
    [TestLab Solar Facades](https://www.solarbuildingenvelopes.com)
    product-data database, which is `192-102-163-92.vm.c.fraunhofer.de`
    or `192-102-162-39.vm.c.fraunhofer.de` (in other uses of this project the
