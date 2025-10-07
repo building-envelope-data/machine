@@ -158,6 +158,15 @@ the possibly destructive command `make dist-upgrade-system` when you know what
 you are doing. See the entries `upgrade` and `dist-upgrade` in the `apt-get`
 manual `man apt-get`.
 
+To install security upgrades in Docker services, redeploy the production and
+staging environments as described in
+[Deploying a relase of the metabase](https://github.com/building-envelope-data/metabase#deploying-a-release)
+or
+[Deploying a relase of the database](https://github.com/building-envelope-data/database#deploying-a-release).
+Rebuilding the image and recreating the services are the important steps here,
+which can also be done by running
+`make --file=Makefile.production begin-maintenance deploy-services end-maintenance`.
+
 Additionally, to keep HTTPS, that is, HTTP over TLS, secure, regularly fetch
 SSL configuration and Diffie–Hellman parameters from certbot as explained in
 [issue #5](https://github.com/building-envelope-data/machine/issues/5).
