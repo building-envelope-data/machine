@@ -291,6 +291,39 @@
         - name: Flush handlers
           meta: flush_handlers
 
+    - name: GnuPG
+      become: yes
+      block:
+        - name: Add GnuPG dependencies
+          package:
+            name:
+              - apt-transport-https
+              - ca-certificates
+              - curl
+              - gnupg
+              - lsb-release
+            state: present
+
+        - name: Add GnuPG key
+          apt_key:
+            url: https://repos.gnupg.org/deb/gnupg/bookworm/gnupg-signing-key.gpg
+            id: 32097B719B3745D6E61DDA1B85C45AE3E1A2B355
+            state: present
+
+        - name: Add GnuPG repository
+          apt_repository:
+            repo: deb [arch=amd64] https://repos.gnupg.org/deb/gnupg/{{ ansible_distribution_release }}/ {{ ansible_distribution_release }} stable
+            state: present
+
+        - name: Install GnuPG
+          package:
+            name:
+              # Keep the version in sync with the one in the Dockerfiles of the
+              # `database` repository where it is specified in the variable
+              # `GNUPG_VERSION`.
+              - gnupg=2.4.8-2
+            state: present
+
     - name: Docker
       # Inspired by https://ops.tips/blog/docker-ansible-role/
       become: yes
