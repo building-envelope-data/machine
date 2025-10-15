@@ -300,7 +300,7 @@
               - apt-transport-https
               - ca-certificates
               - curl
-              - gnupg
+              - gnupg2
               - lsb-release
             state: present
 
@@ -312,7 +312,7 @@
 
         - name: Add GnuPG repository
           apt_repository:
-            repo: deb [arch=amd64] https://repos.gnupg.org/deb/gnupg/{{ ansible_distribution_release }}/ {{ ansible_distribution_release }} stable
+            repo: deb [arch=amd64] https://repos.gnupg.org/deb/gnupg/{{ ansible_distribution_release }}/ {{ ansible_distribution_release }} main
             state: present
 
         - name: Install GnuPG
@@ -321,7 +321,7 @@
               # Keep the version in sync with the one in the Dockerfiles of the
               # `database` repository where it is specified in the variable
               # `GNUPG_VERSION`.
-              - gnupg=2.4.8-2
+              - gnupg2=2.4.8-2
             state: present
 
     - name: Docker
@@ -334,7 +334,7 @@
               - apt-transport-https
               - ca-certificates
               - curl
-              - gnupg
+              - gnupg2
               - lsb-release
             state: present
 
