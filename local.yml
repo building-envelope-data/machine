@@ -321,7 +321,7 @@
               # Keep the version in sync with the one in the Dockerfiles of the
               # `database` repository where it is specified in the variable
               # `GNUPG_VERSION`.
-              - gnupg2=2.4.8-2
+              - gnupg2=2.5.16-1
             state: present
 
     - name: Docker
