@@ -42,9 +42,9 @@ branch `main` is always deployable.
 1. Install
    [GNU Make](https://www.gnu.org/software/make/),
    [Git](https://git-scm.com),
-   [scsitools](https://packages.debian.org/buster/scsitools),
+   [scsitools](https://packages.debian.org/bookworm/scsitools),
    [GNU Parted](https://www.gnu.org/software/parted/manual/parted.html), and
-   [e2fsprogs](https://packages.debian.org/buster/e2fsprogs)
+   [e2fsprogs](https://packages.debian.org/bookworm/e2fsprogs)
    by running `sudo apt-get install make scsitools parted e2fsprogs`, and
    install [Ansible](https://www.ansible.com) as explained on
    [Installing Ansible on Debian](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#installing-ansible-on-debian).
