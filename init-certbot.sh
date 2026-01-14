@@ -28,16 +28,16 @@ mkdir --parents "./certbot/conf"
 mkdir --parents "./certbot/letsencrypt"
 mkdir --parents "./certbot/logs"
 mkdir --parents "./certbot/www"
-chmod 755 "./certbot/conf"
-chmod 755 "./certbot/letsencrypt"
-chmod 700 "./certbot/logs"
-chmod 755 "./certbot/www"
+chmod --recursive 755 "./certbot/conf"
+chmod --recursive 755 "./certbot/letsencrypt"
+chmod --recursive 700 "./certbot/logs"
+chmod --recursive 755 "./certbot/www"
 
 if [ ! -e "./certbot/conf/options-ssl-nginx.conf" ] || [ ! -e "./certbot/conf/ssl-dhparams.pem" ]; then
   echo "### Downloading recommended TLS parameters ..."
   mkdir --parents "./certbot/conf"
-  curl -s https://raw.githubusercontent.com/certbot/certbot/master/certbot-nginx/certbot_nginx/_internal/tls_configs/options-ssl-nginx.conf > "./certbot/conf/options-ssl-nginx.conf"
-  curl -s https://raw.githubusercontent.com/certbot/certbot/master/certbot/certbot/ssl-dhparams.pem > "./certbot/conf/ssl-dhparams.pem"
+  curl --silent https://raw.githubusercontent.com/certbot/certbot/master/certbot-nginx/certbot_nginx/_internal/tls_configs/options-ssl-nginx.conf > "./certbot/conf/options-ssl-nginx.conf"
+  curl --silent https://raw.githubusercontent.com/certbot/certbot/master/certbot/certbot/ssl-dhparams.pem > "./certbot/conf/ssl-dhparams.pem"
   echo
 fi
 
