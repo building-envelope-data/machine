@@ -173,6 +173,7 @@ request-certificates : ## Request certificates
 		--rm \
 		--entrypoint " \
 			certbot certonly \
+				-v \
 				--non-interactive \
 				--webroot \
 				-w /var/www/certbot \
