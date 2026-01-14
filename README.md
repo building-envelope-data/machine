@@ -45,9 +45,9 @@ branch `main` is always deployable.
    [scsitools](https://packages.debian.org/bookworm/scsitools),
    [GNU Parted](https://www.gnu.org/software/parted/manual/parted.html), and
    [e2fsprogs](https://packages.debian.org/bookworm/e2fsprogs)
-   by running `sudo apt-get install make scsitools parted e2fsprogs`, and
+   by running `sudo apt-get install make git scsitools parted e2fsprogs`, and
    install [Ansible](https://www.ansible.com) as explained on
-   [Installing Ansible on Debian](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#installing-ansible-on-debian).
+   [Installing Ansible on Debian](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html).
 1. Create a symbolic link from `/app` to `~` by running
    `sudo ln --symbolic ~ /app`.
 1. Change into the app directory by running `cd /app`.
@@ -113,7 +113,7 @@ branch `main` is always deployable.
       and mount it permanently by adding
       `UUID=XXXX-XXXX-XXXX-XXXX-XXXX /app/data ext4 errors=remount-ro 0 1`
       to the file `/etc/fstab` and running
-      `sudo mount --all`,
+      `sudo mount --all && sudo systemctl daemon-reload`,
       where the UUID is the one reported by
       `sudo blkid | grep /dev/sdx1`.
       Note that to list block devices and whether and where they are
@@ -123,11 +123,11 @@ branch `main` is always deployable.
       running `sudo chown cloud:cloud /app/data`.
    1. Create the directory `/app/data/backups` by running
       `mkdir /app/data/backups`.
+1. Set-up everything else with Ansible by running `make setup`.
 1. Fetch Transport Security Protocol (TLS) certificates from [Let's
    Encrypt](https://letsencrypt.org) used for HTTPS by running
    `./init-certbot.sh` (if you are unsure whether the script will work, set the
    variable `staging` inside that script to `1` for a trial run).
-1. Set-up everything else with Ansible by running `make setup`.
 1. Restart Docker by running `sudo systemctl restart docker`. If you do not do
    that, you will encounter the error: "Cannot start service database: OCI
    runtime create failed: /app/data/docker/overlay2/.../merged is not an
