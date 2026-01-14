@@ -40,6 +40,7 @@ services:
     restart: always
     image: certbot/certbot:v3.3.0
     volumes:
-      - ./certbot/conf:/etc/letsencrypt
-      - ./certbot/letsencrypt:/var/lib/letsencrypt
-      - ./certbot/www:/var/www/certbot
+      - ./certbot/conf:/etc/letsencrypt # --config-dir
+      - ./certbot/letsencrypt:/var/lib/letsencrypt # --work-dir
+      - ./certbot/logs:/var/log/letsencrypt # --logs-dir
+      - ./certbot/www:/var/www/certbot # --webroot-path

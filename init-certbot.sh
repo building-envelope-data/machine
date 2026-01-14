@@ -23,6 +23,12 @@ if [ -d "./certbot" ]; then
   fi
 fi
 
+echo "### Creating certbot config, working, logs, and certificates directories ./certbot/* ..."
+mkdir -p "./certbot/conf"
+mkdir -p "./certbot/letsencrypt"
+mkdir -p "./certbot/logs"
+mkdir -p "./certbot/www"
+
 if [ ! -e "./certbot/conf/options-ssl-nginx.conf" ] || [ ! -e "./certbot/conf/ssl-dhparams.pem" ]; then
   echo "### Downloading recommended TLS parameters ..."
   mkdir -p "./certbot/conf"

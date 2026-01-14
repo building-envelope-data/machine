@@ -171,12 +171,13 @@ delete-dummy-certificates : ## Delete dummy certificates for `${DOMAINS}`
 request-certificates : ## Request certificates
 	${docker_compose} run \
 		--rm \
+		--user $(shell id --user):$(shell id --group) \
 		--entrypoint " \
 			certbot certonly \
 				-v \
 				--non-interactive \
 				--webroot \
-				-w /var/www/certbot \
+				--webroot-path /var/www/certbot \
 				${STAGING_ARG} \
 				${DOMAIN_ARGS} \
 				--email ${EMAIL} \
