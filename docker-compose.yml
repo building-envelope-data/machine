@@ -38,7 +38,7 @@ services:
 
   certbot: # https://hub.docker.com/r/certbot/certbot
     restart: always
-    image: certbot/certbot:v3.1.0
+    image: certbot/certbot:v3.3.0
     volumes:
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/letsencrypt:/var/lib/letsencrypt
