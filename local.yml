@@ -79,7 +79,7 @@
         - name: Activate unattended upgrades
           become: yes
           command:
-            cmd: dpkg-reconfigure --force noninteractive unattended-upgrades
+            cmd: dpkg-reconfigure --force --frontend=noninteractive unattended-upgrades
             creates: /etc/apt/apt.conf.d/20auto-upgrades
 
     - name: Install GNU Make
