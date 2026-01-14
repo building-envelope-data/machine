@@ -33,20 +33,8 @@ setup : ## Setup machine
 .PHONY : setup
 
 pull : ## Pull images
-	COMPOSE_DOCKER_CLI_BUILD=1 \
-		DOCKER_BUILDKIT=1 \
-			${docker_compose} pull
+	${docker_compose} pull
 .PHONY : pull
-
-# To debug errors during build add `--progress plain \` to get additional
-# output.
-build : pull ## Build images
-	COMPOSE_DOCKER_CLI_BUILD=1 \
-		DOCKER_BUILDKIT=1 \
-			${docker_compose} build \
-				--pull \
-				--no-cache
-.PHONY : build
 
 up : ## (Re)create and (re)start services
 	${docker_compose} up \
@@ -57,7 +45,7 @@ up : ## (Re)create and (re)start services
 		reverse_proxy
 .PHONY : up
 
-deploy : setup build up ## Deploy services, that is, setup machine, pull and build images, and (re)create and (re)start services
+deploy : setup pull up ## Deploy services, that is, setup machine, pull images, and (re)create and (re)start services
 .PHONY : deploy
 
 logs : ## Follow logs
