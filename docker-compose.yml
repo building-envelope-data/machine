@@ -8,7 +8,7 @@
 services:
   reverse_proxy: # https://hub.docker.com/_/nginx
     restart: always
-    image: nginx:1.27-bookworm
+    image: nginx:1.29-trixie-otel
     command: [
       "nginx",
       "-g", "daemon off;"
