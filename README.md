@@ -46,8 +46,9 @@ branch `main` is always deployable.
    [GNU Parted](https://www.gnu.org/software/parted/manual/parted.html), and
    [e2fsprogs](https://packages.debian.org/bookworm/e2fsprogs)
    by running `sudo apt-get install make git scsitools parted e2fsprogs`, and
-   install [Ansible](https://www.ansible.com) as explained on
-   [Installing Ansible on Debian](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html).
+   install [Ansible](https://www.ansible.com) through its Ubuntu Personal
+   Package Archive (PPA) as explained on
+   [Installing Ansible on Debian](https://docs.ansible.com/projects/ansible/latest/installation_guide/installation_distros.html#installing-ansible-on-debian).
 1. Create a symbolic link from `/app` to `~` by running
    `sudo ln --symbolic ~ /app`.
 1. Change into the app directory by running `cd /app`.
