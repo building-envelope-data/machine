@@ -51,12 +51,14 @@ check file environment with path /app/production/.env
     if failed checksum then alert
     if changed timestamp then alert
 
+# `make network-interfaces`
 check network {{ network_interface }} with interface {{ network_interface }}
     if failed link then alert
     if changed link then alert
     if saturation > 80% then alert
     if total upload > 10 GB in last hour then alert
 
+# [Check whether Docker is running](https://docs.docker.com/engine/daemon/troubleshoot/#check-whether-docker-is-running)
 check program docker with path "/usr/bin/systemctl --quiet is-active docker"
     if status != 0 then alert
 
