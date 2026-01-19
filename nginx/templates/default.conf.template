@@ -66,6 +66,10 @@ server {
         proxy_pass http://host.docker.internal:${PRODUCTION_HTTP_PORT};
     }
 
+    location /monit {
+        proxy_pass http://host.docker.internal:2812;
+    }
+
     location /email {
         return 404;
     }
