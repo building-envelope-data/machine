@@ -1,10 +1,11 @@
 #!/bin/sh
 
+echo "Docker Healthcheck"
+
 running_containers="$(docker ps --no-trunc --all --filter status=running --format '{{.Names}} {{.Status}}')"
 
 environment=machine
 services="$(make --silent --directory=/app/machine --file=/app/machine/Makefile list-services)"
-echo "Docker Healthcheck"
 echo "  Environment: '${environment}'"
 echo "    Services: '${services}'"
 for service in ${services}
