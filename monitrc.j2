@@ -65,7 +65,7 @@ check program docker with path "/usr/bin/systemctl --quiet is-active docker"
 check program docker_healthcheck with path /app/machine/monit_docker_healthcheck.sh
     if status != 0 for 3 cycles then alert
 
-check host {{ non_www_host }} with address {{ host }}
+check host {{ host }} with address {{ host }}
     if failed
         port 80
         with protocol http
