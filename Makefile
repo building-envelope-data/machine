@@ -44,6 +44,11 @@ setup : ## Setup machine
 		ansible-playbook ./local.yml
 .PHONY : setup
 
+monit : ## Print Monit status and summary
+	sudo monit status
+	sudo monit summary
+.PHONY : monit
+
 pull : ## Pull images
 	${docker_compose} pull
 .PHONY : pull
