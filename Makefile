@@ -35,7 +35,7 @@ setup : ## Setup machine
 	EMAIL_ADDRESS="${EMAIL_ADDRESS}" \
 	SMTP_HOST="${SMTP_HOST}" \
 	SMTP_PORT="${SMTP_PORT}" \
-	NETWORK_INTERFACE="${NETWORK_INTERFACE}"
+	NETWORK_INTERFACE="${NETWORK_INTERFACE}" \
 		ansible-playbook ./local.yml
 .PHONY : setup
 
