@@ -1,9 +1,9 @@
-set daemon 60
-    with start delay 60
-
 # {{ ansible_managed }}
 # /etc/monit/monitrc
 # Inspired by https://mmonit.com/wiki/Monit/ConfigurationExamples
+
+set daemon 60
+    with start delay 60
 
 # Configure email alerts
 set mailserver {{ smtp_host }} port {{ smtp_port }}
@@ -18,7 +18,7 @@ set alert {{ email_address }}
 # Not necessary according to
 # https://serverfault.com/questions/328657/sending-a-test-example-alert-from-monit/656190#656190
 
-check system {{ host }}
+check system {{ non_www_host }}
     if loadavg (5min) > 3 then alert
     if loadavg (15min) > 1 then alert
     if memory usage > 80% for 4 cycles then alert
@@ -65,3 +65,11 @@ check program docker with path "/usr/bin/systemctl --quiet is-active docker"
 
 check program docker_healthcheck with path /app/machine/monit_docker_healthcheck.sh
     if status != 0 then alert
+
+check host {{ non_www_host }} with address {{ host }}
+    if failed port 80 protocol http then alert
+    if failed port 443 protocol https then alert
+
+check host {{ staging_host }} with address {{ staging_host }}
+    if failed port 80 protocol http then alert
+    if failed port 443 protocol https then alert
