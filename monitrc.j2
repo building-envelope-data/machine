@@ -5,6 +5,10 @@
 set daemon 60
     with start delay 60
 
+set log /var/log/monit.log
+set pidfile /var/run/monit.pid
+set statefile /var/lib/monit/monit.state
+
 # Configure email alerts
 set mailserver {{ smtp_host }} port {{ smtp_port }}
 set alert {{ email_address }}
@@ -28,13 +32,9 @@ set ssl options {
 set httpd
     port 2812
     use address 127.0.0.1
-    unixsocket /run/monit.socket
-    with ssl {
-        pemchain: /app/machine/certbot/conf/live/{{ non_www_host }}/fullchain.pem
-        pemkey: /app/machine/certbot/conf/live/{{ non_www_host }}/privkey.pem
-    }
+    unixsocket /var/run/monit.socket
+    allow localhost
     allow monit:{{ monit_password }}
-    allow md5 /app/machine/nginx/.htpasswd
 
 check system {{ non_www_host }}
     if loadavg (5min) > 3 then alert

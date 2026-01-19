@@ -71,7 +71,11 @@ logs : ## Follow logs
 		--follow
 .PHONY : logs
 
-shell : up ## Enter shell in the `reverse_proxy` service
+shell : ## Enter shell in the `reverse_proxy` service
+	${docker_compose} up \
+		--remove-orphans \
+		--detach \
+		reverse_proxy
 	${docker_compose} exec \
 		reverse_proxy \
 		bash
