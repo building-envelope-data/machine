@@ -24,11 +24,11 @@ check system {{ non_www_host }}
     if memory usage > 80% for 4 cycles then alert
     if swap usage > 20% for 4 cycles then alert
     # Test the user part of CPU usage
-    if cpu usage (user) > 80% for 2 cycles then alert
+    if cpu usage (user) > 80% for 3 cycles then alert
     # Test the system part of CPU usage
-    if cpu usage (system) > 20% for 2 cycles then alert
+    if cpu usage (system) > 20% for 3 cycles then alert
     # Test the i/o wait part of CPU usage
-    if cpu usage (wait) > 80% for 2 cycles then alert
+    if cpu usage (wait) > 80% for 3 cycles then alert
     # Test CPU usage including user, system and wait. Note that multi-core
     # systems can generate 100% per core so total CPU usage can be more than
     # 100%
@@ -64,12 +64,32 @@ check program docker with path "/usr/bin/systemctl --quiet is-active docker"
     if status != 0 then alert
 
 check program docker_healthcheck with path /app/machine/monit_docker_healthcheck.sh
-    if status != 0 then alert
+    if status != 0 for 3 cycles then alert
 
 check host {{ non_www_host }} with address {{ host }}
-    if failed port 80 protocol http then alert
-    if failed port 443 protocol https then alert
+    if failed
+        port 80
+        with protocol http
+        for 3 cycles
+    then alert
+    if failed
+        port 443
+        with protocol https
+        and certificate valid > 7 days
+        use ssl options {verify: enable}
+        for 3 cycles
+    then alert
 
 check host {{ staging_host }} with address {{ staging_host }}
-    if failed port 80 protocol http then alert
-    if failed port 443 protocol https then alert
+    if failed
+        port 80
+        with protocol http
+        for 3 cycles
+    then alert
+    if failed
+        port 443
+        with protocol https
+        and certificate valid > 7 days
+        use ssl options {verify: enable}
+        for 3 cycles
+    then alert
