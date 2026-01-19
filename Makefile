@@ -40,6 +40,7 @@ setup : ## Setup machine
 	SMTP_HOST="${SMTP_HOST}" \
 	SMTP_PORT="${SMTP_PORT}" \
 	NETWORK_INTERFACE="${NETWORK_INTERFACE}" \
+	MONIT_PASSWORD="${MONIT_PASSWORD}" \
 		ansible-playbook ./local.yml
 .PHONY : setup
 
