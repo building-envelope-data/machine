@@ -25,7 +25,9 @@ user : ## Add user `${USER}` (he/she will have access to restricted areas like s
 
 setup : ## Setup machine
 	LC_ALL=C.UTF-8 \
+	PRODUCTION_HOST=${PRODUCTION_HOST} \
 	NON_WWW_PRODUCTION_HOST=${NON_WWW_PRODUCTION_HOST} \
+	STAGING_HOST=${STAGING_HOST} \
 	EMAIL_ADDRESS=${EMAIL_ADDRESS} \
 	SMTP_HOST=${SMTP_HOST} \
 	SMTP_PORT=${SMTP_PORT} \

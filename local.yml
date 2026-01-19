@@ -261,7 +261,7 @@
       vars:
         host: '{{ lookup("env", "PRODUCTION_HOST") }}'
         non_www_host: '{{ lookup("env", "NON_WWW_PRODUCTION_HOST") }}'
-        staging_host: '{{ lookup("env", "PRODUCTION_HOST") }}'
+        staging_host: '{{ lookup("env", "STAGING_HOST") }}'
         email_address: '{{ lookup("env", "EMAIL_ADDRESS") }}'
         smtp_host: '{{ lookup("env", "SMTP_HOST") }}'
         smtp_port: '{{ lookup("env", "SMTP_PORT") }}'
