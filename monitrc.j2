@@ -51,17 +51,11 @@ check file environment with path /app/production/.env
     if failed checksum then alert
     if changed timestamp then alert
 
-# In metabase the network is called `eth0`, in database it is called `ens160`.
-# List all with `ip a`.
-# check network eth0 with interface eth0
-#     if failed link then alert
-#     if changed link then alert
-
-# check network en0 with address "fe80::aa20:66ff:fe50:4f6%en0"
-#     if failed link then alert
-#     if changed link then alert
-#     if saturation > 80% then alert
-#     if total upload > 10 GB in last hour then exec "/usr/local/bin/script.sh"
+check network {{ network_interface }} with interface {{ network_interface }}
+    if failed link then alert
+    if changed link then alert
+    if saturation > 80% then alert
+    if total upload > 10 GB in last hour then alert
 
 check program docker with path "/usr/bin/systemctl --quiet is-active docker"
     if status != 0 then alert

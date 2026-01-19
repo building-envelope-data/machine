@@ -19,18 +19,23 @@ scan : ## Scan for additional hard disks without restarting the virtual machine
 	sudo rescan-scsi-bus.sh
 .PHONY : scan
 
+network-interfaces : ## List network interfaces
+	ip link
+.PHONY : network-interfaces
+
 user : ## Add user `${USER}` (he/she will have access to restricted areas like staging with the correct password), for example, `make USER=jdoe user`
 	sudo htpasswd ./nginx/.htpasswd ${USER}
 .PHONY : user
 
 setup : ## Setup machine
-	LC_ALL=C.UTF-8 \
-	PRODUCTION_HOST=${PRODUCTION_HOST} \
-	NON_WWW_PRODUCTION_HOST=${NON_WWW_PRODUCTION_HOST} \
-	STAGING_HOST=${STAGING_HOST} \
-	EMAIL_ADDRESS=${EMAIL_ADDRESS} \
-	SMTP_HOST=${SMTP_HOST} \
-	SMTP_PORT=${SMTP_PORT} \
+	LC_ALL="C.UTF-8" \
+	PRODUCTION_HOST="${PRODUCTION_HOST}" \
+	NON_WWW_PRODUCTION_HOST="${NON_WWW_PRODUCTION_HOST}" \
+	STAGING_HOST="${STAGING_HOST}" \
+	EMAIL_ADDRESS="${EMAIL_ADDRESS}" \
+	SMTP_HOST="${SMTP_HOST}" \
+	SMTP_PORT="${SMTP_PORT}" \
+	NETWORK_INTERFACE="${NETWORK_INTERFACE}"
 		ansible-playbook ./local.yml
 .PHONY : setup
 
