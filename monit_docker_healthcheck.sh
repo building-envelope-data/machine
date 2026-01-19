@@ -3,11 +3,12 @@
 echo "Docker Healthcheck"
 
 running_containers="$(docker ps --no-trunc --all --filter status=running --format '{{.Names}} {{.Status}}')"
+echo "  Running Containers: '${running_containers}'" | tr '\n' '\t'
 
 environment=machine
 services="$(make --silent --directory=/app/machine --file=/app/machine/Makefile list-services)"
 echo "  Environment: '${environment}'"
-echo "    Services: '${services}'"
+echo "    Services: '${services}'" | tr '\n' ' '
 for service in ${services}
 do
   if [ "${service}" != "certbot" ] ; then
@@ -24,7 +25,7 @@ for environment in staging production
 do
   echo "  Environment: '${environment}'"
   services="$(make --silent --directory=/app/${environment} --file=/app/${environment}/Makefile.production list-services)"
-  echo "    Services: '${services}'"
+  echo "    Services: '${services}'" | tr '\n' ' '
   for service in ${services}
   do
     echo "    Service: '${service}'"
