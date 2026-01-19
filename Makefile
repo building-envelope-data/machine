@@ -31,6 +31,11 @@ user : ## Add user `${USER}` (he/she will have access to restricted areas like s
 	sudo htpasswd ./nginx/.htpasswd ${USER}
 .PHONY : user
 
+monit : ## Print Monit status and summary
+	sudo monit status
+	sudo monit summary
+.PHONY : monit
+
 setup : ## Setup machine
 	LC_ALL="C.UTF-8" \
 	PRODUCTION_HOST="${PRODUCTION_HOST}" \
@@ -43,11 +48,6 @@ setup : ## Setup machine
 	MONIT_PASSWORD="${MONIT_PASSWORD}" \
 		ansible-playbook ./local.yml
 .PHONY : setup
-
-monit : ## Print Monit status and summary
-	sudo monit status
-	sudo monit summary
-.PHONY : monit
 
 pull : ## Pull images
 	${docker_compose} pull
@@ -70,6 +70,12 @@ logs : ## Follow logs
 		--since=24h \
 		--follow
 .PHONY : logs
+
+shell : up ## Enter shell in the `reverse_proxy` service
+	${docker_compose} exec \
+		reverse_proxy \
+		bash
+.PHONY : shell
 
 down : ## Stop containers and remove containers, networks, volumes, and images created by `deploy`
 	${docker_compose} down \
