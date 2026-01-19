@@ -266,6 +266,7 @@
         smtp_host: '{{ lookup("env", "SMTP_HOST") }}'
         smtp_port: '{{ lookup("env", "SMTP_PORT") }}'
         network_interface: '{{ lookup("env", "NETWORK_INTERFACE") }}'
+        monit_password: '{{ lookup("env", "MONIT_PASSWORD") }}'
       block:
         - name: Add Debian backports
           # https://backports.debian.org/

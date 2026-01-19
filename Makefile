@@ -23,7 +23,7 @@ network-interfaces : ## List network interfaces
 	ip link
 .PHONY : network-interfaces
 
-user : ## Add user `${USER}` (he/she will have access to restricted areas like staging with the correct password), for example, `make USER=jdoe user`
+user : ## Add user `${USER}` (he/she will have access to restricted areas like staging and the Monit web interface with the correct password), for example, `make USER=jdoe user`
 	sudo htpasswd ./nginx/.htpasswd ${USER}
 .PHONY : user
 

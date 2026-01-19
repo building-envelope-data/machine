@@ -18,6 +18,23 @@ set alert {{ email_address }}
 # Not necessary according to
 # https://serverfault.com/questions/328657/sending-a-test-example-alert-from-monit/656190#656190
 
+# [Global SSL Options](https://mmonit.com/monit/documentation/monit.html#SSL-OPTIONS)
+set ssl options {
+    verify: enable
+    selfsigned: reject
+}
+
+# [Monit HTTPD](https://mmonit.com/monit/documentation/monit.html#MONIT-HTTPD)
+set httpd
+    port 2812
+    unixsocket /run/monit.socket
+    with ssl {
+        pemchain: /app/machine/certbot/conf/live/{{ non_www_host }}/fullchain.pem
+        pemkey: /app/machine/certbot/conf/live/{{ non_www_host }}/privkey.pem
+    }
+    allow monit:{{ monit_password }}
+    allow md5 /app/machine/nginx/htpasswd
+
 check system {{ non_www_host }}
     if loadavg (5min) > 3 then alert
     if loadavg (15min) > 1 then alert
@@ -75,7 +92,7 @@ check host {{ host }} with address {{ host }}
         port 443
         with protocol https
         and certificate valid > 7 days
-        use ssl options {verify: enable}
+        use ssl
         for 3 cycles
     then alert
 
@@ -89,6 +106,6 @@ check host {{ staging_host }} with address {{ staging_host }}
         port 443
         with protocol https
         and certificate valid > 7 days
-        use ssl options {verify: enable}
+        use ssl
         for 3 cycles
     then alert
