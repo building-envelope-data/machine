@@ -55,9 +55,9 @@ branch `main` is always deployable.
 1. Clone the repository by running
    `git clone git@github.com:building-envelope-data/machine.git`.
 1. Change into the clone by running `cd ./machine`.
-1. Prepare the machine environment by running `cp ./.env.sample ./.env` and adapt
-   the `.env` file as needed for example inside `vi ./.env` or `nano ./.env`.
-   The `.env` variables
+1. Prepare the machine environment by running
+   `cp ./.env.sample ./.env && chmod 600 ./.env` and adapt the `.env` file as
+   needed for example inside `vi ./.env` or `nano ./.env`. The `.env` variables
    - `HTTP_PORT` and `HTTPS_PORT` are the HTTP and HTTPS ports on which the
      NGINX reverse proxy is listening;
    - `PRODUCTION_HTTP_PORT`, `PRODUCTION_HOST`, and `NON_WWW_PRODUCTION_HOST`

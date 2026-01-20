@@ -36,7 +36,7 @@ set httpd
     allow localhost
     allow monit:{{ monit_password }}
 
-check system {{ non_www_host }}
+check system {{ non_www_host }}-system
     if loadavg (5min) > 3 then alert
     if loadavg (15min) > 1 then alert
     if memory usage > 80% for 4 cycles then alert
@@ -65,19 +65,15 @@ check directory certbot with path /app/machine/certbot/
 check file htpasswd with path /app/machine/nginx/.htpasswd
     if failed checksum then alert
     if changed timestamp then alert
-
-check directory secrets with path /app/production/secrets/
-    if changed timestamp then alert
-
-check file environment with path /app/production/.env
-    if failed checksum then alert
-    if changed timestamp then alert
+    if failed uid root then alert
+    if failed gid root then alert
+    if failed permission 600 then alert
 
 check directory ssh with path /app/.ssh/
     if changed timestamp then alert
 
 # `make network-interfaces`
-check network {{ network_interface }} with interface {{ network_interface }}
+check network {{ network_interface }}-network with interface {{ network_interface }}
     if failed link then alert
     if changed link then alert
     if saturation > 80% then alert
@@ -97,26 +93,18 @@ check process sshd with pidfile /var/run/sshd.pid
     if failed port 22 protocol ssh then restart
     if 5 restarts within 5 cycles then alert
 
-check host {{ host }} with address {{ host }}
-    if failed
-        port 80
-        with protocol http
-        for 3 cycles
-    then alert
-    if failed
-        port 443
-        with protocol https
-        and certificate valid > 7 days
-        use ssl
-        for 3 cycles
-    then alert
+check host {{ non_www_host }}-host with address {{ non_www_host }}
     if failed
         port 22
         with protocol ssh
         for 3 cycles
     then alert
 
-check host {{ staging_host }} with address {{ staging_host }}
+#------------#
+# Production #
+#------------#
+
+check host {{ host }}-host with address {{ host }}
     if failed
         port 80
         with protocol http
@@ -129,3 +117,69 @@ check host {{ staging_host }} with address {{ staging_host }}
         use ssl
         for 3 cycles
     then alert
+
+check file production-environment with path /app/production/.env
+    if failed checksum then alert
+    if changed timestamp then alert
+    if failed uid cloud then alert
+    if failed gid cloud then alert
+    if failed permission 600 then alert
+
+check directory production-secrets with path /app/production/secrets/
+    if changed timestamp then alert
+
+check file production-postgres_passwords with path /app/production/secrets/postgres_passwords
+    if failed checksum then alert
+    if changed timestamp then alert
+    if failed uid cloud then alert
+    if failed gid cloud then alert
+    if failed permission 600 then alert
+
+check file production-postgres_password with path /app/production/secrets/postgres_password
+    if failed checksum then alert
+    if changed timestamp then alert
+    if failed uid cloud then alert
+    if failed gid cloud then alert
+    if failed permission 644 then alert
+
+#-------------#
+#   Staging   #
+#-------------#
+
+check host {{ staging_host }}-host with address {{ staging_host }}
+    if failed
+        port 80
+        with protocol http
+        for 3 cycles
+    then alert
+    if failed
+        port 443
+        with protocol https
+        and certificate valid > 7 days
+        use ssl
+        for 3 cycles
+    then alert
+
+check file environment with path /app/staging/.env
+    if failed checksum then alert
+    if changed timestamp then alert
+    if failed uid cloud then alert
+    if failed gid cloud then alert
+    if failed permission 600 then alert
+
+check directory secrets with path /app/staging/secrets/
+    if changed timestamp then alert
+
+check file staging-postgres_passwords with path /app/staging/secrets/postgres_passwords
+    if failed checksum then alert
+    if changed timestamp then alert
+    if failed uid cloud then alert
+    if failed gid cloud then alert
+    if failed permission 600 then alert
+
+check file staging-postgres_password with path /app/staging/secrets/postgres_password
+    if failed checksum then alert
+    if changed timestamp then alert
+    if failed uid cloud then alert
+    if failed gid cloud then alert
+    if failed permission 644 then alert
