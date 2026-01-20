@@ -63,12 +63,14 @@ check directory certbot with path /app/machine/certbot/
     if changed timestamp then alert
 
 check file htpasswd with path /app/machine/nginx/.htpasswd
+    if failed checksum then alert
     if changed timestamp then alert
 
 check directory secrets with path /app/production/secrets/
     if changed timestamp then alert
 
 check file environment with path /app/production/.env
+    if failed checksum then alert
     if changed timestamp then alert
 
 check directory ssh with path /app/.ssh/
