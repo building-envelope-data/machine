@@ -189,16 +189,19 @@ In the Ansible playbook `local.yml`, periodic jobs are set-up.
   logs of the vacuuming process itself are kept in
   `/app/machine/journald-vacuuming.log`.
 * The Transport Layer Security (TLS) certificates used by HTTPS, that is, HTTP
-  over TLS, are renewed daily if necessary. The respective logs are kept in
-  `/app/machine/tls-renewal.log`.
+  over TLS, are renewed daily if necessary.
 * The database is backed-up daily keeping the latest seven backups. To do so,
   the production GNU Make targets `backup` and `prune-backups` of the
   [`metabase`'s `Makefile.production`](https://github.com/building-envelope-data/metabase/blob/develop/Makefile.production)
   and
   [`database`'s `Makefile.production`](https://github.com/building-envelope-data/database/blob/develop/Makefile.production)
-  are used. The respective logs are kept in `/app/production/database-backup.log`.
+  are used.
 * The docker system is pruned daily without touching anything that is younger
-  than one day. The respective logs are kept in `/app/machine/docker-prune.log`.
+  than one day.
+* Logs in `/var/log/` are rotated daily by the Debian-default Cron job
+  `/etc/cron.daily/logrotate`. It's configured in `/etc/logrotate.conf`.
+
+If a job fails, Cron sends an email to `${EMAIL_ADDRESS}` set in `./.env`.
 
 ## Logs
 
@@ -213,7 +216,7 @@ For logs of periodic jobs see above.
 * Monitoring logs are written to `/var/log/monit.log` and can be followed by
   running `make monit-logs`.
 * SMTP client logs are written to `/var/log/msmtp` and `~/.msmtp.log` and can
-  be followed by running `make smtp-logs`
+  be followed by running `make smtp-logs`.
 
 ## Troubleshooting
 
