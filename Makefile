@@ -37,9 +37,11 @@ monit : ## Print Monit status and summary
 .PHONY : monit
 
 dotenv : ## Assert that all variables in `./.env.sample` are available in `./.env`
-	diff \
-		<(cut --delimiter='=' --fields=1 ./.env.sample | sort) \
-		<(cut --delimiter='=' --fields=1 ./.env        | sort)
+	bash -c " \
+		diff \
+			<(cut --delimiter='=' --fields=1 ./.env.sample | sort) \
+			<(cut --delimiter='=' --fields=1 ./.env        | sort) \
+	"
 .PHONY : dotenv
 
 setup : ## Setup machine
