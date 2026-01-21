@@ -22,6 +22,21 @@
       shell: echo "Test mail as cloud user from new/updated MSTMP at" `hostname` | mail -s "Test SMTP `hostname`" cloud
 
   pre_tasks:
+    - name: Ensure environment variables used below are set
+      assert:
+        that:
+          - lookup('env', '{{ item }}') | length > 0
+        fail_msg: "The environment variable '{{ item }}' is not set."
+      loop:
+        - PRODUCTION_HOST
+        - NON_WWW_PRODUCTION_HOST
+        - STAGING_HOST
+        - EMAIL_ADDRESS
+        - SMTP_HOST
+        - SMTP_PORT
+        - NETWORK_INTERFACE
+        - MONIT_PASSWORD
+
     - name: Update package information
       become: yes
       apt:
@@ -47,7 +62,7 @@
         # The comment also mentions an alternative better solution that uses a `~/.bashrc.d` directory.
         - name: Source Bash completion scripts in `~/.bashrc`
           blockinfile:
-            dest: '{{ ansible_env.HOME }}/.bashrc'
+            dest: '{{ ansible_env.HOME | mandatory }}/.bashrc'
             block: |
               for file in /etc/bash_completion.d/* ; do
                   source "$file"
@@ -273,7 +288,7 @@
           # https://backports.debian.org/
           become: yes
           apt_repository:
-            repo: deb [arch=amd64] http://deb.debian.org/debian {{ ansible_distribution_release }}-backports main
+            repo: deb [arch=amd64] http://deb.debian.org/debian {{ ansible_distribution_release | mandatory }}-backports main
             state: present
 
         - name: Install Monit
@@ -317,7 +332,7 @@
 
         - name: Add GnuPG repository
           apt_repository:
-            repo: deb [arch=amd64] https://repos.gnupg.org/deb/gnupg/{{ ansible_distribution_release }}/ {{ ansible_distribution_release }} main
+            repo: deb [arch=amd64] https://repos.gnupg.org/deb/gnupg/{{ ansible_distribution_release | mandatory }}/ {{ ansible_distribution_release | mandatory }} main
             state: present
 
         - name: Install GnuPG
@@ -353,7 +368,7 @@
           block:
             - name: Add Docker repository
               apt_repository:
-                repo: deb [arch=amd64] https://download.docker.com/linux/debian {{ ansible_distribution_release }} stable
+                repo: deb [arch=amd64] https://download.docker.com/linux/debian {{ ansible_distribution_release | mandatory }} stable
                 state: present
             - name: Docker Engine, containerd, and Docker Compose
               package:
@@ -375,10 +390,10 @@
 
         - name: Add users to docker group
           user:
-            name: '{{ item }}'
+            name: '{{ item | mandatory }}'
             groups: docker
             append: yes
-          with_items:
+          loop:
             - cloud
 
         - name: Enable Docker systemd service
