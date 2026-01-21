@@ -36,6 +36,12 @@ monit : ## Print Monit status and summary
 	sudo monit summary
 .PHONY : monit
 
+dotenv : ## Assert that all variables in `./.env.sample` are available in `./.env`
+	diff \
+		<(cut --delimiter='=' --fields=1 ./.env.sample | sort) \
+		<(cut --delimiter='=' --fields=1 ./.env        | sort)
+.PHONY : dotenv
+
 setup : ## Setup machine
 	./ansible-playbook.sh ./local.yml
 .PHONY : setup
@@ -53,7 +59,7 @@ up : ## (Re)create and (re)start services
 		reverse_proxy
 .PHONY : up
 
-deploy : setup pull up ## Deploy services, that is, setup machine, pull images, and (re)create and (re)start services
+deploy : dotenv setup pull up ## Deploy services, that is, assert ./.env file, setup machine, pull images, and (re)create and (re)start services
 .PHONY : deploy
 
 logs : ## Follow logs
