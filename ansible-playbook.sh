@@ -7,7 +7,7 @@ export LC_ALL="C.UTF-8"
 
 # Load all variables from .env and export them for Ansible to read
 set -o allexport
-source "$(dirname "$0")/.env"
+. "$(dirname "$0")/.env"
 set +o allexport
 
 # Run Ansible
