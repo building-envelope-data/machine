@@ -119,13 +119,13 @@ crontab : ## List user's and root's contab
 	sudo crontab -u root -l
 .PHONY : crontab
 
-cron-logs : ## Follow cron logs
+cron-logs : ## Follow Cron logs
 	sudo journalctl \
 		--follow \
 		--unit cron.service
 .PHONY : cron-logs
 
-monit-logs : ## Follow monit logs
+monit-logs : ## Follow Monit logs
 	sudo tail \
 		--follow \
 		/var/log/monit.log
@@ -137,6 +137,11 @@ smtp-logs : ## Follow msmtp logs
 		/var/log/msmtp \
 		~/.msmtp.log
 .PHONY : smtp-logs
+
+certbot-logs : ## Follow Certbot logs
+	tail \
+		./certbot/logs/*.log
+.PHONY : certbot-logs
 
 vacuum-journald : ## Vaccum journald logs keeping seven days worth of logs
 	journalctl --rotate

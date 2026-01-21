@@ -213,10 +213,14 @@ For logs of periodic jobs see above.
   followed by running `make daemon-logs`.
 * Cron logs are collected and stored by `journald` and can be
   followed by running `make cron-logs`.
+* Cron logs are collected and stored by `journald` and can be
+  followed by running `make cron-logs`.
 * Monitoring logs are written to `/var/log/monit.log` and can be followed by
   running `make monit-logs`.
 * SMTP client logs are written to `/var/log/msmtp` and `~/.msmtp.log` and can
   be followed by running `make smtp-logs`.
+* Certbot logs are written to `/certbot/logs/*.log.*` and the latest log-files
+  can be followed by running `make certbot-logs`.
 
 ## Troubleshooting
 

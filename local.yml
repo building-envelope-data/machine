@@ -259,8 +259,8 @@
     - name: Monitor system with Monit
       # https://mmonit.com/monit/
       vars:
-        host: '{{ lookup("env", "PRODUCTION_HOST") }}'
-        non_www_host: '{{ lookup("env", "NON_WWW_PRODUCTION_HOST") }}'
+        production_host: '{{ lookup("env", "PRODUCTION_HOST") }}'
+        non_www_production_host: '{{ lookup("env", "NON_WWW_PRODUCTION_HOST") }}'
         staging_host: '{{ lookup("env", "STAGING_HOST") }}'
         email_address: '{{ lookup("env", "EMAIL_ADDRESS") }}'
         smtp_host: '{{ lookup("env", "SMTP_HOST") }}'
