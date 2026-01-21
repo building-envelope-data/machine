@@ -25,7 +25,7 @@
     - name: Ensure environment variables used below are set
       assert:
         that:
-          - lookup('env', '{{ item }}') | length > 0
+          - lookup('env', item) | length > 0
         fail_msg: "The environment variable '{{ item }}' is not set."
       loop:
         - PRODUCTION_HOST
