@@ -56,8 +56,11 @@ branch `main` is always deployable.
    `git clone git@github.com:building-envelope-data/machine.git`.
 1. Change into the clone by running `cd ./machine`.
 1. Prepare the machine environment by running
-   `cp ./.env.sample ./.env && chmod 600 ./.env` and adapt the `.env` file as
-   needed for example inside `vi ./.env` or `nano ./.env`. The `.env` variables
+   `cp ./.env.sample ./.env && chmod 600 ./.env` (or
+   `cp ./.env.buildingenvelopedata.sample ./.env && chmod 600 ./.env` or
+   `cp ./.env.solarbuildingenvelopes.sample ./.env && chmod 600 ./.env`) and
+   adapt the `.env` file as needed for example inside `vi ./.env` or `nano
+   ./.env`. The `.env` variables
    - `HTTP_PORT` and `HTTPS_PORT` are the HTTP and HTTPS ports on which the
      NGINX reverse proxy is listening;
    - `PRODUCTION_HTTP_PORT`, `PRODUCTION_HOST`, and `NON_WWW_PRODUCTION_HOST`
@@ -75,14 +78,10 @@ branch `main` is always deployable.
      staging instance `/app/staging` is listening and the domain name with
      sub-domain of the staging environment (this is usually
      `staging.${NON_WWW_PRODUCTION_HOST}`);
-   - `EXTRA_HOST` is the domain at Fraunhofer cloud for the
-     [metabase](https://www.buildingenvelopedata.org) or
-     [TestLab Solar Facades](https://www.solarbuildingenvelopes.com)
-     product-data database, which is `192-102-163-92.vm.c.fraunhofer.de`
-     or `192-102-162-39.vm.c.fraunhofer.de` (in other uses of this project the
-     variable can be left empty or set to some domain name for which the
-     TLS certificate fetched from [Let's Encrypt](https://letsencrypt.org) shall
-     also be valid apart from `${NON_WWW_PRODUCTION_HOST}`);
+   - `EXTRA_HOST` is an extra domain name for which the TLS certificate fetched
+     from [Let's Encrypt](https://letsencrypt.org) shall also be valid apart
+     from `${NON_WWW_PRODUCTION_HOST}`, `${PRODUCTION_HOST}`, and
+     `${STAGING_HOST}` (it is used in `./init-certbot.sh`);
    - `EMAIL_ADDRESS` is the email address of the person to be notified when
      there is some system-administration issue (for example
      [Monit](https://mmonit.com/monit/) sends such notifications)
