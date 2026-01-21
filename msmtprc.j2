@@ -5,9 +5,9 @@ account default
 
 auth off
 tls off
-host {{ smtp_host }}
-port {{ smtp_port }}
-from {{ from_email_address }}
-logfile {{ msmtp_logfile }}
+host {{ SMTP_HOST }}
+port {{ SMTP_PORT }}
+from {{ FROM_EMAIL_ADDRESS }}
+logfile {{ MSMTP_LOGFILE }}
 
 aliases /etc/aliases

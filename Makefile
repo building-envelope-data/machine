@@ -37,16 +37,7 @@ monit : ## Print Monit status and summary
 .PHONY : monit
 
 setup : ## Setup machine
-	LC_ALL="C.UTF-8" \
-	PRODUCTION_HOST="${PRODUCTION_HOST}" \
-	NON_WWW_PRODUCTION_HOST="${NON_WWW_PRODUCTION_HOST}" \
-	STAGING_HOST="${STAGING_HOST}" \
-	EMAIL_ADDRESS="${EMAIL_ADDRESS}" \
-	SMTP_HOST="${SMTP_HOST}" \
-	SMTP_PORT="${SMTP_PORT}" \
-	NETWORK_INTERFACE="${NETWORK_INTERFACE}" \
-	MONIT_PASSWORD="${MONIT_PASSWORD}" \
-		ansible-playbook ./local.yml
+	./ansible-playbook.sh ./local.yml
 .PHONY : setup
 
 pull : ## Pull images

@@ -1,5 +1,6 @@
 # {{ ansible_managed }}
 # /etc/monit/monitrc
+
 # Inspired by https://mmonit.com/wiki/Monit/ConfigurationExamples
 
 set daemon 60
@@ -10,8 +11,8 @@ set pidfile /var/run/monit.pid
 set statefile /var/lib/monit/monit.state
 
 # Configure email alerts
-set mailserver {{ smtp_host }} port {{ smtp_port }}
-set alert {{ email_address }}
+set mailserver {{ SMTP_HOST }} port {{ SMTP_PORT }}
+set alert {{ EMAIL_ADDRESS }}
 
 # Test email alerts
 # Inspired by https://serverfault.com/questions/328657/sending-a-test-example-alert-from-monit/328672#328672
@@ -34,13 +35,13 @@ set httpd
     use address 127.0.0.1
     unixsocket /var/run/monit.socket
     allow localhost
-    allow monit:{{ monit_password }}
+    allow monit:{{ MONIT_PASSWORD }}
 
 #----------------------------------------------------------------------------
 # System
 #----------------------------------------------------------------------------
 
-check system {{ non_www_production_host }}-system
+check system {{ NON_WWW_PRODUCTION_HOST }}-system
     if loadavg (5min) > 3 then alert
     if loadavg (15min) > 1 then alert
     if memory usage > 80% for 4 cycles then alert
@@ -61,7 +62,7 @@ check filesystem data with path /app/data/
     if service time > 300 milliseconds for 5 cycles then alert
 
 # List interfaces with `make network-interfaces`
-check network {{ network_interface }}-network with interface {{ network_interface }}
+check network {{ NETWORK_INTERFACE }}-network with interface {{ NETWORK_INTERFACE }}
     if failed link then alert
     if changed link then alert
     if saturation > 80% then alert
@@ -124,14 +125,14 @@ check program docker_healthcheck with path /app/machine/monit_docker_healthcheck
 # Hosts
 #----------------------------------------------------------------------------
 
-check host {{ non_www_production_host }}-host with address {{ non_www_production_host }}
+check host {{ NON_WWW_PRODUCTION_HOST }}-host with address {{ NON_WWW_PRODUCTION_HOST }}
     if failed
         port 22
         with protocol ssh
         for 3 cycles
     then alert
 
-{% for host in [production_host, staging_host] %}
+{% for host in [PRODUCTION_HOST, STAGING_HOST] %}
 
     #---- {{ host }} ----#
 
