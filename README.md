@@ -75,7 +75,7 @@ branch `main` is always deployable.
      staging instance `/app/staging` is listening and the domain name with
      sub-domain of the staging environment (this is usually
      `staging.${NON_WWW_PRODUCTION_HOST}`);
-   - `FRAUNHOFER_HOST` is the domain at Fraunhofer cloud for the
+   - `EXTRA_HOST` is the domain at Fraunhofer cloud for the
      [metabase](https://www.buildingenvelopedata.org) or
      [TestLab Solar Facades](https://www.solarbuildingenvelopes.com)
      product-data database, which is `192-102-163-92.vm.c.fraunhofer.de`
