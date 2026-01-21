@@ -36,17 +36,14 @@ monit : ## Print Monit status and summary
 	sudo monit summary
 .PHONY : monit
 
+dotenv : ## Assert that all variables in `./.env.sample` are available in `./.env`
+	diff \
+		<(cut --delimiter='=' --fields=1 ./.env.sample | sort) \
+		<(cut --delimiter='=' --fields=1 ./.env        | sort)
+.PHONY : dotenv
+
 setup : ## Setup machine
-	LC_ALL="C.UTF-8" \
-	PRODUCTION_HOST="${PRODUCTION_HOST}" \
-	NON_WWW_PRODUCTION_HOST="${NON_WWW_PRODUCTION_HOST}" \
-	STAGING_HOST="${STAGING_HOST}" \
-	EMAIL_ADDRESS="${EMAIL_ADDRESS}" \
-	SMTP_HOST="${SMTP_HOST}" \
-	SMTP_PORT="${SMTP_PORT}" \
-	NETWORK_INTERFACE="${NETWORK_INTERFACE}" \
-	MONIT_PASSWORD="${MONIT_PASSWORD}" \
-		ansible-playbook ./local.yml
+	./ansible-playbook.sh ./local.yml
 .PHONY : setup
 
 pull : ## Pull images
@@ -62,7 +59,7 @@ up : ## (Re)create and (re)start services
 		reverse_proxy
 .PHONY : up
 
-deploy : setup pull up ## Deploy services, that is, setup machine, pull images, and (re)create and (re)start services
+deploy : dotenv setup pull up ## Deploy services, that is, assert ./.env file, setup machine, pull images, and (re)create and (re)start services
 .PHONY : deploy
 
 logs : ## Follow logs
@@ -119,13 +116,13 @@ crontab : ## List user's and root's contab
 	sudo crontab -u root -l
 .PHONY : crontab
 
-cron-logs : ## Follow cron logs
+cron-logs : ## Follow Cron logs
 	sudo journalctl \
 		--follow \
 		--unit cron.service
 .PHONY : cron-logs
 
-monit-logs : ## Follow monit logs
+monit-logs : ## Follow Monit logs
 	sudo tail \
 		--follow \
 		/var/log/monit.log
@@ -137,6 +134,11 @@ smtp-logs : ## Follow msmtp logs
 		/var/log/msmtp \
 		~/.msmtp.log
 .PHONY : smtp-logs
+
+certbot-logs : ## Follow Certbot logs
+	tail \
+		./certbot/logs/*.log
+.PHONY : certbot-logs
 
 vacuum-journald : ## Vaccum journald logs keeping seven days worth of logs
 	journalctl --rotate

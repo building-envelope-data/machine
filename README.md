@@ -55,9 +55,12 @@ branch `main` is always deployable.
 1. Clone the repository by running
    `git clone git@github.com:building-envelope-data/machine.git`.
 1. Change into the clone by running `cd ./machine`.
-1. Prepare the machine environment by running `cp ./.env.sample ./.env` and adapt
-   the `.env` file as needed for example inside `vi ./.env` or `nano ./.env`.
-   The `.env` variables
+1. Prepare the machine environment by running
+   `cp ./.env.sample ./.env && chmod 600 ./.env` (or
+   `cp ./.env.buildingenvelopedata.sample ./.env && chmod 600 ./.env` or
+   `cp ./.env.solarbuildingenvelopes.sample ./.env && chmod 600 ./.env`) and
+   adapt the `.env` file as needed for example inside `vi ./.env` or `nano
+   ./.env`. The `.env` variables
    - `HTTP_PORT` and `HTTPS_PORT` are the HTTP and HTTPS ports on which the
      NGINX reverse proxy is listening;
    - `PRODUCTION_HTTP_PORT`, `PRODUCTION_HOST`, and `NON_WWW_PRODUCTION_HOST`
@@ -75,14 +78,10 @@ branch `main` is always deployable.
      staging instance `/app/staging` is listening and the domain name with
      sub-domain of the staging environment (this is usually
      `staging.${NON_WWW_PRODUCTION_HOST}`);
-   - `FRAUNHOFER_HOST` is the domain at Fraunhofer cloud for the
-     [metabase](https://www.buildingenvelopedata.org) or
-     [TestLab Solar Facades](https://www.solarbuildingenvelopes.com)
-     product-data database, which is `192-102-163-92.vm.c.fraunhofer.de`
-     or `192-102-162-39.vm.c.fraunhofer.de` (in other uses of this project the
-     variable can be left empty or set to some domain name for which the
-     TLS certificate fetched from [Let's Encrypt](https://letsencrypt.org) shall
-     also be valid apart from `${NON_WWW_PRODUCTION_HOST}`);
+   - `EXTRA_HOST` is an extra domain name for which the TLS certificate fetched
+     from [Let's Encrypt](https://letsencrypt.org) shall also be valid apart
+     from `${NON_WWW_PRODUCTION_HOST}`, `${PRODUCTION_HOST}`, and
+     `${STAGING_HOST}` (it is used in `./init-certbot.sh`);
    - `EMAIL_ADDRESS` is the email address of the person to be notified when
      there is some system-administration issue (for example
      [Monit](https://mmonit.com/monit/) sends such notifications)
@@ -189,16 +188,19 @@ In the Ansible playbook `local.yml`, periodic jobs are set-up.
   logs of the vacuuming process itself are kept in
   `/app/machine/journald-vacuuming.log`.
 * The Transport Layer Security (TLS) certificates used by HTTPS, that is, HTTP
-  over TLS, are renewed daily if necessary. The respective logs are kept in
-  `/app/machine/tls-renewal.log`.
+  over TLS, are renewed daily if necessary.
 * The database is backed-up daily keeping the latest seven backups. To do so,
   the production GNU Make targets `backup` and `prune-backups` of the
   [`metabase`'s `Makefile.production`](https://github.com/building-envelope-data/metabase/blob/develop/Makefile.production)
   and
   [`database`'s `Makefile.production`](https://github.com/building-envelope-data/database/blob/develop/Makefile.production)
-  are used. The respective logs are kept in `/app/production/database-backup.log`.
+  are used.
 * The docker system is pruned daily without touching anything that is younger
-  than one day. The respective logs are kept in `/app/machine/docker-prune.log`.
+  than one day.
+* Logs in `/var/log/` are rotated daily by the Debian-default Cron job
+  `/etc/cron.daily/logrotate`. It's configured in `/etc/logrotate.conf`.
+
+If a job fails, Cron sends an email to `${EMAIL_ADDRESS}` set in `./.env`.
 
 ## Logs
 
@@ -210,10 +212,14 @@ For logs of periodic jobs see above.
   followed by running `make daemon-logs`.
 * Cron logs are collected and stored by `journald` and can be
   followed by running `make cron-logs`.
+* Cron logs are collected and stored by `journald` and can be
+  followed by running `make cron-logs`.
 * Monitoring logs are written to `/var/log/monit.log` and can be followed by
   running `make monit-logs`.
 * SMTP client logs are written to `/var/log/msmtp` and `~/.msmtp.log` and can
-  be followed by running `make smtp-logs`
+  be followed by running `make smtp-logs`.
+* Certbot logs are written to `/certbot/logs/*.log.*` and the latest log-files
+  can be followed by running `make certbot-logs`.
 
 ## Troubleshooting
 
