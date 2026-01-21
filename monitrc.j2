@@ -73,7 +73,6 @@ check network {{ NETWORK_INTERFACE }}-network with interface {{ NETWORK_INTERFAC
 #----------------------------------------------------------------------------
 
 check process sshd with pidfile /var/run/sshd.pid
-    set onreboot nostart
     start program "/usr/bin/systemctl start sshd"
     restart program "/usr/bin/systemctl restart sshd"
     stop program "/usr/bin/systemctl stop sshd"
