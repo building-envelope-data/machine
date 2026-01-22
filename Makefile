@@ -27,10 +27,6 @@ password : ## Generate a password
 	openssl rand -base64 32
 .PHONY : password
 
-user : ## Add user `${USER}` (he/she will have access to restricted areas like staging and the Monit web interface with the correct password), for example, `make USER=jdoe user`
-	sudo htpasswd ./nginx/.htpasswd ${USER}
-.PHONY : user
-
 monit : ## Print Monit status and summary
 	sudo monit status
 	sudo monit summary
@@ -44,7 +40,15 @@ dotenv : ## Assert that all variables in `./.env.sample` are available in `./.en
 	"
 .PHONY : dotenv
 
-setup : ## Setup machine
+htpasswd : ## Create file ./nginx/.htpasswd if it does not exist
+	touch ./nginx/.htpasswd
+# Not phony on purpose.
+
+user : htpasswd ## Add user `${USER}` (he/she will have access to restricted areas like staging and the Monit web interface with the correct password), for example, `make USER=jdoe user`
+	sudo htpasswd ./nginx/.htpasswd ${USER}
+.PHONY : user
+
+setup : htpasswd ## Setup machine
 	./ansible-playbook.sh ./local.yml
 .PHONY : setup
 
