@@ -434,7 +434,7 @@
           become: yes
           template:
             src: telemetry/open-telemetry-collector-config.yml
-            dest: /etc/otelcol-contrib/config.yaml
+            dest: /etc/otelcol/config.yaml
             owner: root
             group: root
             mode: 0644
