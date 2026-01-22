@@ -49,6 +49,13 @@
         name: acl
         state: present
 
+  post_tasks:
+    - name: Clean (Advanced Package Tool) APT cache and remove unused dependencies
+      apt:
+        clean: yes
+        autoremove: yes
+        autoclean: yes
+
   tasks:
     - name: Bash completion
       block:
