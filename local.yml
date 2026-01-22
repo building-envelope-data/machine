@@ -57,6 +57,7 @@
 
   post_tasks:
     - name: Clean (Advanced Package Tool) APT cache and remove unused dependencies
+      become: yes
       apt:
         clean: yes
         autoremove: yes
