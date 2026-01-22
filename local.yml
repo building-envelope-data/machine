@@ -411,3 +411,14 @@
 
         - name: Flush handlers
           meta: flush_handlers
+
+    - name: OpenTelemetry
+      become: yes
+      block:
+        - name: Install XZ-format compression utilities (needed to install *.deb packages)
+          package: xz-utils
+          state: present
+
+        - name: Install OpenTelemetry Collector
+          apt:
+            deb: https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v0.144.0/otelcol_0.144.0_linux_386.deb
