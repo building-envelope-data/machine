@@ -41,7 +41,7 @@ dotenv : ## Assert that all variables in `./.env.sample` are available in `./.en
 .PHONY : dotenv
 
 htpasswd : ## Create file ./nginx/.htpasswd if it does not exist
-	touch ./nginx/.htpasswd
+	sudo touch ./nginx/.htpasswd
 	chmod 600 ./nginx/.htpasswd
 # Not phony on purpose.
 
