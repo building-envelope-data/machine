@@ -14,12 +14,18 @@
         name: monit
         state: reloaded
 
-    - name: Send test mail as root
+    - name: Reload OpenTelemetry Collector
       become: yes
-      shell: echo "Test mail as root user from new/updated MSTMP at" `hostname` | mail -s "Test SMTP `hostname`" root
+      service:
+        name: otelcol-contrib
+        state: reloaded
 
-    - name: Send test mail as cloud
-      shell: echo "Test mail as cloud user from new/updated MSTMP at" `hostname` | mail -s "Test SMTP `hostname`" cloud
+    - name: Send test email as root
+      become: yes
+      shell: echo "Test email as root user from new/updated MSTMP at" `hostname` | mail -s "Test SMTP `hostname`" root
+
+    - name: Send test email as cloud
+      shell: echo "Test email as cloud user from new/updated MSTMP at" `hostname` | mail -s "Test SMTP `hostname`" cloud
 
   pre_tasks:
     - name: Ensure environment variables used below are set
@@ -193,8 +199,8 @@
             group: root
             mode: 0644
           notify:
-            - Send test mail as root
-            - Send test mail as cloud
+            - Send test email as root
+            - Send test email as cloud
 
         - name: Copy system-wide `mstprc` configuration file
           become: yes
@@ -208,7 +214,7 @@
             owner: root
             group: root
             mode: 0644
-          notify: Send test mail as root
+          notify: Send test email as root
 
         - name: Copy user-specific `mstprc` configuration file
           vars:
@@ -219,7 +225,7 @@
             src: msmtprc.j2
             dest: ~/.msmtprc
             mode: 0644
-          notify: Send test mail as cloud
+          notify: Send test email as cloud
 
         - name: Copy `aliases` configuration file
           become: yes
@@ -232,10 +238,10 @@
             group: root
             mode: 0644
           notify:
-            - Send test mail as root
-            - Send test mail as cloud
+            - Send test email as root
+            - Send test email as cloud
 
-        - name: Flush handlers
+        - name: Flush handlers to send test emails
           meta: flush_handlers
 
     - name: Configure Cron
@@ -315,7 +321,7 @@
           notify:
             - Reload Monit
 
-        - name: Flush handlers
+        - name: Flush handlers to reload Monit
           meta: flush_handlers
 
     - name: GnuPG
@@ -409,7 +415,7 @@
             enabled: yes
             state: started
 
-        - name: Flush handlers
+        - name: Flush handlers to reload Docker
           meta: flush_handlers
 
     - name: OpenTelemetry
@@ -422,3 +428,15 @@
         - name: Install OpenTelemetry Collector
           apt:
             deb: https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v0.144.0/otelcol_0.144.0_linux_386.deb
+
+        - name: Copy OpenTelemetry Collector configuration file
+          become: yes
+          template:
+            src: telemetry/open-telemetry-collector-config.yml
+            dest: /etc/otelcol-contrib/config.yaml
+            owner: root
+            group: root
+            mode: 0644
+
+        - name: Flush handlers to reload OpenTelemetry Collector
+          meta: flush_handlers
