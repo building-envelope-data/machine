@@ -2,9 +2,6 @@ x-common: &common
   networks:
     - telemetry
   restart: unless-stopped
-  logging:
-    options:
-      max-size: 50m
 
 x-clickhouse-defaults: &clickhouse-defaults
   !!merge <<: *common
