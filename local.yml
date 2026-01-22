@@ -422,8 +422,9 @@
       become: yes
       block:
         - name: Install XZ-format compression utilities (needed to install *.deb packages)
-          package: xz-utils
-          state: present
+          package:
+            name: xz-utils
+            state: present
 
         - name: Install OpenTelemetry Collector
           apt:
