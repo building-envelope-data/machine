@@ -42,6 +42,7 @@ dotenv : ## Assert that all variables in `./.env.sample` are available in `./.en
 
 htpasswd : ## Create file ./nginx/.htpasswd if it does not exist
 	touch ./nginx/.htpasswd
+	chmod 600 ./nginx/.htpasswd
 # Not phony on purpose.
 
 user : htpasswd ## Add user `${USER}` (he/she will have access to restricted areas like staging and the Monit web interface with the correct password), for example, `make USER=jdoe user`
