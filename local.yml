@@ -429,13 +429,13 @@
 
         - name: Install OpenTelemetry Collector
           apt:
-            deb: https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v0.144.0/otelcol_0.144.0_linux_amd64.deb
+            deb: https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v0.144.0/otelcol-contrib_0.144.0_linux_amd64.deb
 
         - name: Copy OpenTelemetry Collector configuration file
           become: yes
           template:
             src: telemetry/open-telemetry-collector-config.yml
-            dest: /etc/otelcol/config.yaml
+            dest: /etc/otelcol-contrib/config.yaml
             owner: root
             group: root
             mode: 0644
