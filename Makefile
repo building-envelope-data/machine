@@ -1,11 +1,16 @@
 # Concise introduction to GNU Make:
 # https://swcarpentry.github.io/make-novice/reference.html
 
-include .env
+include ./.env
+include ./telemetry/.env
 
 docker_compose = \
 	docker compose \
 		--file ./docker-compose.yml
+
+make_telemetry = \
+	make \
+		--directory=./telemetry \
 
 # Taken from https://www.client9.com/self-documenting-makefiles/
 help : ## Print this help
@@ -57,6 +62,7 @@ setup : htpasswd ## Setup machine
 
 pull : ## Pull images
 	${docker_compose} pull
+	${make_telemetry} pull
 .PHONY : pull
 
 up : ## (Re)create and (re)start services
@@ -66,6 +72,7 @@ up : ## (Re)create and (re)start services
 		--remove-orphans \
 		--detach \
 		reverse_proxy
+	${make_telemetry} up
 .PHONY : up
 
 deploy : dotenv setup pull up ## Deploy services, that is, assert ./.env file, setup machine, pull images, and (re)create and (re)start services
@@ -74,7 +81,9 @@ deploy : dotenv setup pull up ## Deploy services, that is, assert ./.env file, s
 logs : ## Follow logs
 	${docker_compose} logs \
 		--since=24h \
-		--follow
+		--follow & \
+	${make_telemetry} logs & \
+	wait
 .PHONY : logs
 
 shell : ## Enter shell in the `reverse_proxy` service
@@ -90,17 +99,20 @@ shell : ## Enter shell in the `reverse_proxy` service
 down : ## Stop containers and remove containers, networks, volumes, and images created by `deploy`
 	${docker_compose} down \
 		--remove-orphans
+	${make_telemetry} down
 .PHONY : down
 
 list : ## List all containers with health status
 	${docker_compose} ps \
 		--no-trunc \
 		--all
+	${make_telemetry} ps
 .PHONY : list
 
 list-services : ## List all services specified in the docker-compose file (used by Monit)
 	${docker_compose} config \
 		--services
+	${make_telemetry} config
 .PHONY : list-services
 
 # See https://docs.docker.com/config/daemon/#view-stack-traces

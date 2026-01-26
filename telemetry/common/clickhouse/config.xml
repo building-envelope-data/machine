@@ -1,10 +1,4 @@
 <?xml version="1.0"?>
-<!--
-  NOTE: User and query level settings are set up in "users.xml" file.
-  If you have accidentally specified user-level settings here, server won't start.
-  You can either move the settings to the right place inside "users.xml" file
-   or add <skip_check_for_incorrect_settings>1</skip_check_for_incorrect_settings> here.
--->
 <clickhouse>
     <logger>
         <!-- Possible levels [1]:
@@ -34,35 +28,6 @@
         <size>1000M</size>
         <count>10</count>
         <!-- <console>1</console> --> <!-- Default behavior is autodetection (log to console if not daemon mode and is tty) -->
-
-        <!-- Per level overrides (legacy):
-
-        For example to suppress logging of the ConfigReloader you can use:
-        NOTE: levels.logger is reserved, see below.
-        -->
-        <!--
-        <levels>
-          <ConfigReloader>none</ConfigReloader>
-        </levels>
-        -->
-
-        <!-- Per level overrides:
-
-        For example to suppress logging of the RBAC for default user you can use:
-        (But please note that the logger name maybe changed from version to version, even after minor upgrade)
-        -->
-        <!--
-        <levels>
-          <logger>
-            <name>ContextAccess (default)</name>
-            <level>none</level>
-          </logger>
-          <logger>
-            <name>DatabaseOrdinary (test)</name>
-            <level>none</level>
-          </logger>
-        </levels>
-        -->
     </logger>
 
     <!-- Add headers to response in options request. OPTIONS method is used in CORS preflight requests. -->
@@ -958,9 +923,9 @@
 
     <!-- Allow to execute distributed DDL queries (CREATE, DROP, ALTER, RENAME) on cluster.
          Works only if ZooKeeper is enabled. Comment it if such functionality isn't required. -->
-    <distributed_ddl>
+    <!-- <distributed_ddl> -->
         <!-- Path in ZooKeeper to queue with DDL queries -->
-        <path>/clickhouse/task_queue/ddl</path>
+        <!-- <path>/clickhouse/task_queue/ddl</path> -->
 
         <!-- Settings from this profile will be used to execute DDL queries -->
         <!-- <profile>default</profile> -->
@@ -980,7 +945,7 @@
 
         <!-- Controls how many tasks could be in the queue -->
         <!-- <max_tasks_in_queue>1000</max_tasks_in_queue> -->
-    </distributed_ddl>
+    <!-- </distributed_ddl> -->
 
     <!-- Settings to fine tune MergeTree tables. See documentation in source code, in MergeTreeSettings.h -->
     <!--

@@ -33,6 +33,7 @@ services:
       - NON_WWW_PRODUCTION_HOST=${NON_WWW_PRODUCTION_HOST}
       - STAGING_HTTP_PORT=${STAGING_HTTP_PORT}
       - STAGING_HOST=${STAGING_HOST}
+      - TELEMETRY_PORT=${TELEMETRY_PORT}
     extra_hosts:
       - host.docker.internal:host-gateway
 

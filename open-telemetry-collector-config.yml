@@ -1,10 +1,18 @@
+connectors:
+  pipelines_meter:
+    metrics_flush_interval: 1h
+    dimensions:
+      - name: service.name
+      - name: deployment.environment
+      - name: host.name
+
 receivers:
   otlp:
     protocols:
       grpc:
-        endpoint: 0.0.0.0:4317
+        endpoint: 127.0.0.1:4317
       http:
-        endpoint: 0.0.0.0:4318
+        endpoint: 127.0.0.1:4318
   hostmetrics:
     collection_interval: 30s
     scrapers:
@@ -31,48 +39,100 @@ receivers:
   #     scrape_configs:
   #       - job_name: otel-collector-binary
   #         static_configs:
-  #           - targets: ['localhost:8888']
+  #           - targets: ['127.0.0.1:8888']
 
 processors:
   batch:
     send_batch_size: 1000
+    send_batch_max_size: 1100
     timeout: 10s
-  resourcedetection:
-    detectors: [system]
+  batch/meter:
+    send_batch_max_size: 2500
+    send_batch_size: 2000
+    timeout: 1s
+  resource_detection:
+    detectors: [env, system]
     timeout: 2s
     system:
       hostname_sources: [dns, os] # set FQDN as host.name and os as fallback
+  metrics/delta:
+    metrics_exporter: metrics
+    metrics_flush_interval: 60s
+    latency_histogram_buckets: [100us, 1ms, 2ms, 6ms, 10ms, 50ms, 100ms, 250ms, 500ms, 1000ms, 1400ms, 2000ms, 5s, 10s, 20s, 40s, 60s]
+    dimensions_cache_size: 100000
+    aggregation_temporality: AGGREGATION_TEMPORALITY_DELTA
+    enable_exp_histogram: true
+    dimensions:
+      - name: service.namespace
+        default: default
+      - name: deployment.environment
+        default: default
+      # This is added to ensure the uniqueness of the timeseries
+      # Otherwise, identical timeseries produced by multiple replicas of
+      # collectors result in incorrect APM metrics
+      - name: signoz.collector.id
+      - name: service.version
+      - name: browser.platform
+      - name: browser.mobile
+      - name: host.name
+      - name: host.type
+      - name: container.name
 
 extensions:
   health_check: {}
-  # zpages: {}
+  # [Troubleshooting Extensions](https://opentelemetry.io/docs/collector/troubleshooting/#extensions)
+  # zpages:
+  #   endpoint: 127.0.0.1:55679
+  # pprof:
+  #   endpoint: 127.0.0.1:1777
 
 exporters:
-  otlp:
-    endpoint: localhost:4317
-    tls:
-      insecure: true
-  debug:
-    verbosity: detailed
+  traces:
+    datasource: tcp://127.0.0.1:${env:TELEMETRY_DATA_PORT}/traces
+    low_cardinal_exception_grouping: false
+    use_new_schema: true
+  metrics:
+    dsn: tcp://127.0.0.1:${env:TELEMETRY_DATA_PORT}/metrics
+  logs:
+    dsn: tcp://127.0.0.1:${env:TELEMETRY_DATA_PORT}/logs
+    timeout: 10s
+    use_new_schema: true
+  meter:
+    dsn: tcp://127.0.0.1:${env:TELEMETRY_DATA_PORT}/meter
+    timeout: 45s
+    sending_queue:
+      enabled: false
 
 service:
   telemetry:
-    metrics:
-  extensions: [health_check] # zpages
+    logs:
+      encoding: json
+  extensions:
+    - health_check
+    # - zpages
+    # - pprof
   pipelines:
-    metrics:
-      receivers: [otlp]
-      processors: [batch]
-      exporters: [otlp]
-    metrics/internal:
-      receivers: [hostmetrics] # prometheus
-      processors: [resourcedetection, batch]
-      exporters: [otlp]
     traces:
       receivers: [otlp]
+      processors: [metrics/delta, batch]
+      exporters: [traces, pipelines_meter]
+    metrics:
+      receivers: [otlp]
       processors: [batch]
-      exporters: [otlp]
+      exporters: [metrics, pipelines_meter]
+    metrics/host:
+      receivers: [hostmetrics] # prometheus
+      processors: [resource_detection, batch]
+      exporters: [metrics, pipelines_meter]
+    # metrics/prometheus:
+    #   receivers: [prometheus]
+    #   processors: [batch]
+    #   exporters: [metrics, pipelines_meter]
     logs:
       receivers: [otlp, journald]
       processors: [batch]
-      exporters: [otlp]
+      exporters: [logs, pipelines_meter]
+    meter:
+      receivers: [pipelines_meter]
+      processors: [batch/meter]
+      exporters: [meter]

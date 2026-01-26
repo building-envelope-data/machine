@@ -88,6 +88,13 @@ branch `main` is always deployable.
    - `SMTP_HOST` and `SMTP_PORT` are host and port of the message transfer
      agent to be used to send emails through the Simple Mail Transfer
      Protocol (SMTP).
+1. Prepare the telemetry environment by running
+   `cp ./telemetry/.env.sample ./telemetry/.env` and adapt the
+   `./telemetry/.env` file as needed
+   - `TELEMETRY_PORT` is the HTTP port on which the telemetry web user
+     interface instance is listening;
+   - `TELEMETRY_DATA_PORT` is the TCP port on which the database management
+     system ClickHouse is listening.
 1. If there is a firewall, configure it such that it allows the protocol TCP
    for ports 80 and 443.
 1. If the HTTP and HTTPS port configured in `.env` are not 80 and 443, then the

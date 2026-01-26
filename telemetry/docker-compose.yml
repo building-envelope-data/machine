@@ -8,20 +8,18 @@ x-clickhouse-defaults: &clickhouse-defaults
   image: clickhouse/clickhouse-server:25.5.6
   tty: true
   labels:
-    signoz.io/scrape: "true"
-    signoz.io/port: "9363"
-    signoz.io/path: "/metrics"
+    signoz.io/scrape: true
+    signoz.io/port: 9363
+    signoz.io/path: /metrics
   depends_on:
     init-clickhouse:
       condition: service_completed_successfully
-    zookeeper:
-      condition: service_healthy
   healthcheck:
     test:
       - CMD
       - wget
+      - --quiet
       - --spider
-      - -q
       - 0.0.0.0:8123/ping
     interval: 30s
     timeout: 5s
@@ -33,22 +31,6 @@ x-clickhouse-defaults: &clickhouse-defaults
       hard: 262144
   environment:
     - CLICKHOUSE_SKIP_USER_SETUP=1
-
-x-zookeeper-defaults: &zookeeper-defaults
-  !!merge <<: *common
-  image: signoz/zookeeper:3.7.1
-  user: root
-  labels:
-    signoz.io/scrape: "true"
-    signoz.io/port: "9141"
-    signoz.io/path: "/metrics"
-  healthcheck:
-    test:
-      - CMD-SHELL
-      - curl -s -m 2 localhost:8080/commands/ruok | grep error | grep null
-    interval: 30s
-    timeout: 5s
-    retries: 3
 
 x-db-depend: &db-depend
   !!merge <<: *common
@@ -78,25 +60,10 @@ services:
     volumes:
       - ./common/clickhouse/user_scripts:/var/lib/clickhouse/user_scripts/
 
-  zookeeper:
-    !!merge <<: *zookeeper-defaults
-    # ports:
-    #   - "2181:2181"
-    #   - "2888:2888"
-    #   - "3888:3888"
-    volumes:
-      - zookeeper:/bitnami/zookeeper
-    environment:
-      - ZOO_SERVER_ID=1
-      - ALLOW_ANONYMOUS_LOGIN=yes
-      - ZOO_AUTOPURGE_INTERVAL=1
-      - ZOO_ENABLE_PROMETHEUS_METRICS=yes
-      - ZOO_PROMETHEUS_METRICS_PORT_NUMBER=9141
-
   clickhouse:
     !!merge <<: *clickhouse-defaults
-    # ports:
-    #   - "9000:9000"
+    ports:
+      - ${TELEMETRY_DATA_PORT}:9000
     #   - "8123:8123"
     #   - "9181:9181"
     volumes:
@@ -105,17 +72,15 @@ services:
       - ./common/clickhouse/custom-function.xml:/etc/clickhouse-server/custom-function.xml
       - ./common/clickhouse/user_scripts:/var/lib/clickhouse/user_scripts/
       - ./common/clickhouse/cluster.xml:/etc/clickhouse-server/config.d/cluster.xml
+      - ./common/clickhouse/storage.xml:/etc/clickhouse-server/config.d/storage.xml
       - clickhouse:/var/lib/clickhouse/
-      # - ./common/clickhouse/storage.xml:/etc/clickhouse-server/config.d/storage.xml
 
   signoz:
     !!merge <<: *db-depend
     image: signoz/signoz:v0.108.0
-    command:
-      - --config=/root/config/prometheus.yml
     ports:
-      - "8080:8080" # signoz port
-    #   - "6060:6060"     # pprof port
+      - ${TELEMETRY_PORT}:8080 # signoz port
+    #   - "6060:6060" # pprof port
     volumes:
       - ./common/signoz/prometheus.yml:/root/config/prometheus.yml
       - ./common/dashboards:/root/config/dashboards
@@ -124,18 +89,20 @@ services:
       - SIGNOZ_ALERTMANAGER_PROVIDER=signoz
       - SIGNOZ_TELEMETRYSTORE_CLICKHOUSE_DSN=tcp://clickhouse:9000
       - SIGNOZ_SQLSTORE_SQLITE_PATH=/var/lib/signoz/signoz.db
+      - SIGNOZ_PROMETHEUS_CONFIG=/root/config/prometheus.yml
+      - SIGNOZ_ANALYTICS_ENABLED=true
+      # - SIGNOZ_TELEMETRYSTORE_CLICKHOUSE_CLUSTER=
       - DASHBOARDS_PATH=/root/config/dashboards
-      - STORAGE=clickhouse
+      - SIGNOZ_TELEMETRYSTORE_PROVIDER=clickhouse
       - GODEBUG=netdns=go
-      - TELEMETRY_ENABLED=true
       - DEPLOYMENT_TYPE=docker-standalone-amd
       - DOT_METRICS_ENABLED=true
     healthcheck:
       test:
         - CMD
         - wget
+        - --quiet
         - --spider
-        - -q
         - http://signoz:8080/api/v1/health
       interval: 30s
       timeout: 5s
@@ -193,5 +160,3 @@ volumes:
     name: telemetry-clickhouse
   sqlite:
     name: telemetry-sqlite
-  zookeeper:
-    name: telemetry-zookeeper
