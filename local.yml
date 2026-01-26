@@ -37,6 +37,7 @@
         - PRODUCTION_HOST
         - NON_WWW_PRODUCTION_HOST
         - STAGING_HOST
+        - TELEMETRY_HOST
         - EMAIL_ADDRESS
         - SMTP_HOST
         - SMTP_PORT
@@ -292,6 +293,7 @@
         PRODUCTION_HOST: '{{ lookup("env", "PRODUCTION_HOST") }}'
         NON_WWW_PRODUCTION_HOST: '{{ lookup("env", "NON_WWW_PRODUCTION_HOST") }}'
         STAGING_HOST: '{{ lookup("env", "STAGING_HOST") }}'
+        TELEMETRY_HOST: '{{ lookup("env", "TELEMETRY_HOST") }}'
         EMAIL_ADDRESS: '{{ lookup("env", "EMAIL_ADDRESS") }}'
         SMTP_HOST: '{{ lookup("env", "SMTP_HOST") }}'
         SMTP_PORT: '{{ lookup("env", "SMTP_PORT") }}'
