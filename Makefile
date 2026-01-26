@@ -41,9 +41,11 @@ dotenv : ## Assert that all variables in `./.env.sample` are available in `./.en
 .PHONY : dotenv
 
 htpasswd : ## Create file ./nginx/.htpasswd if it does not exist
-	sudo touch ./nginx/.htpasswd
-	sudo chmod 600 ./nginx/.htpasswd
-# Not phony on purpose.
+	if [ -f ./nginx/.htpasswd ] ; then \
+		sudo touch ./nginx/.htpasswd && \
+		sudo chmod 600 ./nginx/.htpasswd ; \
+	fi
+.PHONY : htpasswd
 
 user : htpasswd ## Add user `${USER}` (he/she will have access to restricted areas like staging and the Monit web interface with the correct password), for example, `make USER=jdoe user`
 	sudo htpasswd ./nginx/.htpasswd ${USER}
