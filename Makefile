@@ -5,8 +5,9 @@ include ./.env
 include ./telemetry/.env
 
 docker_compose = \
-	docker compose \
-		--file ./docker-compose.yml
+	TELEMETRY_PORT=${TELEMETRY_PORT} \
+		docker compose \
+			--file ./docker-compose.yml
 
 make_telemetry = \
 	make \
