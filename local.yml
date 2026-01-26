@@ -419,7 +419,7 @@
         - name: Flush handlers to reload Docker
           meta: flush_handlers
 
-    - name: OpenTelemetry
+    - name: OpenTelemetry Collector
       become: yes
       block:
         - name: Install XZ-format compression utilities (needed to install *.deb packages)
@@ -434,7 +434,7 @@
         - name: Copy OpenTelemetry Collector configuration file
           become: yes
           template:
-            src: telemetry/open-telemetry-collector-config.yml
+            src: open-telemetry-collector-config.yml
             dest: /etc/otelcol-contrib/config.yaml
             owner: root
             group: root
