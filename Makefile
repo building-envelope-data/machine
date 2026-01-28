@@ -38,6 +38,14 @@ monit : ## Print Monit status and summary
 	sudo monit summary
 .PHONY : monit
 
+crontab : ## List user's and root's contab
+	crontab -l
+	sudo crontab -u root -l
+.PHONY : crontab
+
+# --------------------------------------------------------------------------
+# Deploy and Interface with Docker
+
 dotenv : ## Assert that all variables in `./.env.sample` are available in `./.env`
 	bash -c " \
 		diff \
@@ -97,6 +105,22 @@ shell : ## Enter shell in the `reverse_proxy` service
 		bash
 .PHONY : shell
 
+machine : ## Enter shell in the `machine` service for debugging and testing, for example by running `make setup` or `make --file=Makefile.ansible lint`
+	COMPOSE_BAKE=true \
+		COMPOSE_DOCKER_CLI_BUILD=1 \
+			DOCKER_BUILDKIT=1 \
+				${docker_compose} build \
+					--build-arg GROUP_ID=$(shell id --group) \
+					--build-arg USER_ID=$(shell id --user) \
+					machine
+	${docker_compose} run \
+		--rm \
+		--remove-orphans \
+		--user $(shell id --user):$(shell id --group) \
+		machine \
+		bash
+.PHONY : shell
+
 down : ## Stop containers and remove containers, networks, volumes, and images created by `deploy`
 	${docker_compose} down \
 		--remove-orphans
@@ -116,27 +140,31 @@ list-services : ## List all services specified in the docker-compose file (used 
 	${make_telemetry} config
 .PHONY : list-services
 
-# See https://docs.docker.com/config/daemon/#view-stack-traces
-daemon-logs : ## Follow Docker daemon logs
-	sudo journalctl \
-		--follow \
-		--unit docker.service
-.PHONY : daemon-logs
+# See https://docs.docker.com/config/containers/runmetrics/
+docker-stats : ## Show Docker run-time metrics
+	docker stats
+.PHONY : docker-stats
+
+prune-docker : ## Prune docker
+	docker system prune \
+		--force \
+		--filter "until=24h"
+.PHONY : prune-docker
 
 reload-daemon : ## Reload Docker daemon
 	sudo systemctl \
 		reload docker
 .PHONY : reload-daemon
 
-# See https://docs.docker.com/config/containers/runmetrics/
-docker-stats : ## Show Docker run-time metrics
-	docker stats
-.PHONY : docker-stats
+# --------------------------------------------------------------------------
+# Logs
 
-crontab : ## List user's and root's contab
-	crontab -l
-	sudo crontab -u root -l
-.PHONY : crontab
+# See https://docs.docker.com/config/daemon/#view-stack-traces
+daemon-logs : ## Follow Docker daemon logs
+	sudo journalctl \
+		--follow \
+		--unit docker.service
+.PHONY : daemon-logs
 
 cron-logs : ## Follow Cron logs
 	sudo journalctl \
@@ -167,27 +195,11 @@ vacuum-journald : ## Vaccum journald logs keeping seven days worth of logs
 	journalctl --vacuum-time=7d
 .PHONY : vacuum-journald
 
+# --------------------------------------------------------------------------
+# TLS Certificates
+
 renew-tls : renew-certificates deploy ## Renew Transport Layer Security (TLS) certificates needed for the `S` in `HTTPS`
 .PHONY : renew-tls
-
-backup-database : ## Backup production database and prune backups
-	mkdir --parents /app/data/backups
-	make \
-		--directory=/app/production \
-		--file /app/production/Makefile.production \
-		--keep-going \
-		BACKUP_DIRECTORY=/app/data/backups/$(shell date +"\%Y-\%m-\%d_\%H_\%M_\%S") \
-		begin-maintenance \
-		backup \
-		end-maintenance \
-		prune-backups
-.PHONY : backup-database
-
-prune-docker : ## Prune docker
-	docker system prune \
-		--force \
-		--filter "until=24h"
-.PHONY : prune-docker
 
 dummy-certificates : ## Create dummy certificates for `${OUT_PATH}`
 	${docker_compose} run \
@@ -255,15 +267,14 @@ renew-certificates : ## Renew certificates
 		certbot
 .PHONY: renew-certificates
 
+# --------------------------------------------------------------------------
+# Maintenance
+
 begin-maintenance : ## Begin maintenance
 	for environment in staging production ; do \
 		make --directory=/app/$${environment} --file=Makefile.production begin-maintenance ; \
 	done
 .PHONY : begin-maintenance
-
-reboot : ## Reboot
-	sudo systemctl reboot
-.PHONY : reboot
 
 end-maintenance : ## End maintenance
 	if [ -f /var/run/reboot-required ] ; then \
@@ -275,25 +286,44 @@ end-maintenance : ## End maintenance
 	fi
 .PHONY : end-maintenance
 
-upgrade-system : ## Upgrade system (Is used to install the newest versions of all packages currently installed on the system from the sources enumerated in /etc/apt/sources.list. Packages currently installed with new versions available are retrieved and upgraded. Under no circumstances are currently installed packages removed, or packages not already installed retrieved and installed. New versions of currently installed packages that cannot be upgraded without changing the install status of another package will be left at their current version.)
+backup-database : ## Backup production database and prune backups
+	mkdir --parents /app/data/backups
+	make \
+		--directory=/app/production \
+		--file /app/production/Makefile.production \
+		--keep-going \
+		BACKUP_DIRECTORY=/app/data/backups/$(shell date +"\%Y-\%m-\%d_\%H_\%M_\%S") \
+		begin-maintenance \
+		backup \
+		end-maintenance \
+		prune-backups
+.PHONY : backup-database
+
+reboot : ## Reboot
+	sudo systemctl reboot
+.PHONY : reboot
+
+upgrade : ## Upgrade system (Is used to install the newest versions of all packages currently installed on the system from the sources enumerated in /etc/apt/sources.list. Packages currently installed with new versions available are retrieved and upgraded. Under no circumstances are currently installed packages removed, or packages not already installed retrieved and installed. New versions of currently installed packages that cannot be upgraded without changing the install status of another package will be left at their current version.)
 	make begin-maintenance
 	sudo apt-get --assume-yes update
 	sudo apt-get --assume-yes upgrade
 	sudo apt-get --assume-yes auto-remove
 	sudo apt-get --assume-yes clean
 	sudo apt-get --assume-yes auto-clean
+	pipx upgrade-all --include-injected
 	make end-maintenance
-.PHONY : upgrade-system
+.PHONY : upgrade
 
-dist-upgrade-system : ## Upgrade system (In addition to performing the function of `upgrade-system`, also intelligently handles changing dependencies with new versions of packages. It will attempt to upgrade the most important packages at the expense of less important ones if necessary. It may therefore remove some packages.)
+dist-upgrade : ## Upgrade system (In addition to performing the function of `upgrade`, also intelligently handles changing dependencies with new versions of packages. It will attempt to upgrade the most important packages at the expense of less important ones if necessary. It may therefore remove some packages.)
 	make begin-maintenance
 	sudo apt-get --assume-yes update
 	sudo apt-get --assume-yes dist-upgrade
 	sudo apt-get --assume-yes auto-remove
 	sudo apt-get --assume-yes clean
 	sudo apt-get --assume-yes auto-clean
+	pipx upgrade-all --include-injected
 	make end-maintenance
-.PHONY : dist-upgrade-system
+.PHONY : dist-upgrade
 
 dry-run-unattended-upgrades : ## Dry-run unattended upgrades for testing purposes
 	sudo unattended-upgrades \

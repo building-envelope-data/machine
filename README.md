@@ -42,13 +42,16 @@ branch `main` is always deployable.
 1. Install
    [GNU Make](https://www.gnu.org/software/make/),
    [Git](https://git-scm.com),
+   [pipx](https://github.com/pypa/pipx),
    [scsitools](https://packages.debian.org/bookworm/scsitools),
    [GNU Parted](https://www.gnu.org/software/parted/manual/parted.html), and
    [e2fsprogs](https://packages.debian.org/bookworm/e2fsprogs)
-   by running `sudo apt-get install make git scsitools parted e2fsprogs`, and
-   install [Ansible](https://www.ansible.com) through its Ubuntu Personal
-   Package Archive (PPA) as explained on
-   [Installing Ansible on Debian](https://docs.ansible.com/projects/ansible/latest/installation_guide/installation_distros.html#installing-ansible-on-debian).
+   by running `sudo apt-get install make git pipx scsitools parted e2fsprogs`, and
+   install
+   [Ansible](https://www.ansible.com) and
+   [Ansible Development Tools](https://github.com/ansible/ansible-dev-tools)
+   by running
+   `pipx install --include-deps ansible && pipx install --include-deps ansible-dev-tools && pipx inject ansible-dev-tools ansible`.
 1. Create a symbolic link from `/app` to `~` by running
    `sudo ln --symbolic ~ /app`.
 1. Change into the app directory by running `cd /app`.
@@ -159,9 +162,9 @@ branch `main` is always deployable.
 Security upgrades are installed automatically and unattendedly by
 [`unattended-upgrades`](https://packages.debian.org/search?keywords=unattended-upgrades)
 as configured in the Ansible playbook `local.yml`. Non-security upgrades should
-be done weekly by running `make upgrade-system`. If the command asks you to
+be done weekly by running `make upgrade`. If the command asks you to
 reboot, then please do so and run `make end-maintenance` afterwards. Only run
-the possibly destructive command `make dist-upgrade-system` when you know what
+the possibly destructive command `make dist-upgrade` when you know what
 you are doing. See the entries `upgrade` and `dist-upgrade` in the `apt-get`
 manual `man apt-get`.
 

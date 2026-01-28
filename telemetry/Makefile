@@ -1,7 +1,7 @@
 # Concise introduction to GNU Make:
 # https://swcarpentry.github.io/make-novice/reference.html
 
-include .env
+include ./.env
 
 docker_compose = \
 	docker compose \

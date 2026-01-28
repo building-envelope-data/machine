@@ -7,41 +7,51 @@
 
 services:
   reverse_proxy: # https://hub.docker.com/_/nginx
-    restart: always
-    image: nginx:1.29-trixie-otel
+    restart: "always"
+    image: "nginx:1.29-trixie-otel"
     command: [
       "nginx",
       "-g", "daemon off;"
       ]
     healthcheck:
       test: ["CMD-SHELL", "service nginx status || exit 1"]
-      interval: 30s
-      timeout: 30s
-      retries: 3
+      interval: "30s"
+      timeout: "30s"
+      retries: "3"
     ports:
-      - ${HTTP_PORT}:80
-      - ${HTTPS_PORT}:443
+      - "${HTTP_PORT}:80"
+      - "${HTTPS_PORT}:443"
     volumes:
-      - ./nginx/.htpasswd:/etc/apache2/.htpasswd:ro
-      - ./nginx/templates:/etc/nginx/templates:ro
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./certbot/conf:/etc/letsencrypt:ro
-      - ./certbot/www:/var/www/certbot:ro
+      - "./nginx/.htpasswd:/etc/apache2/.htpasswd:ro"
+      - "./nginx/templates:/etc/nginx/templates:ro"
+      - "./nginx/nginx.conf:/etc/nginx/nginx.conf:ro"
+      - "./certbot/conf:/etc/letsencrypt:ro"
+      - "./certbot/www:/var/www/certbot:ro"
     environment:
-      - PRODUCTION_HTTP_PORT=${PRODUCTION_HTTP_PORT}
-      - PRODUCTION_HOST=${PRODUCTION_HOST}
-      - NON_WWW_PRODUCTION_HOST=${NON_WWW_PRODUCTION_HOST}
-      - STAGING_HTTP_PORT=${STAGING_HTTP_PORT}
-      - STAGING_HOST=${STAGING_HOST}
-      - TELEMETRY_PORT=${TELEMETRY_PORT}
+      PRODUCTION_HTTP_PORT: "${PRODUCTION_HTTP_PORT}"
+      PRODUCTION_HOST: "${PRODUCTION_HOST}"
+      NON_WWW_PRODUCTION_HOST: "${NON_WWW_PRODUCTION_HOST}"
+      STAGING_HTTP_PORT: "${STAGING_HTTP_PORT}"
+      STAGING_HOST: "${STAGING_HOST}"
+      TELEMETRY_PORT: "${TELEMETRY_PORT}"
     extra_hosts:
-      - host.docker.internal:host-gateway
+      - "host.docker.internal:host-gateway"
 
+  # Fetch TLS certificates from Let's Encrypt
   certbot: # https://hub.docker.com/r/certbot/certbot
-    restart: always
-    image: certbot/certbot:v3.3.0
+    image: "certbot/certbot:v3.3.0"
     volumes:
-      - ./certbot/conf:/etc/letsencrypt # --config-dir
-      - ./certbot/letsencrypt:/var/lib/letsencrypt # --work-dir
-      - ./certbot/logs:/var/log/letsencrypt # --logs-dir
-      - ./certbot/www:/var/www/certbot # --webroot-path
+      - "./certbot/conf:/etc/letsencrypt" # --config-dir
+      - "./certbot/letsencrypt:/var/lib/letsencrypt" # --work-dir
+      - "./certbot/logs:/var/log/letsencrypt" # --logs-dir
+      - "./certbot/www:/var/www/certbot" # --webroot-path
+
+  # Test for example `make setup` within `make machine`
+  machine:
+    build:
+      context: "."
+      dockerfile: "./Dockerfile"
+    volumes:
+      - ".:/app"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
