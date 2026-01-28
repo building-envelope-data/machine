@@ -13,6 +13,7 @@ receivers:
         endpoint: 127.0.0.1:4317
       http:
         endpoint: 127.0.0.1:4318
+
   hostmetrics:
     collection_interval: 30s
     scrapers:
@@ -28,6 +29,7 @@ receivers:
         mute_process_exe_error: true
         mute_process_io_error: true
       processes: {}
+
   journald:
     directory: /var/log/journal
     start_at: end
@@ -46,15 +48,18 @@ processors:
     send_batch_size: 1000
     send_batch_max_size: 1100
     timeout: 10s
+
   batch/meter:
     send_batch_max_size: 2500
     send_batch_size: 2000
     timeout: 1s
+
   resource_detection:
     detectors: [env, system]
     timeout: 2s
     system:
       hostname_sources: [dns, os] # set FQDN as host.name and os as fallback
+
   metrics/delta:
     metrics_exporter: metrics
     metrics_flush_interval: 60s
@@ -88,17 +93,20 @@ extensions:
 
 exporters:
   traces:
-    datasource: tcp://127.0.0.1:${env:TELEMETRY_DATA_PORT}/traces
+    datasource: tcp://${env:TELEMETRY_DATA_HOST:-127.0.0.1}:${env:TELEMETRY_DATA_PORT}/traces
     low_cardinal_exception_grouping: false
     use_new_schema: true
+
   metrics:
-    dsn: tcp://127.0.0.1:${env:TELEMETRY_DATA_PORT}/metrics
+    dsn: tcp://${env:TELEMETRY_DATA_HOST:-127.0.0.1}:${env:TELEMETRY_DATA_PORT}/metrics
+
   logs:
-    dsn: tcp://127.0.0.1:${env:TELEMETRY_DATA_PORT}/logs
+    dsn: tcp://${env:TELEMETRY_DATA_HOST:-127.0.0.1}:${env:TELEMETRY_DATA_PORT}/logs
     timeout: 10s
     use_new_schema: true
+
   meter:
-    dsn: tcp://127.0.0.1:${env:TELEMETRY_DATA_PORT}/meter
+    dsn: tcp://${env:TELEMETRY_DATA_HOST:-127.0.0.1}:${env:TELEMETRY_DATA_PORT}/meter
     timeout: 45s
     sending_queue:
       enabled: false
@@ -107,31 +115,38 @@ service:
   telemetry:
     logs:
       encoding: json
+
   extensions:
     - health_check
     # - zpages
     # - pprof
+
   pipelines:
     traces:
       receivers: [otlp]
       processors: [metrics/delta, batch]
       exporters: [traces, pipelines_meter]
+
     metrics:
       receivers: [otlp]
       processors: [batch]
       exporters: [metrics, pipelines_meter]
+
     metrics/host:
       receivers: [hostmetrics] # prometheus
       processors: [resource_detection, batch]
       exporters: [metrics, pipelines_meter]
+
     # metrics/prometheus:
     #   receivers: [prometheus]
     #   processors: [batch]
     #   exporters: [metrics, pipelines_meter]
+
     logs:
       receivers: [otlp, journald]
       processors: [batch]
       exporters: [logs, pipelines_meter]
+
     meter:
       receivers: [pipelines_meter]
       processors: [batch/meter]

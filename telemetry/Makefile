@@ -5,7 +5,8 @@ include ./.env
 
 docker_compose = \
 	docker compose \
-		--file ./docker-compose.yml
+		--file ./docker-compose.yml \
+		--env-file ./.env
 
 # Taken from https://www.client9.com/self-documenting-makefiles/
 help : ## Print this help

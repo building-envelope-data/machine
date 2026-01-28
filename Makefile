@@ -5,9 +5,10 @@ include ./.env
 include ./telemetry/.env
 
 docker_compose = \
-	TELEMETRY_PORT=${TELEMETRY_PORT} \
+	TELEMETRY_HTTP_PORT=${TELEMETRY_HTTP_PORT} \
 		docker compose \
-			--file ./docker-compose.yml
+			--file ./docker-compose.yml \
+			--env-file ./.env
 
 make_telemetry = \
 	make \
@@ -52,6 +53,17 @@ dotenv : ## Assert that all variables in `./.env.sample` are available in `./.en
 			<(cut --delimiter='=' --fields=1 ./.env.sample | sort) \
 			<(cut --delimiter='=' --fields=1 ./.env        | sort) \
 	"
+	bash -c " \
+		diff \
+			<(cut --delimiter='=' --fields=1 ./.env.sample | sort) \
+			<(cut --delimiter='=' --fields=1 ./.env.buildingenvelopedata.sample | sort) \
+	"
+	bash -c " \
+		diff \
+			<(cut --delimiter='=' --fields=1 ./.env.sample | sort) \
+			<(cut --delimiter='=' --fields=1 ./.env.solarbuildingenvelopes.sample | sort) \
+	"
+	${make_telemetry} dotenv
 .PHONY : dotenv
 
 htpasswd : ## Create file ./nginx/.htpasswd if it does not exist

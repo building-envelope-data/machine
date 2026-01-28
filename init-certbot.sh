@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# https://explainshell.com/explain?cmd=set+-euo
+set -euo
+set -o pipefail
+
 # Inspired by https://github.com/wmnnd/nginx-certbot/blob/master/init-letsencrypt.sh
 
 # For the option `allexport` see https://www.gnu.org/software/bash/manual/html_node/The-Set-Builtin.html
@@ -12,7 +16,7 @@ if ! docker compose version; then
   exit 1
 fi
 
-domains=("${NON_WWW_PRODUCTION_HOST}" "${PRODUCTION_HOST}" "${STAGING_HOST}" "${EXTRA_HOST}")
+domains=("${HOST}" "${PRODUCTION_SUBDOMAIN}.${HOST}" "${STAGING_SUBDOMAIN}.${HOST}" "${TELEMETRY_SUBDOMAIN}.${HOST}" "${EXTRA_HOST}")
 email="${EMAIL_ADDRESS}"
 staging=0 # Set to 1 if you're testing your setup to avoid hitting request limits
 

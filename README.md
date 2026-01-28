@@ -64,37 +64,44 @@ branch `main` is always deployable.
    `cp ./.env.solarbuildingenvelopes.sample ./.env && chmod 600 ./.env`) and
    adapt the `.env` file as needed for example inside `vi ./.env` or `nano
    ./.env`. The `.env` variables
-   - `HTTP_PORT` and `HTTPS_PORT` are the HTTP and HTTPS ports on which the
-     NGINX reverse proxy is listening;
-   - `PRODUCTION_HTTP_PORT`, `PRODUCTION_HOST`, and `NON_WWW_PRODUCTION_HOST`
-     are the HTTP port on which the production instance `/app/production` is
-     listening, its domain name with sub-domain `www`, and its domain name
-     without sub-domain (note that the reverse proxy NGINX redirects requests
-     without the sub-domain `www` to such with this sub-domain). If the domain
-     name is too long, then NGINX will fail to start, for example, with the
-     error message `"Could not build the server_names_hash. You should increase
-     server_names_hash_bucket_size."` and it becomes necessary to
-     [tune the `server_names_hash_max_size` or `server_names_hash_bucket_size` directives](https://nginx.org/en/docs/http/server_names.html#optimization),
+   - `HOST` is the domain name without sub-domain;
+   - `PRODUCTION_SUBDOMAIN`, `STAGING_SUBDOMAIN`, `TELEMETRY_SUBDOMAIN` are the
+     sub-domains of the production instance `/app/production`, staging instance
+     `/app/staging`, and the telemetry instance `/app/machine/telemetry`. Note
+     that none of these sub-domains can be empty. The reverse proxy NGINX
+     redirects requests to `${HOST}` without a sub-domain to such with the
+     sub-domain `${PRODUCTION_SUBDOMAIN}`. If the domain name is too long, then
+     NGINX will fail to start, for example, with the error message `"Could not
+     build the server_names_hash. You should increase
+     server_names_hash_bucket_size."` and it becomes necessary to [tune the
+     `server_names_hash_max_size` or `server_names_hash_bucket_size`
+     directives](https://nginx.org/en/docs/http/server_names.html#optimization),
      in the above example just increase `server_names_hash_bucket_size` to the
      next power of two;
-   - `STAGING_HTTP_PORT` and `STAGING_HOST` are the HTTP port on which the
-     staging instance `/app/staging` is listening and the domain name with
-     sub-domain of the staging environment (this is usually
-     `staging.${NON_WWW_PRODUCTION_HOST}`);
+   - `HTTP_PORT` and `HTTPS_PORT` are the HTTP and HTTPS ports on which the
+     NGINX reverse proxy is listening;
+   - `PRODUCTION_HTTP_PORT` or `STAGING_HTTP_PORT` is the HTTP port on which the
+     production instance `/app/production` or staging instance `/app/staging`
+     is listening;
    - `EXTRA_HOST` is an extra domain name for which the TLS certificate fetched
      from [Let's Encrypt](https://letsencrypt.org) shall also be valid apart
-     from `${NON_WWW_PRODUCTION_HOST}`, `${PRODUCTION_HOST}`, and
-     `${STAGING_HOST}` (it is used in `./init-certbot.sh`);
+     from `${HOST}`, `${PRODUCTION_SUBDOMAIN}.${HOST}`,
+     `${STAGING_SUBDOMAIN}.${HOST}`, and `${TELEMETRY_SUBDOMAIN}.${HOST}` (it
+     is used in `./init-certbot.sh`);
    - `EMAIL_ADDRESS` is the email address of the person to be notified when
      there is some system-administration issue (for example
      [Monit](https://mmonit.com/monit/) sends such notifications)
    - `SMTP_HOST` and `SMTP_PORT` are host and port of the message transfer
      agent to be used to send emails through the Simple Mail Transfer
-     Protocol (SMTP).
+     Protocol (SMTP);
+   - `NETWORK_INTERFACE` is the network interface to monitor with Monit (list
+     all with `make network-interfaces` or simply `ip link`);
+   - `MONIT_PASSWORD` is the clear-text password to communicate with Monit (for
+     example via `make monit` or simply `sudo monit status`)
 1. Prepare the telemetry environment by running
    `cp ./telemetry/.env.sample ./telemetry/.env` and adapt the
    `./telemetry/.env` file as needed
-   - `TELEMETRY_PORT` is the HTTP port on which the telemetry web user
+   - `TELEMETRY_HTTP_PORT` is the HTTP port on which the telemetry web user
      interface instance is listening;
    - `TELEMETRY_DATA_PORT` is the TCP port on which the database management
      system ClickHouse is listening.

@@ -41,7 +41,7 @@ set httpd
 # System
 #----------------------------------------------------------------------------
 
-check system {{ NON_WWW_PRODUCTION_HOST }}-system
+check system {{ HOST }}-system
     if loadavg (5min) > 3 then alert
     if loadavg (15min) > 1 then alert
     if memory usage > 80% for 4 cycles then alert
@@ -124,7 +124,7 @@ check program docker_healthcheck with path /app/machine/monit_docker_healthcheck
 # Hosts
 #----------------------------------------------------------------------------
 
-check host {{ NON_WWW_PRODUCTION_HOST }}-host with address {{ NON_WWW_PRODUCTION_HOST }}
+check host {{ HOST }}-host with address {{ HOST }}
     if failed
         port 22
         with protocol ssh

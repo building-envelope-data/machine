@@ -48,10 +48,10 @@
           - lookup('env', item) | length > 0
         fail_msg: "The environment variable '{{ item }}' is not set."
       loop:
-        - PRODUCTION_HOST
-        - NON_WWW_PRODUCTION_HOST
-        - STAGING_HOST
-        - TELEMETRY_HOST
+        - HOST
+        - PRODUCTION_SUBDOMAIN
+        - STAGING_SUBDOMAIN
+        - TELEMETRY_SUBDOMAIN
         - EMAIL_ADDRESS
         - SMTP_HOST
         - SMTP_PORT
@@ -173,7 +173,7 @@
 
     - name: Install and configure `msmtp` to be used by Cron and other services to send emails
       vars:
-        FROM_EMAIL_ADDRESS: 'server@{{ lookup("env", "NON_WWW_PRODUCTION_HOST") }}'
+        FROM_EMAIL_ADDRESS: 'server@{{ lookup("env", "HOST") }}'
         SMTP_HOST: '{{ lookup("env", "SMTP_HOST") }}'
         SMTP_PORT: '{{ lookup("env", "SMTP_PORT") }}'
       block:
@@ -307,10 +307,10 @@
     - name: Monitor system with Monit
       # https://mmonit.com/monit/
       vars:
-        PRODUCTION_HOST: '{{ lookup("env", "PRODUCTION_HOST") }}'
-        NON_WWW_PRODUCTION_HOST: '{{ lookup("env", "NON_WWW_PRODUCTION_HOST") }}'
-        STAGING_HOST: '{{ lookup("env", "STAGING_HOST") }}'
-        TELEMETRY_HOST: '{{ lookup("env", "TELEMETRY_HOST") }}'
+        HOST: '{{ lookup("env", "HOST") }}'
+        PRODUCTION_HOST: '{{ lookup("env", "PRODUCTION_SUBDOMAIN") }}.{{ lookup("env", "HOST") }}'
+        STAGING_HOST: '{{ lookup("env", "STAGING_SUBDOMAIN") }}.{{ lookup("env", "HOST") }}'
+        TELEMETRY_HOST: '{{ lookup("env", "TELEMETRY_SUBDOMAIN") }}.{{ lookup("env", "HOST") }}'
         EMAIL_ADDRESS: '{{ lookup("env", "EMAIL_ADDRESS") }}'
         SMTP_HOST: '{{ lookup("env", "SMTP_HOST") }}'
         SMTP_PORT: '{{ lookup("env", "SMTP_PORT") }}'

@@ -79,7 +79,7 @@ services:
     !!merge <<: *db-depend
     image: signoz/signoz:v0.108.0
     ports:
-      - ${TELEMETRY_PORT}:8080 # signoz port
+      - ${TELEMETRY_HTTP_PORT}:8080 # signoz port
     #   - "6060:6060" # pprof port
     volumes:
       - ./common/signoz/prometheus.yml:/root/config/prometheus.yml

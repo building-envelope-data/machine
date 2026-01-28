@@ -1,4 +1,8 @@
-#!/bin/sh
+#!/bin/bash
+
+# https://explainshell.com/explain?cmd=set+-euo
+set -euo
+set -o pipefail
 
 echo "Docker Healthcheck"
 

@@ -28,12 +28,13 @@ services:
       - "./certbot/conf:/etc/letsencrypt:ro"
       - "./certbot/www:/var/www/certbot:ro"
     environment:
+      HOST: "${HOST}"
+      PRODUCTION_SUBDOMAIN: "${PRODUCTION_SUBDOMAIN}"
+      STAGING_SUBDOMAIN: "${STAGING_SUBDOMAIN}"
+      TELEMETRY_SUBDOMAIN: "${TELEMETRY_SUBDOMAIN}"
       PRODUCTION_HTTP_PORT: "${PRODUCTION_HTTP_PORT}"
-      PRODUCTION_HOST: "${PRODUCTION_HOST}"
-      NON_WWW_PRODUCTION_HOST: "${NON_WWW_PRODUCTION_HOST}"
       STAGING_HTTP_PORT: "${STAGING_HTTP_PORT}"
-      STAGING_HOST: "${STAGING_HOST}"
-      TELEMETRY_PORT: "${TELEMETRY_PORT}"
+      TELEMETRY_HTTP_PORT: "${TELEMETRY_HTTP_PORT}"
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
@@ -53,5 +54,7 @@ services:
       dockerfile: "./Dockerfile"
     volumes:
       - ".:/app"
+    environment:
+      TELEMETRY_DATA_HOST: "host.docker.internal"
     extra_hosts:
       - "host.docker.internal:host-gateway"
