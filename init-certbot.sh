@@ -31,11 +31,12 @@ if [ -d "./certbot" ]; then
 fi
 
 echo "### Creating certbot config, working, logs, and certificates directories ./certbot/* ..."
-mkdir --parents "./certbot/conf"
+mkdir --parents "./certbot/conf/accounts"
 mkdir --parents "./certbot/letsencrypt"
 mkdir --parents "./certbot/logs"
 mkdir --parents "./certbot/www"
 chmod --recursive 755 "./certbot/conf"
+chmod --recursive 700 "./certbot/conf/accounts"
 chmod --recursive 755 "./certbot/letsencrypt"
 chmod --recursive 700 "./certbot/logs"
 chmod --recursive 755 "./certbot/www"
@@ -69,6 +70,7 @@ for domain in "${domains[@]}"; do
 done
 
 # Enable staging mode if needed
+staging_arg=""
 if [ ${staging} != "0" ]; then staging_arg="--staging"; fi
 
 make \
