@@ -250,6 +250,11 @@ vacuum-journald : ## Vaccum journald logs keeping seven days worth of logs
 	journalctl --vacuum-time=7d
 .PHONY : vacuum-journald
 
+clear-logs : ## Delete archived and backuped logs
+	find /var/log -type f -name "*.gz" -delete
+	find /var/log -type f -name "*.[0-9].log" -delete
+.PHONY : clear-logs
+
 # --------------------------------------------------------------------------
 # TLS Certificates
 
