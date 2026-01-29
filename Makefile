@@ -4,6 +4,10 @@
 include ./.env
 include ./telemetry/.env
 
+SHELL := /bin/bash
+.SHELLFLAGS := -o errexit -o errtrace -o nounset -o pipefail -c
+MAKEFLAGS += --warn-undefined-variables
+
 docker_compose = \
 	TELEMETRY_HTTP_PORT=${TELEMETRY_HTTP_PORT} \
 		docker compose \
@@ -11,7 +15,7 @@ docker_compose = \
 			--env-file ./.env
 
 make_telemetry = \
-	make \
+	$(MAKE) \
 		--directory=./telemetry \
 
 # Taken from https://www.client9.com/self-documenting-makefiles/
@@ -152,6 +156,45 @@ list-services : ## List all services specified in the docker-compose file (used 
 	${make_telemetry} config
 .PHONY : list-services
 
+# docker run \
+# 	--workdir / \
+# 	--volume ./checkmake.ini:/checkmake.ini \
+# 	--volume ./Makefile:/Makefile \
+# 	--volume ./Makefile.development:/Makefile.development \
+# 	quay.io/checkmake/checkmake \
+# 	/Makefile \
+# 	/Makefile.development
+lint : ## Lint Docker Compose and Dockerfile
+	docker run \
+		--rm \
+		--tty \
+		--volume .:/app \
+		zavoloklom/dclint \
+		--config /app/.dclintrc \
+		.
+	docker run \
+		--rm \
+		--interactive \
+		--volume ./.hadolint.yml:/.config/.hadolint.yaml \
+		hadolint/hadolint \
+		hadolint \
+		--config /.config/.hadolint.yaml \
+		- \
+		< ./Dockerfile
+	${make_telemetry} lint
+.PHONY : lint
+
+fix : ## Fix Docker Compoe linting violations
+	docker run \
+		--rm \
+		--tty \
+		--volume .:/app \
+		zavoloklom/dclint \
+		--fix \
+		.
+	${make_telemetry} fix
+.PHONY : fix
+
 # See https://docs.docker.com/config/containers/runmetrics/
 docker-stats : ## Show Docker run-time metrics
 	docker stats
@@ -284,7 +327,7 @@ renew-certificates : ## Renew certificates
 
 begin-maintenance : ## Begin maintenance
 	for environment in staging production ; do \
-		make --directory=/app/$${environment} --file=Makefile.production begin-maintenance ; \
+		$(MAKE) --directory=/app/$${environment} --file=Makefile.production begin-maintenance ; \
 	done
 .PHONY : begin-maintenance
 
@@ -293,14 +336,14 @@ end-maintenance : ## End maintenance
 		echo 'Reboot by running `make reboot` and afterwards run `cd /app/machine && make end-maintenance`' ; \
 	else \
 		for environment in staging production ; do \
-			make --directory=/app/$${environment} --file=Makefile.production end-maintenance ; \
+			$(MAKE) --directory=/app/$${environment} --file=Makefile.production end-maintenance ; \
 		done ; \
 	fi
 .PHONY : end-maintenance
 
 backup-database : ## Backup production database and prune backups
 	mkdir --parents /app/data/backups
-	make \
+	$(MAKE) \
 		--directory=/app/production \
 		--file /app/production/Makefile.production \
 		--keep-going \
@@ -316,25 +359,25 @@ reboot : ## Reboot
 .PHONY : reboot
 
 upgrade : ## Upgrade system (Is used to install the newest versions of all packages currently installed on the system from the sources enumerated in /etc/apt/sources.list. Packages currently installed with new versions available are retrieved and upgraded. Under no circumstances are currently installed packages removed, or packages not already installed retrieved and installed. New versions of currently installed packages that cannot be upgraded without changing the install status of another package will be left at their current version.)
-	make begin-maintenance
+	$(MAKE) begin-maintenance
 	sudo apt-get --assume-yes update
 	sudo apt-get --assume-yes upgrade
 	sudo apt-get --assume-yes auto-remove
 	sudo apt-get --assume-yes clean
 	sudo apt-get --assume-yes auto-clean
 	pipx upgrade-all --include-injected
-	make end-maintenance
+	$(MAKE) end-maintenance
 .PHONY : upgrade
 
 dist-upgrade : ## Upgrade system (In addition to performing the function of `upgrade`, also intelligently handles changing dependencies with new versions of packages. It will attempt to upgrade the most important packages at the expense of less important ones if necessary. It may therefore remove some packages.)
-	make begin-maintenance
+	$(MAKE) begin-maintenance
 	sudo apt-get --assume-yes update
 	sudo apt-get --assume-yes dist-upgrade
 	sudo apt-get --assume-yes auto-remove
 	sudo apt-get --assume-yes clean
 	sudo apt-get --assume-yes auto-clean
 	pipx upgrade-all --include-injected
-	make end-maintenance
+	$(MAKE) end-maintenance
 .PHONY : dist-upgrade
 
 dry-run-unattended-upgrades : ## Dry-run unattended upgrades for testing purposes

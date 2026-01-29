@@ -5,28 +5,17 @@
 # See also
 # https://certbot.eff.org/docs/install.html#running-with-docker
 
+name: machine
+
 services:
-  reverse_proxy: # https://hub.docker.com/_/nginx
-    restart: "always"
+  reverse_proxy:
     image: "nginx:1.29-trixie-otel"
-    command: [
-      "nginx",
-      "-g", "daemon off;"
-      ]
-    healthcheck:
-      test: ["CMD-SHELL", "service nginx status || exit 1"]
-      interval: "30s"
-      timeout: "30s"
-      retries: "3"
-    ports:
-      - "${HTTP_PORT}:80"
-      - "${HTTPS_PORT}:443"
     volumes:
-      - "./nginx/.htpasswd:/etc/apache2/.htpasswd:ro"
-      - "./nginx/templates:/etc/nginx/templates:ro"
-      - "./nginx/nginx.conf:/etc/nginx/nginx.conf:ro"
-      - "./certbot/conf:/etc/letsencrypt:ro"
-      - "./certbot/www:/var/www/certbot:ro"
+      - ./nginx/.htpasswd:/etc/apache2/.htpasswd:ro
+      - ./nginx/templates:/etc/nginx/templates:ro
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./certbot/conf:/etc/letsencrypt:ro
+      - ./certbot/www:/var/www/certbot:ro
     environment:
       HOST: "${HOST:?required}"
       PRODUCTION_SUBDOMAIN: "${PRODUCTION_SUBDOMAIN:?required}"
@@ -35,17 +24,27 @@ services:
       PRODUCTION_HTTP_PORT: "${PRODUCTION_HTTP_PORT:?required}"
       STAGING_HTTP_PORT: "${STAGING_HTTP_PORT:?required}"
       TELEMETRY_HTTP_PORT: "${TELEMETRY_HTTP_PORT:?required}"
+    ports:
+      - "127.0.0.1:${HTTP_PORT:?required}:80"
+      - "127.0.0.1:${HTTPS_PORT:?required}:443"
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    command: [ "nginx", "-g", "daemon off;" ]
+    restart: "always"
+    healthcheck:
+      test: [ "CMD-SHELL", "service nginx status || exit 1" ]
+      interval: "30s"
+      timeout: "30s"
+      retries: "3"
 
   # Fetch TLS certificates from Let's Encrypt
-  certbot: # https://hub.docker.com/r/certbot/certbot
+  certbot:
     image: "certbot/certbot:v3.3.0"
     volumes:
-      - "./certbot/conf:/etc/letsencrypt" # --config-dir
-      - "./certbot/letsencrypt:/var/lib/letsencrypt" # --work-dir
-      - "./certbot/logs:/var/log/letsencrypt" # --logs-dir
-      - "./certbot/www:/var/www/certbot" # --webroot-path
+      - ./certbot/conf:/etc/letsencrypt # --config-dir
+      - ./certbot/letsencrypt:/var/lib/letsencrypt # --work-dir
+      - ./certbot/logs:/var/log/letsencrypt # --logs-dir
+      - ./certbot/www:/var/www/certbot # --webroot-path
 
   # Test for example `make setup` within `make machine`
   machine:
@@ -53,7 +52,7 @@ services:
       context: "."
       dockerfile: "./Dockerfile"
     volumes:
-      - ".:/app"
+      - .:/app
     environment:
       TELEMETRY_DATA_HOST: "host.docker.internal"
     extra_hosts:

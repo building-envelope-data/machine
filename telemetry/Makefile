@@ -3,6 +3,10 @@
 
 include ./.env
 
+SHELL := /bin/bash
+.SHELLFLAGS := -o errexit -o errtrace -o nounset -o pipefail -c
+MAKEFLAGS += --warn-undefined-variables
+
 docker_compose = \
 	docker compose \
 		--file ./docker-compose.yml \
@@ -67,3 +71,37 @@ list-services : ## List all services specified in the docker-compose file (used 
 	${docker_compose} config \
 		--services
 .PHONY : list-services
+
+# docker run \
+# 	--workdir / \
+# 	--volume ./Makefile:/Makefile \
+# 	--volume ./checkmake.ini:/checkmake.ini \
+# 	quay.io/checkmake/checkmake
+lint : ## Lint Docker Compose and Dockerfile
+	docker run \
+		--rm \
+		--tty \
+		--volume .:/app \
+		zavoloklom/dclint \
+		--config /app/.dclintrc \
+		.
+	docker run \
+		--rm \
+		--interactive \
+		--volume ./.hadolint.yml:/.config/.hadolint.yaml \
+		hadolint/hadolint \
+		hadolint \
+		--config /.config/.hadolint.yaml \
+		- \
+		< ./Dockerfile
+.PHONY : lint
+
+fix : ## Fix Docker linting violations
+	docker run \
+		--rm \
+		--tty \
+		--volume .:/app \
+		zavoloklom/dclint \
+		--fix \
+		.
+.PHONY : fix
