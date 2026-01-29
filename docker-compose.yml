@@ -25,8 +25,8 @@ services:
       STAGING_HTTP_PORT: "${STAGING_HTTP_PORT:?required}"
       TELEMETRY_HTTP_PORT: "${TELEMETRY_HTTP_PORT:?required}"
     ports:
-      - "127.0.0.1:${HTTP_PORT:?required}:80"
-      - "127.0.0.1:${HTTPS_PORT:?required}:443"
+      - "0.0.0.0:${HTTP_PORT:?required}:80"
+      - "0.0.0.0:${HTTPS_PORT:?required}:443"
     extra_hosts:
       - "host.docker.internal:host-gateway"
     command: [ "nginx", "-g", "daemon off;" ]
