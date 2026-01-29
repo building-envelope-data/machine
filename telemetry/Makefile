@@ -37,7 +37,7 @@ up : ## (Re)create and (re)start services
 		--force-recreate \
 		--renew-anon-volumes \
 		--remove-orphans \
-		--detach
+		--wait
 .PHONY : up
 
 logs : ## Follow logs
@@ -49,7 +49,7 @@ logs : ## Follow logs
 shell : ## Enter shell in the `signoz` service
 	${docker_compose} up \
 		--remove-orphans \
-		--detach \
+		--wait \
 		signoz
 	${docker_compose} exec \
 		signoz \

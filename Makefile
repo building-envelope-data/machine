@@ -95,7 +95,7 @@ up : ## (Re)create and (re)start services
 		--force-recreate \
 		--renew-anon-volumes \
 		--remove-orphans \
-		--detach \
+		--wait \
 		reverse_proxy
 	${make_telemetry} up
 .PHONY : up
@@ -114,7 +114,7 @@ logs : ## Follow logs
 shell : ## Enter shell in the `reverse_proxy` service
 	${docker_compose} up \
 		--remove-orphans \
-		--detach \
+		--wait \
 		reverse_proxy
 	${docker_compose} exec \
 		reverse_proxy \
