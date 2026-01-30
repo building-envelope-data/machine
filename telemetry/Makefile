@@ -23,8 +23,8 @@ help : ## Print this help
 dotenv : ## Assert that all variables in `./.env.sample` are available in `./.env`
 	bash -c " \
 		diff \
-			<cut --only-delimited --delimiter='=' --fields=1 ./.env.sample | sort) \
-			<cut --only-delimited --delimiter='=' --fields=1 ./.env        | sort) \
+			<(cut --only-delimited --delimiter='=' --fields=1 ./.env.sample | sort) \
+			<(cut --only-delimited --delimiter='=' --fields=1 ./.env        | sort) \
 	"
 .PHONY : dotenv
 

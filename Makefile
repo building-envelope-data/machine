@@ -48,18 +48,18 @@ crontab : ## List user's and root's contab
 dotenv : ## Assert that all variables in `./.env.sample` are available in `./.env`
 	bash -c " \
 		diff \
-			<cut --only-delimited --delimiter='=' --fields=1 ./.env.sample | sort) \
-			<cut --only-delimited --delimiter='=' --fields=1 ./.env        | sort) \
+			<(cut --only-delimited --delimiter='=' --fields=1 ./.env.sample | sort) \
+			<(cut --only-delimited --delimiter='=' --fields=1 ./.env        | sort) \
 	"
 	bash -c " \
 		diff \
-			<cut --only-delimited --delimiter='=' --fields=1 ./.env.sample | sort) \
-			<cut --only-delimited --delimiter='=' --fields=1 ./.env.buildingenvelopedata.sample | sort) \
+			<(cut --only-delimited --delimiter='=' --fields=1 ./.env.sample | sort) \
+			<(cut --only-delimited --delimiter='=' --fields=1 ./.env.buildingenvelopedata.sample | sort) \
 	"
 	bash -c " \
 		diff \
-			<cut --only-delimited --delimiter='=' --fields=1 ./.env.sample | sort) \
-			<cut --only-delimited --delimiter='=' --fields=1 ./.env.solarbuildingenvelopes.sample | sort) \
+			<(cut --only-delimited --delimiter='=' --fields=1 ./.env.sample | sort) \
+			<(cut --only-delimited --delimiter='=' --fields=1 ./.env.solarbuildingenvelopes.sample | sort) \
 	"
 .PHONY : dotenv
 
