@@ -2,17 +2,15 @@
 # https://swcarpentry.github.io/make-novice/reference.html
 
 include ./.env
-include ./telemetry/.env
 
 SHELL := /bin/bash
 .SHELLFLAGS := -o errexit -o errtrace -o nounset -o pipefail -c
 MAKEFLAGS += --warn-undefined-variables
 
 docker_compose = \
-	TELEMETRY_HTTP_PORT=${TELEMETRY_HTTP_PORT} \
-		docker compose \
-			--file ./docker-compose.yml \
-			--env-file ./.env
+	docker compose \
+		--file ./docker-compose.yml \
+		--env-file ./.env
 
 # Taken from https://www.client9.com/self-documenting-makefiles/
 help : ## Print this help

@@ -93,20 +93,20 @@ extensions:
 
 exporters:
   traces:
-    datasource: tcp://${env:TELEMETRY_DATA_HOST:-127.0.0.1}:${env:TELEMETRY_DATA_PORT}/traces
+    datasource: tcp://{{ TELEMETRY_DATA_HOST }}:{{ TELEMETRY_DATA_PORT }}/traces
     low_cardinal_exception_grouping: false
     use_new_schema: true
 
   metrics:
-    dsn: tcp://${env:TELEMETRY_DATA_HOST:-127.0.0.1}:${env:TELEMETRY_DATA_PORT}/metrics
+    dsn: tcp://{{ TELEMETRY_DATA_HOST }}:{{ TELEMETRY_DATA_PORT }}/metrics
 
   logs:
-    dsn: tcp://${env:TELEMETRY_DATA_HOST:-127.0.0.1}:${env:TELEMETRY_DATA_PORT}/logs
+    dsn: tcp://{{ TELEMETRY_DATA_HOST }}:{{ TELEMETRY_DATA_PORT }}/logs
     timeout: 10s
     use_new_schema: true
 
   meter:
-    dsn: tcp://${env:TELEMETRY_DATA_HOST:-127.0.0.1}:${env:TELEMETRY_DATA_PORT}/meter
+    dsn: tcp://{{ TELEMETRY_DATA_HOST }}:{{ TELEMETRY_DATA_PORT }}/meter
     timeout: 45s
     sending_queue:
       enabled: false
