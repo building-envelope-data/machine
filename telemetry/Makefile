@@ -72,6 +72,12 @@ list-services : ## List all services specified in the docker-compose file (used 
 		--services
 .PHONY : list-services
 
+remove : ## Remove volumes
+	docker volume rm \
+		telemetry-clickhouse \
+		telemetry-sqlite
+.PHONY : remove
+
 # docker run \
 # 	--workdir / \
 # 	--volume ./Makefile:/Makefile \
