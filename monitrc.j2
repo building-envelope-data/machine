@@ -6,10 +6,6 @@
 set daemon 60
     with start delay 60
 
-set log /var/log/monit.log
-set pidfile /var/run/monit.pid
-set statefile /var/lib/monit/monit.state
-
 # Configure email alerts
 set mailserver {{ SMTP_HOST }} port {{ SMTP_PORT }}
 set alert {{ EMAIL_ADDRESS }}

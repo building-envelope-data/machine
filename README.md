@@ -201,9 +201,7 @@ Our machines run Debian 12 "Bookworm" which reaches its end of life on June
 
 In the Ansible playbook `local.yml`, periodic jobs are set-up.
 
-* System logs are are vacuumed daily keeping logs of the latest seven days. The
-  logs of the vacuuming process itself are kept in
-  `/app/machine/journald-vacuuming.log`.
+* System logs are are vacuumed daily keeping logs of the latest seven days.
 * The Transport Layer Security (TLS) certificates used by HTTPS, that is, HTTP
   over TLS, are renewed daily if necessary.
 * The database is backed-up daily keeping the latest seven backups. To do so,
@@ -229,12 +227,10 @@ For logs of periodic jobs see above.
   followed by running `make daemon-logs`.
 * Cron logs are collected and stored by `journald` and can be
   followed by running `make cron-logs`.
-* Cron logs are collected and stored by `journald` and can be
-  followed by running `make cron-logs`.
-* Monitoring logs are written to `/var/log/monit.log` and can be followed by
-  running `make monit-logs`.
-* SMTP client logs are written to `/var/log/msmtp` and `~/.msmtp.log` and can
-  be followed by running `make smtp-logs`.
+* Monitoring logs are collected and stored by `journald` and can be
+  followed by running `make monit-logs`.
+* SMTP client logs are collected and stored by `journald` and can be
+  followed by running `make smtp-logs`.
 * Certbot logs are written to `/certbot/logs/*.log.*` and the latest log-files
   can be followed by running `make certbot-logs`.
 

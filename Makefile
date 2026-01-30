@@ -212,16 +212,15 @@ cron-logs : ## Follow Cron logs
 .PHONY : cron-logs
 
 monit-logs : ## Follow Monit logs
-	sudo tail \
+	sudo journalctl \
 		--follow \
-		/var/log/monit.log
+		--unit monit.service
 .PHONY : monit-logs
 
 smtp-logs : ## Follow msmtp logs
-	sudo tail \
+	sudo journalctl \
 		--follow \
-		/var/log/msmtp \
-		~/.msmtp.log
+		--unit msmtp.service
 .PHONY : smtp-logs
 
 certbot-logs : ## Follow Certbot logs
@@ -234,9 +233,10 @@ vacuum-journald : ## Vaccum journald logs keeping seven days worth of logs
 	journalctl --vacuum-time=7d
 .PHONY : vacuum-journald
 
-clear-logs : ## Delete archived and backuped logs
-	find /var/log -type f -name "*.gz" -delete
-	find /var/log -type f -name "*.[0-9].log" -delete
+cleanup-logs : ## Delete archived and backed up logs
+	sudo find /var/log -type f -name "*.gz" -delete
+	sudo find /var/log -type f -name "*.[0-9]*.log" -delete
+	find ./certbot/logs -type f -name "*.log.[0-9]*" -delete
 .PHONY : clear-logs
 
 # --------------------------------------------------------------------------
