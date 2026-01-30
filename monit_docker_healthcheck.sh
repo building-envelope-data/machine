@@ -18,7 +18,7 @@ echo "  Environment: '${environment}'"
 echo "    Services: '${services}'" | tr '\n' ' '
 for service in ${services}
 do
-  if [ "${service}" != "certbot" ] ; then
+  if [ "${service}" != "certbot" -a "${service}" != "machine" ] ; then
     if echo "${running_containers}" | grep --quiet --extended-regexp "^${environment}-${service}-[0-9] [ a-zA-Z0-9]+ \(healthy\)$" ; then
       echo "    Service '${service}' is running and healthy"
     else
