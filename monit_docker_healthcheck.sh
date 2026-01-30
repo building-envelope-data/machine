@@ -13,9 +13,9 @@ running_containers="$(docker ps --no-trunc --all --filter status=running --forma
 echo "  Running Containers: '${running_containers}'" | tr '\n' '\t'
 
 environment=machine
-services="$(make --silent --directory=/app/machine --file=/app/machine/Makefile list-services)"
+services="$(make --silent --directory=/app/machine --file=/app/machine/Makefile list-services | tr '\n' ' ')"
 echo "  Environment: '${environment}'"
-echo "    Services: '${services}'" | tr '\n' ' '
+echo "    Services: '${services}'"
 for service in ${services}
 do
   if [ "${service}" != "certbot" -a "${service}" != "machine" ] ; then
@@ -31,11 +31,10 @@ done
 for environment in staging production
 do
   echo "  Environment: '${environment}'"
-  services="$(make --silent --directory=/app/${environment} --file=/app/${environment}/Makefile.production list-services)"
-  echo "    Services: '${services}'" | tr '\n' ' '
+  services="$(make --silent --directory=/app/${environment} --file=/app/${environment}/Makefile.production list-services | tr '\n' ' ')"
+  echo "    Services: '${services}'"
   for service in ${services}
   do
-    echo "    Service: '${service}'"
     if echo "${running_containers}" | grep --quiet --extended-regexp "^[a-zA-Z]+_${environment}-${service}-[0-9] [ a-zA-Z0-9]+ \(healthy\)$" ; then
       echo "    Service '${service}' is running and healthy"
     else
