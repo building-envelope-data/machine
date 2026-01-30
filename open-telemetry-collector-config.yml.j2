@@ -34,14 +34,15 @@ receivers:
     directory: /var/log/journal
     start_at: end
     priority: info
-  # prometheus:
-  #   config:
-  #     global:
-  #       scrape_interval: 30s
-  #     scrape_configs:
-  #       - job_name: otel-collector-binary
-  #         static_configs:
-  #           - targets: ['127.0.0.1:8888']
+
+#  prometheus:
+#    config:
+#      global:
+#        scrape_interval: 30s
+#      scrape_configs:
+#        - job_name: otel-collector-binary
+#          static_configs:
+#            - targets: ['127.0.0.1:8888']
 
 processors:
   batch:
@@ -122,32 +123,32 @@ service:
     # - pprof
 
   pipelines:
-    traces:
-      receivers: [otlp]
-      processors: [metrics/delta, batch]
-      exporters: [traces, pipelines_meter]
+    # traces:
+    #   receivers: [otlp]
+    #   processors: [metrics/delta, batch]
+    #   exporters: [traces] # pipelines_meter
 
-    metrics:
-      receivers: [otlp]
-      processors: [batch]
-      exporters: [metrics, pipelines_meter]
+    # metrics:
+    #   receivers: [otlp]
+    #   processors: [batch]
+    #   exporters: [metrics] # pipelines_meter
 
     metrics/host:
       receivers: [hostmetrics] # prometheus
       processors: [resource_detection, batch]
-      exporters: [metrics, pipelines_meter]
+      exporters: [metrics] # pipelines_meter
 
     # metrics/prometheus:
     #   receivers: [prometheus]
     #   processors: [batch]
-    #   exporters: [metrics, pipelines_meter]
+    #   exporters: [metrics] # pipelines_meter
 
     logs:
       receivers: [otlp, journald]
       processors: [batch]
-      exporters: [logs, pipelines_meter]
+      exporters: [logs] # pipelines_meter
 
-    meter:
-      receivers: [pipelines_meter]
-      processors: [batch/meter]
-      exporters: [meter]
+    # meter:
+    #   receivers: [pipelines_meter]
+    #   processors: [batch/meter]
+    #   exporters: [meter]
