@@ -8,6 +8,10 @@
         <default>
             <!-- Maximum memory usage for processing single query, in bytes. -->
             <max_memory_usage>100000000</max_memory_usage>
+            <max_block_size>1024</max_block_size>
+            <max_download_threads>1</max_download_threads>
+            <input_format_parallel_parsing>0</input_format_parallel_parsing>
+            <output_format_parallel_formatting>0</output_format_parallel_formatting>
 
             <!-- How to choose between replicas during distributed query processing.
                  random - choose random replica from set of replicas with minimum number of errors
