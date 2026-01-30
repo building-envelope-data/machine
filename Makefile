@@ -14,10 +14,6 @@ docker_compose = \
 			--file ./docker-compose.yml \
 			--env-file ./.env
 
-make_telemetry = \
-	$(MAKE) \
-		--directory=./telemetry \
-
 # Taken from https://www.client9.com/self-documenting-makefiles/
 help : ## Print this help
 	@awk -F ':|##' '/^[^\t].+?:.*?##/ {\
@@ -54,20 +50,19 @@ crontab : ## List user's and root's contab
 dotenv : ## Assert that all variables in `./.env.sample` are available in `./.env`
 	bash -c " \
 		diff \
-			<(cut --delimiter='=' --fields=1 ./.env.sample | sort) \
-			<(cut --delimiter='=' --fields=1 ./.env        | sort) \
+			<cut --only-delimited --delimiter='=' --fields=1 ./.env.sample | sort) \
+			<cut --only-delimited --delimiter='=' --fields=1 ./.env        | sort) \
 	"
 	bash -c " \
 		diff \
-			<(cut --delimiter='=' --fields=1 ./.env.sample | sort) \
-			<(cut --delimiter='=' --fields=1 ./.env.buildingenvelopedata.sample | sort) \
+			<cut --only-delimited --delimiter='=' --fields=1 ./.env.sample | sort) \
+			<cut --only-delimited --delimiter='=' --fields=1 ./.env.buildingenvelopedata.sample | sort) \
 	"
 	bash -c " \
 		diff \
-			<(cut --delimiter='=' --fields=1 ./.env.sample | sort) \
-			<(cut --delimiter='=' --fields=1 ./.env.solarbuildingenvelopes.sample | sort) \
+			<cut --only-delimited --delimiter='=' --fields=1 ./.env.sample | sort) \
+			<cut --only-delimited --delimiter='=' --fields=1 ./.env.solarbuildingenvelopes.sample | sort) \
 	"
-	${make_telemetry} dotenv
 .PHONY : dotenv
 
 htpasswd : ## Create file ./nginx/.htpasswd if it does not exist
@@ -87,7 +82,6 @@ setup : htpasswd ## Setup machine
 
 pull : ## Pull images
 	${docker_compose} pull
-	${make_telemetry} pull
 .PHONY : pull
 
 up : ## (Re)create and (re)start services
@@ -97,7 +91,6 @@ up : ## (Re)create and (re)start services
 		--remove-orphans \
 		--wait \
 		reverse_proxy
-	${make_telemetry} up
 .PHONY : up
 
 deploy : dotenv setup pull up ## Deploy services, that is, assert ./.env file, setup machine, pull images, and (re)create and (re)start services
@@ -106,9 +99,7 @@ deploy : dotenv setup pull up ## Deploy services, that is, assert ./.env file, s
 logs : ## Follow logs
 	${docker_compose} logs \
 		--since=24h \
-		--follow & \
-	${make_telemetry} logs & \
-	wait
+		--follow
 .PHONY : logs
 
 shell : ## Enter shell in the `reverse_proxy` service
@@ -140,20 +131,17 @@ machine : ## Enter shell in the `machine` service for debugging and testing, for
 down : ## Stop containers and remove containers, networks, volumes, and images created by `deploy`
 	${docker_compose} down \
 		--remove-orphans
-	${make_telemetry} down
 .PHONY : down
 
 list : ## List all containers with health status
 	${docker_compose} ps \
 		--no-trunc \
 		--all
-	${make_telemetry} ps
 .PHONY : list
 
 list-services : ## List all services specified in the docker-compose file (used by Monit)
 	${docker_compose} config \
 		--services
-	${make_telemetry} config
 .PHONY : list-services
 
 # docker run \
@@ -181,7 +169,6 @@ lint : ## Lint Docker Compose and Dockerfile
 		--config /.config/.hadolint.yaml \
 		- \
 		< ./Dockerfile
-	${make_telemetry} lint
 .PHONY : lint
 
 fix : ## Fix Docker Compoe linting violations
@@ -192,7 +179,6 @@ fix : ## Fix Docker Compoe linting violations
 		zavoloklom/dclint \
 		--fix \
 		.
-	${make_telemetry} fix
 .PHONY : fix
 
 # See https://docs.docker.com/config/containers/runmetrics/
