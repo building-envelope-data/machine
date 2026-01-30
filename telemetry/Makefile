@@ -74,8 +74,9 @@ list-services : ## List all services specified in the docker-compose file (used 
 
 remove : ## Remove volumes
 	docker volume rm \
-		telemetry-clickhouse \
-		telemetry-sqlite
+		telemetry_clickhouse \
+		telemetry_sqlite \
+		telemetry_zookeeper
 .PHONY : remove
 
 # docker run \
