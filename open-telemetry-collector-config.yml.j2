@@ -93,20 +93,20 @@ extensions:
 
 exporters:
   traces:
-    datasource: tcp://{{ TELEMETRY_DATA_HOST }}:{{ TELEMETRY_DATA_PORT }}/traces
+    datasource: tcp://{{ TELEMETRY_DATA_HOST }}:{{ TELEMETRY_DATA_PORT }}/signoz_traces
     low_cardinal_exception_grouping: false
     use_new_schema: true
 
   metrics:
-    dsn: tcp://{{ TELEMETRY_DATA_HOST }}:{{ TELEMETRY_DATA_PORT }}/metrics
+    dsn: tcp://{{ TELEMETRY_DATA_HOST }}:{{ TELEMETRY_DATA_PORT }}/signoz_metrics
 
   logs:
-    dsn: tcp://{{ TELEMETRY_DATA_HOST }}:{{ TELEMETRY_DATA_PORT }}/logs
+    dsn: tcp://{{ TELEMETRY_DATA_HOST }}:{{ TELEMETRY_DATA_PORT }}/signoz_logs
     timeout: 10s
     use_new_schema: true
 
   meter:
-    dsn: tcp://{{ TELEMETRY_DATA_HOST }}:{{ TELEMETRY_DATA_PORT }}/meter
+    dsn: tcp://{{ TELEMETRY_DATA_HOST }}:{{ TELEMETRY_DATA_PORT }}/signoz_meter
     timeout: 45s
     sending_queue:
       enabled: false

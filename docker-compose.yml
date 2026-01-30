@@ -5,7 +5,7 @@
 # See also
 # https://certbot.eff.org/docs/install.html#running-with-docker
 
-name: machine
+name: "machine"
 
 services:
   reverse_proxy:
