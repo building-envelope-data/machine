@@ -25,7 +25,7 @@
         <!-- Rotation policy
              See https://github.com/pocoproject/poco/blob/poco-1.9.4-release/Foundation/include/Poco/FileChannel.h#L54-L85
           -->
-        <size>1000M</size>
+        <size>500M</size>
         <count>10</count>
         <!-- <console>1</console> --> <!-- Default behavior is autodetection (log to console if not daemon mode and is tty) -->
     </logger>
@@ -260,7 +260,7 @@
     of the time, in which case a higher number of threads might be required.
     -->
 
-    <max_thread_pool_size>10000</max_thread_pool_size>
+    <max_thread_pool_size>1000</max_thread_pool_size>
 
     <!-- Number of workers to recycle connections in background (see also drain_timeout).
          If the pool is full, connection will be drained synchronously. -->
@@ -268,7 +268,7 @@
 
     <!-- On memory constrained environments you may have to set this to value larger than 1.
       -->
-    <max_server_memory_usage_to_ram_ratio>0.9</max_server_memory_usage_to_ram_ratio>
+    <max_server_memory_usage_to_ram_ratio>0.3</max_server_memory_usage_to_ram_ratio>
 
     <!-- Simple server-wide memory profiler. Collect a stack trace at every peak allocation step (in bytes).
          Data will be stored in system.trace_log table with query_id = empty string.
@@ -301,10 +301,9 @@
 
     <!-- Approximate size of mark cache, used in tables of MergeTree family.
          In bytes. Cache is single for server. Memory is allocated only on demand.
-         You should not lower this value.
+         You should not lower this value below `5368709120`.
       -->
-    <mark_cache_size>5368709120</mark_cache_size>
-
+    <mark_cache_size>256000000</mark_cache_size>
 
     <!-- If you enable the `min_bytes_to_use_mmap_io` setting,
          the data in MergeTree tables can be read with mmap to avoid copying from kernel to userspace.
@@ -693,7 +692,7 @@
     </prometheus>
 
     <!-- Query log. Used only for queries with setting log_queries = 1. -->
-    <query_log>
+    <query_log remove="1">
         <!-- What table to insert data. If table is not exist, it will be created.
              When query log structure is changed after system update,
               then old table will be renamed and new table will be created automatically.
@@ -729,7 +728,7 @@
 
     <!-- Trace log. Stores stack traces collected by query profilers.
          See query_profiler_real_time_period_ns and query_profiler_cpu_time_period_ns settings. -->
-    <trace_log>
+    <trace_log remove="1">
         <database>system</database>
         <table>trace_log</table>
 
@@ -739,7 +738,7 @@
 
     <!-- Query thread log. Has information about all threads participated in query execution.
          Used only for queries with setting log_query_threads = 1. -->
-    <query_thread_log>
+    <query_thread_log remove="1">
         <database>system</database>
         <table>query_thread_log</table>
         <partition_by>toYYYYMM(event_date)</partition_by>
@@ -748,7 +747,7 @@
 
     <!-- Query views log. Has information about all dependent views associated with a query.
          Used only for queries with setting log_query_views = 1. -->
-    <query_views_log>
+    <query_views_log remove="1">
         <database>system</database>
         <table>query_views_log</table>
         <partition_by>toYYYYMM(event_date)</partition_by>
@@ -757,7 +756,7 @@
 
     <!-- Uncomment if use part log.
          Part log contains information about all actions with parts in MergeTree tables (creation, deletion, merges, downloads).-->
-    <part_log>
+    <part_log remove="1">
         <database>system</database>
         <table>part_log</table>
         <partition_by>toYYYYMM(event_date)</partition_by>
@@ -767,7 +766,7 @@
     <!-- Uncomment to write text log into table.
          Text log contains all information from usual server log but stores it in structured and efficient way.
          The level of the messages that goes to the table can be limited (<level>), if not specified all messages will go to the table.
-    <text_log>
+    <text_log remove="1">
         <database>system</database>
         <table>text_log</table>
         <flush_interval_milliseconds>7500</flush_interval_milliseconds>
@@ -776,7 +775,7 @@
     -->
 
     <!-- Metric log contains rows with current values of ProfileEvents, CurrentMetrics collected with "collect_interval_milliseconds" interval. -->
-    <metric_log>
+    <metric_log remove="1">
         <database>system</database>
         <table>metric_log</table>
         <flush_interval_milliseconds>7500</flush_interval_milliseconds>
@@ -787,7 +786,7 @@
         Asynchronous metric log contains values of metrics from
         system.asynchronous_metrics.
     -->
-    <asynchronous_metric_log>
+    <asynchronous_metric_log remove="1">
         <database>system</database>
         <table>asynchronous_metric_log</table>
         <!--
@@ -800,7 +799,7 @@
     <!--
         OpenTelemetry log contains OpenTelemetry trace spans.
     -->
-    <opentelemetry_span_log>
+    <opentelemetry_span_log remove="1">
         <!--
             The default table creation code is insufficient, this <engine> spec
             is a workaround. There is no 'event_time' for this log, but two times,
@@ -824,7 +823,7 @@
 
     <!-- Crash log. Stores stack traces for fatal errors.
          This table is normally empty. -->
-    <crash_log>
+    <crash_log remove="1">
         <database>system</database>
         <table>crash_log</table>
 
@@ -836,7 +835,7 @@
 
         Note: session log has known security issues and should not be used in production.
     -->
-    <!-- <session_log>
+    <!-- <session_log remove="1">
         <database>system</database>
         <table>session_log</table>
 
@@ -845,7 +844,7 @@
     </session_log> -->
 
     <!-- Profiling on Processors level. -->
-    <processors_profile_log>
+    <processors_profile_log remove="1">
         <database>system</database>
         <table>processors_profile_log</table>
 

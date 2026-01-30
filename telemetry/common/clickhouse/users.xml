@@ -7,7 +7,7 @@
         <!-- Default settings. -->
         <default>
             <!-- Maximum memory usage for processing single query, in bytes. -->
-            <max_memory_usage>10000000000</max_memory_usage>
+            <max_memory_usage>500000000</max_memory_usage>
 
             <!-- How to choose between replicas during distributed query processing.
                  random - choose random replica from set of replicas with minimum number of errors
@@ -18,6 +18,12 @@
                  first_or_random - if first replica one has higher number of errors, pick a random one from replicas with minimum number of errors.
             -->
             <load_balancing>random</load_balancing>
+
+            <!-- Ensure queries don't try to log at the session level to reduce memory usage. -->
+            <log_queries>0</log_queries>
+            <log_query_threads>0</log_query_threads>
+            <max_threads>1</max_threads> <!-- Force single-threaded for stability -->
+            <max_memory_usage>100000000</max_memory_usage> <!-- 100 megabyte cap per query -->
         </default>
 
         <!-- Profile that allows only read queries. -->
