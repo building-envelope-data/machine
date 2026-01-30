@@ -66,7 +66,8 @@ server {
         proxy_pass http://host.docker.internal:${PRODUCTION_HTTP_PORT};
     }
 
-    location /monit {
+    location /monit/ {
+        rewrite ^/monit/(.*)$ /$1 break;
         proxy_pass http://host.docker.internal:2812;
     }
 
