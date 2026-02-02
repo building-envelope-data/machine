@@ -67,12 +67,12 @@ branch `main` is always deployable.
    - `HOST` is the domain name without sub-domain;
    - `PRODUCTION_SUBDOMAIN`, `STAGING_SUBDOMAIN`, `TELEMETRY_SUBDOMAIN` are the
      sub-domains of the production instance `/app/production`, staging instance
-     `/app/staging`, and the telemetry instance `/app/machine/telemetry`. Note
-     that none of these sub-domains can be empty. The reverse proxy NGINX
-     redirects requests to `${HOST}` without a sub-domain to such with the
-     sub-domain `${PRODUCTION_SUBDOMAIN}`. If the domain name is too long, then
-     NGINX will fail to start, for example, with the error message `"Could not
-     build the server_names_hash. You should increase
+     `/app/staging`, and the telemetry services `pipelines`, `logs`, and
+     `metrics`. Note that none of these sub-domains can be empty. The reverse
+     proxy NGINX redirects requests to `${HOST}` without a sub-domain to such
+     with the sub-domain `${PRODUCTION_SUBDOMAIN}`. If the domain name is too
+     long, then NGINX will fail to start, for example, with the error message
+     `"Could not build the server_names_hash. You should increase
      server_names_hash_bucket_size."` and it becomes necessary to [tune the
      `server_names_hash_max_size` or `server_names_hash_bucket_size`
      directives](https://nginx.org/en/docs/http/server_names.html#optimization),
@@ -96,15 +96,6 @@ branch `main` is always deployable.
      Protocol (SMTP);
    - `NETWORK_INTERFACE` is the network interface to monitor with Monit (list
      all with `make network-interfaces` or simply `ip link`);
-   - `MONIT_PASSWORD` is the clear-text password to communicate with Monit (for
-     example via `make monit` or simply `sudo monit status`)
-1. Prepare the telemetry environment by running
-   `cp ./telemetry/.env.sample ./telemetry/.env` and adapt the
-   `./telemetry/.env` file as needed
-   - `TELEMETRY_HTTP_PORT` is the HTTP port on which the telemetry web user
-     interface instance is listening;
-   - `TELEMETRY_DATA_PORT` is the TCP port on which the database management
-     system ClickHouse is listening.
 1. If there is a firewall, configure it such that it allows the protocol TCP
    for ports 80 and 443.
 1. If the HTTP and HTTPS port configured in `.env` are not 80 and 443, then the

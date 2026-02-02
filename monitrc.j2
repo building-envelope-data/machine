@@ -27,11 +27,11 @@ set ssl options {
 
 # [Monit HTTPD](https://mmonit.com/monit/documentation/monit.html#MONIT-HTTPD)
 set httpd
-    port 2812
+    port {{ MONITOR_HTTP_PORT }}
     unixsocket /var/run/monit.socket
     use address 0.0.0.0
     allow 0.0.0.0/0
-    allow monit:{{ MONIT_PASSWORD }}
+    allow md5 /app/nginx/.htpasswd
 
 #----------------------------------------------------------------------------
 # System

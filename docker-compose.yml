@@ -5,9 +5,15 @@
 # See also
 # https://certbot.eff.org/docs/install.html#running-with-docker
 
+# Telemetry (logs and metrics) setup inspired by
+# https://github.com/VictoriaMetrics/VictoriaLogs/blob/master/deployment/docker/compose-vl-single.yml
+# https://github.com/VictoriaMetrics/VictoriaLogs/blob/master/deployment/docker/victorialogs/compose-base.yml
+# https://github.com/VictoriaMetrics/VictoriaLogs/blob/master/deployment/docker/victorialogs/vector/compose-base.yml
+
 name: "machine"
 
 services:
+  # https://hub.docker.com/_/nginx
   reverse_proxy:
     image: "nginx:1.29-trixie-otel"
     volumes:
@@ -23,7 +29,10 @@ services:
       TELEMETRY_SUBDOMAIN: "${TELEMETRY_SUBDOMAIN:?required}"
       PRODUCTION_HTTP_PORT: "${PRODUCTION_HTTP_PORT:?required}"
       STAGING_HTTP_PORT: "${STAGING_HTTP_PORT:?required}"
-      TELEMETRY_HTTP_PORT: "${TELEMETRY_HTTP_PORT:?required}"
+      MONITOR_HTTP_PORT: "${MONITOR_HTTP_PORT:?required}"
+      PIPELINES_HTTP_PORT: "${PIPELINES_HTTP_PORT:?required}"
+      LOGS_HTTP_PORT: "${LOGS_HTTP_PORT:?required}"
+      METRICS_HTTP_PORT: "${METRICS_HTTP_PORT:?required}"
     ports:
       - "0.0.0.0:${HTTP_PORT:?required}:80"
       - "0.0.0.0:${HTTPS_PORT:?required}:443"
@@ -33,11 +42,55 @@ services:
     restart: "always"
     healthcheck:
       test: [ "CMD-SHELL", "service nginx status || exit 1" ]
-      interval: "30s"
-      timeout: "30s"
-      retries: "3"
+      interval: "5s"
+      timeout: "5s"
+      retries: "5"
+
+  # https://hub.docker.com/r/victoriametrics/victoria-logs
+  logs:
+    image: "victoriametrics/victoria-logs:v1.44.0"
+    ports:
+      - "127.0.0.1:${LOGS_HTTP_PORT}:9428"
+    command:
+      - "-storageDataPath=/storage"
+      - "-loggerFormat=json"
+      - "-retentionFilter='{env=~\"development\"}:1d'"
+      - "-retentionFilter='{env=~\"staging\"}:7d'"
+      - "-retentionPeriod=14d"
+      # - -journald.streamFields=_HOSTNAME,_SYSTEMD_UNIT,_PID
+      # - -journald.ignoreFields=MESSAGE_ID,INVOCATION_ID,USER_INVOCATION_ID
+      # - -journald.ignoreFields=_BOOT_ID,_MACHINE_ID,_SYSTEMD_INVOCATION_ID,_STREAM_ID,_UID
+    volumes:
+      - logs:/storage
+    restart: "always"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:9428/health"]
+      interval: "1s"
+      timeout: "1s"
+      retries: "10"
+
+  # https://hub.docker.com/r/victoriametrics/victoria-metrics
+  metrics:
+    image: "victoriametrics/victoria-metrics:v1.135.0"
+    ports:
+      - "127.0.0.1:${METRICS_HTTP_PORT}:8428"
+    volumes:
+      - metrics:/storage
+    command:
+      - "-storageDataPath=/storage"
+      - "-loggerFormat=json"
+      - "-retentionFilter='{env=~\"development\"}:1d'"
+      - "-retentionFilter='{env=~\"staging\"}:7d'"
+      - "-retentionPeriod=14d"
+    restart: "always"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8428/health"]
+      interval: "1s"
+      timeout: "1s"
+      retries: "10"
 
   # Fetch TLS certificates from Let's Encrypt
+  # https://hub.docker.com/r/certbot/certbot
   certbot:
     image: "certbot/certbot:v3.3.0"
     volumes:
@@ -57,3 +110,7 @@ services:
       TELEMETRY_DATA_HOST: "host.docker.internal"
     extra_hosts:
       - "host.docker.internal:host-gateway"
+
+volumes:
+  logs:
+  metrics:

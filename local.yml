@@ -16,10 +16,10 @@
         name: monit
         state: reloaded
 
-    - name: Reload OpenTelemetry Collector
+    - name: Reload Vector
       become: true
       ansible.builtin.service:
-        name: otelcol-contrib
+        name: vector
         state: reloaded
 
     - name: Send test email as root
@@ -56,9 +56,10 @@
         - SMTP_HOST
         - SMTP_PORT
         - NETWORK_INTERFACE
-        - MONIT_PASSWORD
-        - TELEMETRY_DATA_HOST
-        - TELEMETRY_DATA_PORT
+        - MONITOR_HTTP_PORT
+        - PIPELINES_HTTP_PORT
+        - LOGS_HTTP_PORT
+        - METRICS_HTTP_PORT
 
     - name: Update package information
       become: true
@@ -317,7 +318,7 @@
         SMTP_HOST: '{{ lookup("env", "SMTP_HOST") }}'
         SMTP_PORT: '{{ lookup("env", "SMTP_PORT") }}'
         NETWORK_INTERFACE: '{{ lookup("env", "NETWORK_INTERFACE") }}'
-        MONIT_PASSWORD: '{{ lookup("env", "MONIT_PASSWORD") }}'
+        MONITOR_HTTP_PORT: '{{ lookup("env", "MONITOR_HTTP_PORT") }}'
       block:
         - name: Add Debian backports
           # https://backports.debian.org/
@@ -443,28 +444,36 @@
     - name: OpenTelemetry Collector
       become: true
       vars:
-        TELEMETRY_DATA_HOST: '{{ lookup("env", "TELEMETRY_DATA_HOST") }}'
-        TELEMETRY_DATA_PORT: '{{ lookup("env", "TELEMETRY_DATA_PORT") }}'
+        PIPELINES_HTTP_PORT: '{{ lookup("env", "PIPELINES_HTTP_PORT") }}'
+        LOGS_HTTP_PORT: '{{ lookup("env", "LOGS_HTTP_PORT") }}'
+        METRICS_HTTP_PORT: '{{ lookup("env", "METRICS_HTTP_PORT") }}'
       block:
-        - name: Install XZ-format compression utilities (needed to install *.deb packages)
-          ansible.builtin.package:
-            name: xz-utils
+        - name: Add Vector key
+          ansible.builtin.apt_key:
+            url: https://keys.datadoghq.com/DATADOG_APT_KEY_CURRENT.public
+            id: A4C0B90D74A3CF69D7C66018C4E03426C0962C7D
             state: present
 
-        - name: Install OpenTelemetry Collector
-          ansible.builtin.apt:
-            deb: https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v0.144.0/otelcol-contrib_0.144.0_linux_amd64.deb
+        - name: Add Vector repository
+          ansible.builtin.apt_repository:
+            repo: deb [arch=amd64] https://apt.vector.dev stable main
+            state: present
 
-        - name: Copy OpenTelemetry Collector configuration file
+        - name: Install Vector
+          ansible.builtin.package:
+            name: vector
+            state: present
+
+        - name: Copy Vector configuration file
           become: true
           ansible.builtin.template:
-            src: open-telemetry-collector-config.yml.j2
-            dest: /etc/otelcol-contrib/config.yaml
+            src: vector.yml.j2
+            dest: /etc/vector/vector.yaml
             owner: root
             group: root
             mode: "0644"
           notify:
-            - Reload OpenTelemetry Collector
+            - Reload Vector
 
-        - name: Flush handlers to reload OpenTelemetry Collector
+        - name: Flush handlers to reload Vector
           ansible.builtin.meta: flush_handlers
