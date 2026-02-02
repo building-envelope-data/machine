@@ -42,13 +42,16 @@ branch `main` is always deployable.
 1. Install
    [GNU Make](https://www.gnu.org/software/make/),
    [Git](https://git-scm.com),
+   [pipx](https://github.com/pypa/pipx),
    [scsitools](https://packages.debian.org/bookworm/scsitools),
    [GNU Parted](https://www.gnu.org/software/parted/manual/parted.html), and
    [e2fsprogs](https://packages.debian.org/bookworm/e2fsprogs)
-   by running `sudo apt-get install make git scsitools parted e2fsprogs`, and
-   install [Ansible](https://www.ansible.com) through its Ubuntu Personal
-   Package Archive (PPA) as explained on
-   [Installing Ansible on Debian](https://docs.ansible.com/projects/ansible/latest/installation_guide/installation_distros.html#installing-ansible-on-debian).
+   by running `sudo apt-get install make git pipx scsitools parted e2fsprogs`, and
+   install
+   [Ansible](https://www.ansible.com) and
+   [Ansible Development Tools](https://github.com/ansible/ansible-dev-tools)
+   by running
+   `pipx install --include-deps ansible && pipx install --include-deps ansible-dev-tools && pipx inject ansible-dev-tools ansible`.
 1. Create a symbolic link from `/app` to `~` by running
    `sudo ln --symbolic ~ /app`.
 1. Change into the app directory by running `cd /app`.
@@ -61,33 +64,38 @@ branch `main` is always deployable.
    `cp ./.env.solarbuildingenvelopes.sample ./.env && chmod 600 ./.env`) and
    adapt the `.env` file as needed for example inside `vi ./.env` or `nano
    ./.env`. The `.env` variables
-   - `HTTP_PORT` and `HTTPS_PORT` are the HTTP and HTTPS ports on which the
-     NGINX reverse proxy is listening;
-   - `PRODUCTION_HTTP_PORT`, `PRODUCTION_HOST`, and `NON_WWW_PRODUCTION_HOST`
-     are the HTTP port on which the production instance `/app/production` is
-     listening, its domain name with sub-domain `www`, and its domain name
-     without sub-domain (note that the reverse proxy NGINX redirects requests
-     without the sub-domain `www` to such with this sub-domain). If the domain
-     name is too long, then NGINX will fail to start, for example, with the
-     error message `"Could not build the server_names_hash. You should increase
-     server_names_hash_bucket_size."` and it becomes necessary to
-     [tune the `server_names_hash_max_size` or `server_names_hash_bucket_size` directives](https://nginx.org/en/docs/http/server_names.html#optimization),
+   - `HOST` is the domain name without sub-domain;
+   - `PRODUCTION_SUBDOMAIN`, `STAGING_SUBDOMAIN`, `TELEMETRY_SUBDOMAIN` are the
+     sub-domains of the production instance `/app/production`, staging instance
+     `/app/staging`, and the telemetry services `pipelines`, `logs`, and
+     `metrics`. Note that none of these sub-domains can be empty. The reverse
+     proxy NGINX redirects requests to `${HOST}` without a sub-domain to such
+     with the sub-domain `${PRODUCTION_SUBDOMAIN}`. If the domain name is too
+     long, then NGINX will fail to start, for example, with the error message
+     `"Could not build the server_names_hash. You should increase
+     server_names_hash_bucket_size."` and it becomes necessary to [tune the
+     `server_names_hash_max_size` or `server_names_hash_bucket_size`
+     directives](https://nginx.org/en/docs/http/server_names.html#optimization),
      in the above example just increase `server_names_hash_bucket_size` to the
      next power of two;
-   - `STAGING_HTTP_PORT` and `STAGING_HOST` are the HTTP port on which the
-     staging instance `/app/staging` is listening and the domain name with
-     sub-domain of the staging environment (this is usually
-     `staging.${NON_WWW_PRODUCTION_HOST}`);
+   - `HTTP_PORT` and `HTTPS_PORT` are the HTTP and HTTPS ports on which the
+     NGINX reverse proxy is listening;
+   - `PRODUCTION_HTTP_PORT` or `STAGING_HTTP_PORT` is the HTTP port on which the
+     production instance `/app/production` or staging instance `/app/staging`
+     is listening;
    - `EXTRA_HOST` is an extra domain name for which the TLS certificate fetched
      from [Let's Encrypt](https://letsencrypt.org) shall also be valid apart
-     from `${NON_WWW_PRODUCTION_HOST}`, `${PRODUCTION_HOST}`, and
-     `${STAGING_HOST}` (it is used in `./init-certbot.sh`);
+     from `${HOST}`, `${PRODUCTION_SUBDOMAIN}.${HOST}`,
+     `${STAGING_SUBDOMAIN}.${HOST}`, and `${TELEMETRY_SUBDOMAIN}.${HOST}` (it
+     is used in `./init-certbot.sh`);
    - `EMAIL_ADDRESS` is the email address of the person to be notified when
      there is some system-administration issue (for example
      [Monit](https://mmonit.com/monit/) sends such notifications)
    - `SMTP_HOST` and `SMTP_PORT` are host and port of the message transfer
      agent to be used to send emails through the Simple Mail Transfer
-     Protocol (SMTP).
+     Protocol (SMTP);
+   - `NETWORK_INTERFACE` is the network interface to monitor with Monit (list
+     all with `make network-interfaces` or simply `ip link`);
 1. If there is a firewall, configure it such that it allows the protocol TCP
    for ports 80 and 443.
 1. If the HTTP and HTTPS port configured in `.env` are not 80 and 443, then the
@@ -152,9 +160,9 @@ branch `main` is always deployable.
 Security upgrades are installed automatically and unattendedly by
 [`unattended-upgrades`](https://packages.debian.org/search?keywords=unattended-upgrades)
 as configured in the Ansible playbook `local.yml`. Non-security upgrades should
-be done weekly by running `make upgrade-system`. If the command asks you to
+be done weekly by running `make upgrade`. If the command asks you to
 reboot, then please do so and run `make end-maintenance` afterwards. Only run
-the possibly destructive command `make dist-upgrade-system` when you know what
+the possibly destructive command `make dist-upgrade` when you know what
 you are doing. See the entries `upgrade` and `dist-upgrade` in the `apt-get`
 manual `man apt-get`.
 
@@ -184,9 +192,7 @@ Our machines run Debian 12 "Bookworm" which reaches its end of life on June
 
 In the Ansible playbook `local.yml`, periodic jobs are set-up.
 
-* System logs are are vacuumed daily keeping logs of the latest seven days. The
-  logs of the vacuuming process itself are kept in
-  `/app/machine/journald-vacuuming.log`.
+* System logs are are vacuumed daily keeping logs of the latest seven days.
 * The Transport Layer Security (TLS) certificates used by HTTPS, that is, HTTP
   over TLS, are renewed daily if necessary.
 * The database is backed-up daily keeping the latest seven backups. To do so,
@@ -212,12 +218,10 @@ For logs of periodic jobs see above.
   followed by running `make daemon-logs`.
 * Cron logs are collected and stored by `journald` and can be
   followed by running `make cron-logs`.
-* Cron logs are collected and stored by `journald` and can be
-  followed by running `make cron-logs`.
-* Monitoring logs are written to `/var/log/monit.log` and can be followed by
-  running `make monit-logs`.
-* SMTP client logs are written to `/var/log/msmtp` and `~/.msmtp.log` and can
-  be followed by running `make smtp-logs`.
+* Monitoring logs are collected and stored by `journald` and can be
+  followed by running `make monit-logs`.
+* SMTP client logs are collected and stored by `journald` and can be
+  followed by running `make smtp-logs`.
 * Certbot logs are written to `/certbot/logs/*.log.*` and the latest log-files
   can be followed by running `make certbot-logs`.
 

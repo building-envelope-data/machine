@@ -1,6 +1,15 @@
 # {{ ansible_managed }}
 # /etc/msmtprc or ~/.msmtprc
 
+# -------------------------
+
+defaults
+
+syslog on
+aliases /etc/aliases
+
+# -------------------------
+
 account default
 
 auth off
@@ -8,6 +17,3 @@ tls off
 host {{ SMTP_HOST }}
 port {{ SMTP_PORT }}
 from {{ FROM_EMAIL_ADDRESS }}
-logfile {{ MSMTP_LOGFILE }}
-
-aliases /etc/aliases

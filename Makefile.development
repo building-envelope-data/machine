@@ -1,0 +1,46 @@
+SHELL := /usr/bin/env bash
+.SHELLFLAGS := -o errexit -o errtrace -o nounset -o pipefail -c
+MAKEFLAGS += --warn-undefined-variables
+
+# Taken from https://www.client9.com/self-documenting-makefiles/
+help : ## Print this help
+	@awk -F ':|##' '/^[^\t].+?:.*?##/ {\
+		printf "\033[36m%-30s\033[0m %s\n", $$1, $$NF \
+	}' $(MAKEFILE_LIST)
+.PHONY : help
+.DEFAULT_GOAL := help
+
+config : ## Dump Ansible config
+	ansible-config dump
+	ansible-config view
+.PHONY : config
+
+# Lint Ansible playbook without style rules
+# ansible-lint \
+# 	--config-file ./.ansible-lint \
+# 	--skip-list "$$(echo $$(ansible-lint -L | awk -F':' '{print $$1}' | grep '^[^ ]') | tr ' ' ',')" \
+# 	./local.yml
+lint : ## Lint Ansible
+	ansible-lint \
+		--config-file ./.ansible-lint \
+		./local.yml
+.PHONY : lint
+
+fix : ## Fix Ansible linting violations
+	ansible-lint \
+		--config-file ./.ansible-lint \
+		--fix \
+		./local.yml
+.PHONY : fix
+
+syntax : ## Syntax-check Ansible playbook
+	./ansible-playbook.sh \
+		--syntax-check \
+		./local.yml
+.PHONY : syntax
+
+dry-run : ## Dry-run Ansible playbook
+	./ansible-playbook.sh \
+		--check \
+		./local.yml
+.PHONY : dry-run

@@ -3,12 +3,12 @@
 
 # Inspired by https://mmonit.com/wiki/Monit/ConfigurationExamples
 
+# Poll every 60 seconds
 set daemon 60
     with start delay 60
 
-set log /var/log/monit.log
-set pidfile /var/run/monit.pid
-set statefile /var/lib/monit/monit.state
+# Run Monit as a foreground process managed by `systemd` logging to `journald`
+set init
 
 # Configure email alerts
 set mailserver {{ SMTP_HOST }} port {{ SMTP_PORT }}
@@ -31,17 +31,17 @@ set ssl options {
 
 # [Monit HTTPD](https://mmonit.com/monit/documentation/monit.html#MONIT-HTTPD)
 set httpd
-    port 2812
-    use address 127.0.0.1
+    port {{ MONITOR_HTTP_PORT }}
     unixsocket /var/run/monit.socket
-    allow localhost
-    allow monit:{{ MONIT_PASSWORD }}
+    use address 0.0.0.0
+    allow 0.0.0.0/0
+    allow md5 /app/machine/nginx/.htpasswd
 
 #----------------------------------------------------------------------------
 # System
 #----------------------------------------------------------------------------
 
-check system {{ NON_WWW_PRODUCTION_HOST }}-system
+check system {{ HOST }}-system
     if loadavg (5min) > 3 then alert
     if loadavg (15min) > 1 then alert
     if memory usage > 80% for 4 cycles then alert
@@ -107,7 +107,7 @@ check file htpasswd with path /app/machine/nginx/.htpasswd
     if changed timestamp then alert
     if failed uid root then alert
     if failed gid root then alert
-    if failed permission 600 then alert
+    if failed permission 644 then alert
 
 #----------------------------------------------------------------------------
 # Docker
@@ -124,14 +124,14 @@ check program docker_healthcheck with path /app/machine/monit_docker_healthcheck
 # Hosts
 #----------------------------------------------------------------------------
 
-check host {{ NON_WWW_PRODUCTION_HOST }}-host with address {{ NON_WWW_PRODUCTION_HOST }}
+check host {{ HOST }}-host with address {{ HOST }}
     if failed
         port 22
         with protocol ssh
         for 3 cycles
     then alert
 
-{% for host in [PRODUCTION_HOST, STAGING_HOST] %}
+{% for host in [PRODUCTION_HOST, STAGING_HOST, TELEMETRY_HOST] %}
 
     #---- {{ host }} ----#
 

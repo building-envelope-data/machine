@@ -1,0 +1,70 @@
+api:
+  address: 0.0.0.0:{{ PIPELINES_HTTP_PORT }}
+  enabled: true
+  graphql: true
+  playground: true
+
+sources:
+  journald:
+    type: journald
+    exclude_units:
+      - docker.service
+
+  docker_logs:
+    type: docker_logs
+
+  vector_logs:
+    type: internal_logs
+
+  host_metrics:
+    type: host_metrics
+    filesystem:
+      mountpoints:
+        excludes:
+          - /run/docker/*
+          - /app/data/docker/*
+          - /home/cloud/data/docker/*
+
+  vector_metrics:
+    type: internal_metrics
+
+  # postgresql_metrics
+  #   type: postgresql_metrics
+  #   endpoints:
+  #     - postgresql://postgres:vector@localhost:5432/postgres
+
+  # nginx_metrics:
+  #   type: nginx_metrics
+  #   endpoints:
+  #     - http://localhost:8000/basic_status
+
+sinks:
+  logs:
+    inputs:
+      - journald
+      - docker_logs
+      - vector_logs
+    type: elasticsearch
+    endpoints: [http://localhost:{{ LOGS_HTTP_PORT }}/insert/elasticsearch/]
+    mode: bulk
+    api_version: v8
+    compression: gzip
+    healthcheck:
+      enabled: false
+    query:
+      # https://docs.victoriametrics.com/victorialogs/keyconcepts/#message-field
+      # https://manpages.ubuntu.com/manpages/focal//man7/systemd.journal-fields.7.html
+      # https://vector.dev/docs/reference/configuration/sources/docker_logs/#output-logs
+      # https://vector.dev/docs/reference/configuration/sources/internal_logs/#output-logs
+      _msg_field: MESSAGE,message
+      _time_field: SYSLOG_TIMESTAMP,timestamp
+      _stream_fields: _HOSTNAME,_COMM,_SYSTEMD_UNIT,host,source_type,container_name
+
+  metrics:
+    inputs:
+      - host_metrics
+      - vector_metrics
+    type: prometheus_remote_write
+    endpoint: http://localhost:{{ METRICS_HTTP_PORT }}/api/v1/write
+    healthcheck:
+      enabled: false
