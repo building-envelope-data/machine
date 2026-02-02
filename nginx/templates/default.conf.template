@@ -138,10 +138,11 @@ server {
     auth_basic_user_file /etc/apache2/.htpasswd;
 
     location / {
-        index /telemetry.html break;
+        index /telemetry.html;
     }
 
     location /monitor/ {
+        # Monit has its own basic authentication
         auth_basic "off";
         rewrite ^/monitor/(.*)$ /$1 break;
         proxy_pass http://monitor;
