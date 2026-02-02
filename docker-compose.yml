@@ -54,9 +54,7 @@ services:
     command:
       - "-storageDataPath=/storage"
       - "-loggerFormat=json"
-      - "-retentionFilter='{env=~\"development\"}:1d'"
-      - "-retentionFilter='{env=~\"staging\"}:7d'"
-      - "-retentionPeriod=14d"
+      - "-retentionPeriod=7d"
       # - -journald.streamFields=_HOSTNAME,_SYSTEMD_UNIT,_PID
       # - -journald.ignoreFields=MESSAGE_ID,INVOCATION_ID,USER_INVOCATION_ID
       # - -journald.ignoreFields=_BOOT_ID,_MACHINE_ID,_SYSTEMD_INVOCATION_ID,_STREAM_ID,_UID
@@ -79,9 +77,7 @@ services:
     command:
       - "-storageDataPath=/storage"
       - "-loggerFormat=json"
-      - "-retentionFilter='{env=~\"development\"}:1d'"
-      - "-retentionFilter='{env=~\"staging\"}:7d'"
-      - "-retentionPeriod=14d"
+      - "-retentionPeriod=7d"
     restart: "always"
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8428/health"]
