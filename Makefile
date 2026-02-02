@@ -3,7 +3,7 @@
 
 include ./.env
 
-SHELL := /bin/bash
+SHELL := /usr/bin/env bash
 .SHELLFLAGS := -o errexit -o errtrace -o nounset -o pipefail -c
 MAKEFLAGS += --warn-undefined-variables
 
@@ -151,6 +151,15 @@ list-services : ## List all services specified in the docker-compose file (used 
 # 	/Makefile \
 # 	/Makefile.development
 lint : ## Lint Docker Compose and Dockerfile
+	@echo Lint Shell Scripts
+	docker run \
+		--rm \
+		--volume .:/mnt \
+		koalaman/shellcheck \
+		--enable=all \
+		--external-sources \
+		./*.sh
+	@echo Lint Docker Compose Files
 	docker run \
 		--rm \
 		--tty \
@@ -158,6 +167,7 @@ lint : ## Lint Docker Compose and Dockerfile
 		zavoloklom/dclint \
 		--config /app/.dclintrc \
 		.
+	@echo Lint Dockerfiles
 	docker run \
 		--rm \
 		--interactive \
