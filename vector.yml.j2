@@ -16,6 +16,10 @@ sources:
 
   host_metrics:
     type: host_metrics
+    filesystem:
+      mountpoints:
+        excludes:
+          - /app/data
 
   vector_metrics:
     type: internal_metrics
