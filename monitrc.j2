@@ -3,8 +3,12 @@
 
 # Inspired by https://mmonit.com/wiki/Monit/ConfigurationExamples
 
+# Poll every 60 seconds
 set daemon 60
     with start delay 60
+
+# Run Monit as a foreground process managed by `systemd` logging to `journald`
+set init
 
 # Configure email alerts
 set mailserver {{ SMTP_HOST }} port {{ SMTP_PORT }}
@@ -31,7 +35,7 @@ set httpd
     unixsocket /var/run/monit.socket
     use address 0.0.0.0
     allow 0.0.0.0/0
-    allow md5 /app/nginx/.htpasswd
+    allow md5 /app/machine/nginx/.htpasswd
 
 #----------------------------------------------------------------------------
 # System
