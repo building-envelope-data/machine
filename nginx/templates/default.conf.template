@@ -46,8 +46,8 @@ upstream monitor {
   server host.docker.internal:${MONITOR_HTTP_PORT};
 }
 
-upstream pipeline {
-  server host.docker.internal:${PIPELINE_HTTP_PORT};
+upstream pipelines {
+  server host.docker.internal:${PIPELINES_HTTP_PORT};
 }
 
 upstream logs {
@@ -147,9 +147,9 @@ server {
         proxy_pass http://monitor;
     }
 
-    location /pipeline/ {
-        rewrite ^/pipeline/(.*)$ /$1 break;
-        proxy_pass http://pipeline;
+    location /pipelines/ {
+        rewrite ^/pipelines/(.*)$ /$1 break;
+        proxy_pass http://pipelines;
     }
 
     location /logs/ {
