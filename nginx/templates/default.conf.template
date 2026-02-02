@@ -46,10 +46,6 @@ upstream monitor {
   server host.docker.internal:${MONITOR_HTTP_PORT};
 }
 
-upstream pipelines {
-  server host.docker.internal:${PIPELINES_HTTP_PORT};
-}
-
 upstream logs {
   server host.docker.internal:${LOGS_HTTP_PORT};
 }
@@ -141,15 +137,14 @@ server {
     auth_basic "Restricted Area";
     auth_basic_user_file /etc/apache2/.htpasswd;
 
+    location / {
+        index /telemetry.html break;
+    }
+
     location /monitor/ {
         auth_basic "off";
         rewrite ^/monitor/(.*)$ /$1 break;
         proxy_pass http://monitor;
-    }
-
-    location /pipelines/ {
-        rewrite ^/pipelines/(.*)$ /$1 break;
-        proxy_pass http://pipelines;
     }
 
     location /logs/ {

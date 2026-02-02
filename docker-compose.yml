@@ -30,7 +30,6 @@ services:
       PRODUCTION_HTTP_PORT: "${PRODUCTION_HTTP_PORT:?required}"
       STAGING_HTTP_PORT: "${STAGING_HTTP_PORT:?required}"
       MONITOR_HTTP_PORT: "${MONITOR_HTTP_PORT:?required}"
-      PIPELINES_HTTP_PORT: "${PIPELINES_HTTP_PORT:?required}"
       LOGS_HTTP_PORT: "${LOGS_HTTP_PORT:?required}"
       METRICS_HTTP_PORT: "${METRICS_HTTP_PORT:?required}"
     ports:
