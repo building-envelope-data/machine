@@ -89,14 +89,14 @@ lint : ## Lint Docker Compose and Dockerfile
 		--rm \
 		--tty \
 		--volume .:/app \
-		zavoloklom/dclint \
+		zavoloklom/dclint:latest \
 		--config /app/.dclintrc \
 		.
 	docker run \
 		--rm \
 		--interactive \
 		--volume ./.hadolint.yml:/.config/.hadolint.yaml \
-		hadolint/hadolint \
+		hadolint/hadolint:latest \
 		hadolint \
 		--config /.config/.hadolint.yaml \
 		- \
@@ -108,7 +108,7 @@ fix : ## Fix Docker linting violations
 		--rm \
 		--tty \
 		--volume .:/app \
-		zavoloklom/dclint \
+		zavoloklom/dclint:latest \
 		--fix \
 		.
 .PHONY : fix

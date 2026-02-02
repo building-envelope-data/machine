@@ -142,6 +142,37 @@ list-services : ## List all services specified in the docker-compose file (used 
 		--services
 .PHONY : list-services
 
+shellcheck = \
+	docker run \
+		--rm \
+		--user $(shell id --user):$(shell id --group) \
+		--volume "$(shell pwd):/mnt" \
+		--pull "always" \
+		koalaman/shellcheck:latest \
+		--enable=all \
+		--external-sources
+
+dclint = \
+	docker run \
+		--rm \
+		--tty \
+		--user $(shell id --user):$(shell id --group) \
+		--volume "$(shell pwd):/app" \
+		--pull "always" \
+		zavoloklom/dclint:latest \
+		--config /app/.dclintrc
+
+hadolint = \
+	docker run \
+		--rm \
+		--interactive \
+		--user $(shell id --user):$(shell id --group) \
+		--volume ./.hadolint.yml:/.config/.hadolint.yaml \
+		--pull "always" \
+		hadolint/hadolint:latest \
+		hadolint \
+		--config /.config/.hadolint.yaml
+
 # docker run \
 # 	--workdir / \
 # 	--volume ./checkmake.ini:/checkmake.ini \
@@ -150,44 +181,43 @@ list-services : ## List all services specified in the docker-compose file (used 
 # 	quay.io/checkmake/checkmake \
 # 	/Makefile \
 # 	/Makefile.development
-lint : ## Lint Docker Compose and Dockerfile
+lint : ## Lint shell scripts, Docker Compose files, and Dockerfile
 	@echo Lint Shell Scripts
-	docker run \
-		--rm \
-		--volume .:/mnt \
-		koalaman/shellcheck \
-		--enable=all \
-		--external-sources \
-		./*.sh
+	${shellcheck} ./*.sh
 	@echo Lint Docker Compose Files
-	docker run \
-		--rm \
-		--tty \
-		--volume .:/app \
-		zavoloklom/dclint \
-		--config /app/.dclintrc \
-		.
+	${dclint} .
 	@echo Lint Dockerfiles
-	docker run \
-		--rm \
-		--interactive \
-		--volume ./.hadolint.yml:/.config/.hadolint.yaml \
-		hadolint/hadolint \
-		hadolint \
-		--config /.config/.hadolint.yaml \
-		- \
-		< ./Dockerfile
+	${hadolint} - < ./Dockerfile
 .PHONY : lint
 
-fix : ## Fix Docker Compoe linting violations
+fix : ## Fix Docker Compose linting violations
+	${dclint} --fix .
+.PHONY : fix
+
+format : ## Format shell scripts and Dockerfile
 	docker run \
 		--rm \
-		--tty \
-		--volume .:/app \
-		zavoloklom/dclint \
-		--fix \
-		.
-.PHONY : fix
+		--user $(shell id --user):$(shell id --group) \
+		--volume "$(shell pwd):/mnt" \
+		--workdir /mnt \
+		mvdan/shfmt:latest \
+		--write \
+		--simplify \
+		--indent 2 \
+		--case-indent \
+		--space-redirects \
+		$(shell find . -name "*.sh" -printf "/mnt/%h/%f ")
+	docker run \
+		--rm \
+		--user $(shell id --user):$(shell id --group) \
+		--volume "$(shell pwd):/pwd" \
+		--pull "always" \
+		ghcr.io/reteps/dockerfmt:latest \
+		--indent 2 \
+		--newline \
+		--write \
+		$(shell find . -name "Dockerfile*" -printf "/pwd/%h/%f ")
+.PHONY : format
 
 # See https://docs.docker.com/config/containers/runmetrics/
 docker-stats : ## Show Docker run-time metrics

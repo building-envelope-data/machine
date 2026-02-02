@@ -25,7 +25,7 @@ staging=0 # Set to 1 if you're testing your setup to avoid hitting request limit
 
 if [[ -d "./certbot" ]]; then
   read -r -p "Existing data found. Continue and replace existing certificate(s)? (y/N) " decision
-  if [[ "${decision}" != "Y" ]] && [[ "${decision}" != "y" ]]; then
+  if [[ ${decision} != "Y" ]] && [[ ${decision} != "y" ]]; then
     exit
   fi
 fi

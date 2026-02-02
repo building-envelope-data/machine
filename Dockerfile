@@ -61,9 +61,8 @@ RUN \
 # less: used by `ansible-config dump`
 # python3-apt: used by `ansible-playbook --check`
 ENV UBUNTU_CODENAME=jammy
-RUN \
-  apt-get update && \
-  apt-get install \
+RUN apt-get update \
+  && apt-get install \
     --assume-yes \
     --no-install-recommends \
     less \
@@ -71,22 +70,21 @@ RUN \
     # npm \
     pipx \
     python3-apt \
-    tini && \
-  rm \
+    tini \
+  && rm \
     --recursive \
     --force \
     /var/lib/apt/lists/*
 
 ENV HOME=/home/me
-RUN \
-  mkdir --parents "${HOME}/app" && \
-  chown \
+RUN mkdir --parents "${HOME}/app" \
+  && chown \
     me:us \
-    "${HOME}" && \
-  chown \
+    "${HOME}" \
+  && chown \
     me:us \
-    "${HOME}/app" && \
-  ln --symbolic "${HOME}/app" /app
+    "${HOME}/app" \
+  && ln --symbolic "${HOME}/app" /app
 
 ###########
 # As `me` #
@@ -98,13 +96,12 @@ WORKDIR /app
 #   sudo npm install --global npm@latest \
 #   sudo npm install --global dclint
 
-RUN \
-  pipx ensurepath && \
-  pipx install --include-deps ansible==12.3 && \
-  pipx install --include-deps ansible-dev-tools==26.1 && \
-  pipx inject ansible-dev-tools ansible
-  # eval '"$(register-python-argcomplete pipx)"' \
-  #   >> "${HOME}/.bash_profile"
+RUN pipx ensurepath \
+  && pipx install --include-deps ansible==12.3 \
+  && pipx install --include-deps ansible-dev-tools==26.1 \
+  && pipx inject ansible-dev-tools ansible
+# eval '"$(register-python-argcomplete pipx)"' \
+#   >> "${HOME}/.bash_profile"
 
 ENV SHELL=/bin/bash
 

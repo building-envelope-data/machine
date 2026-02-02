@@ -16,10 +16,9 @@ environment=machine
 services="$(make --silent --directory=/app/machine --file=/app/machine/Makefile list-services | tr '\n' ' ')"
 echo "  Environment: '${environment}'"
 echo "    Services: '${services}'"
-for service in ${services}
-do
-  if [[ "${service}" != "certbot" ]] && [[ "${service}" != "machine" ]] ; then
-    if echo "${running_containers}" | grep --quiet --extended-regexp "^${environment}-${service}-[0-9] [ a-zA-Z0-9]+ \(healthy\)$" ; then
+for service in ${services}; do
+  if [[ ${service} != "certbot" ]] && [[ ${service} != "machine" ]]; then
+    if echo "${running_containers}" | grep --quiet --extended-regexp "^${environment}-${service}-[0-9] [ a-zA-Z0-9]+ \(healthy\)$"; then
       echo "    Service '${service}' is running and healthy"
     else
       service_info="$(docker ps --no-trunc --all --filter name="${environment}-${service}" --format '{{.ID}} {{.Image}} {{.Command}} {{.CreatedAt}} {{.Status}} {{.Ports}} {{.Names}}')"
@@ -29,14 +28,12 @@ do
   fi
 done
 
-for environment in staging production
-do
+for environment in staging production; do
   echo "  Environment: '${environment}'"
   services="$(make --silent --directory=/app/"${environment}" --file=/app/"${environment}"/Makefile.production list-services | tr '\n' ' ')"
   echo "    Services: '${services}'"
-  for service in ${services}
-  do
-    if echo "${running_containers}" | grep --quiet --extended-regexp "^[a-zA-Z]+_${environment}-${service}-[0-9] [ a-zA-Z0-9]+ \(healthy\)$" ; then
+  for service in ${services}; do
+    if echo "${running_containers}" | grep --quiet --extended-regexp "^[a-zA-Z]+_${environment}-${service}-[0-9] [ a-zA-Z0-9]+ \(healthy\)$"; then
       echo "    Service '${service}' is running and healthy"
     else
       service_info="$(docker ps --no-trunc --all --filter name="${environment}-${service}" --format '{{.ID}} {{.Image}} {{.Command}} {{.CreatedAt}} {{.Status}} {{.Ports}} {{.Names}}')"
