@@ -55,9 +55,9 @@ crontab : ## List user's and root's contab
 # Deploy and Interface with Docker
 
 dotenv : ## Assert that all variables in `./.env.sample` are available in `./.env`
-	${dotenv-linter} diff /mnt/.env.sample /mnt/.env
-	${dotenv-linter} diff /mnt/.env.sample /mnt/.env.buildingenvelopedata.sample
-	${dotenv-linter} diff /mnt/.env.sample /mnt/.env.solarbuildingenvelopes.sample
+	${dotenv-linter} diff /mnt/.env /mnt/.env.sample
+	${dotenv-linter} diff /mnt/.env.buildingenvelopedata.sample /mnt/.env.sample
+	${dotenv-linter} diff /mnt/.env.solarbuildingenvelopes.sample /mnt/.env.sample
 .PHONY : dotenv
 
 htpasswd : ## Create file ./nginx/.htpasswd if it does not exist
