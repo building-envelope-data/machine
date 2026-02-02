@@ -85,7 +85,9 @@ up : ## (Re)create and (re)start services
 		--renew-anon-volumes \
 		--remove-orphans \
 		--wait \
-		reverse_proxy
+		reverse_proxy \
+		logs \
+		metrics
 .PHONY : up
 
 deploy : dotenv setup pull up ## Deploy services, that is, assert ./.env file, setup machine, pull images, and (re)create and (re)start services
