@@ -425,13 +425,11 @@
           notify:
             - Restart Docker
 
-        - name: Add users to docker group
+        - name: Add user `cloud` to group `docker`
           ansible.builtin.user:
-            name: "{{ item | mandatory }}"
+            name: cloud
             groups: docker
             append: true
-          loop:
-            - cloud
 
         - name: Enable Docker systemd service
           ansible.builtin.service:
@@ -475,6 +473,12 @@
             mode: "0644"
           notify:
             - Reload Vector
+
+        - name: Add user `vector` to group `docker`
+          ansible.builtin.user:
+            name: vector
+            groups: docker
+            append: true
 
         - name: Flush handlers to reload Vector
           ansible.builtin.meta: flush_handlers
