@@ -441,7 +441,8 @@
 
         - name: Flush handlers to restart Docker
           ansible.builtin.meta: flush_handlers
-    - name: OpenTelemetry Collector
+
+    - name: Vector
       become: true
       vars:
         PIPELINES_HTTP_PORT: '{{ lookup("env", "PIPELINES_HTTP_PORT") }}'
@@ -451,12 +452,12 @@
         - name: Add Vector key
           ansible.builtin.apt_key:
             url: https://keys.datadoghq.com/DATADOG_APT_KEY_CURRENT.public
-            id: A4C0B90D74A3CF69D7C66018C4E03426C0962C7D
+            id: 5F1E256061D813B125E156E8E6266D4AC0962C7D
             state: present
 
         - name: Add Vector repository
           ansible.builtin.apt_repository:
-            repo: deb [arch=amd64] https://apt.vector.dev stable main
+            repo: deb [arch=amd64] https://apt.vector.dev stable vector-0
             state: present
 
         - name: Install Vector
