@@ -12,6 +12,15 @@ docker_compose = \
 		--file ./docker-compose.yml \
 		--env-file ./.env
 
+dotenv-linter = \
+	docker run \
+		--rm \
+		--user $(shell id --user):$(shell id --group) \
+		--volume "$(shell pwd):/mnt" \
+		--pull "always" \
+		--quiet \
+		dotenvlinter/dotenv-linter:latest
+
 # Taken from https://www.client9.com/self-documenting-makefiles/
 help : ## Print this help
 	@awk -F ':|##' '/^[^\t].+?:.*?##/ {\
@@ -46,21 +55,9 @@ crontab : ## List user's and root's contab
 # Deploy and Interface with Docker
 
 dotenv : ## Assert that all variables in `./.env.sample` are available in `./.env`
-	bash -c " \
-		diff \
-			<(cut --only-delimited --delimiter='=' --fields=1 ./.env.sample | sort) \
-			<(cut --only-delimited --delimiter='=' --fields=1 ./.env        | sort) \
-	"
-	bash -c " \
-		diff \
-			<(cut --only-delimited --delimiter='=' --fields=1 ./.env.sample | sort) \
-			<(cut --only-delimited --delimiter='=' --fields=1 ./.env.buildingenvelopedata.sample | sort) \
-	"
-	bash -c " \
-		diff \
-			<(cut --only-delimited --delimiter='=' --fields=1 ./.env.sample | sort) \
-			<(cut --only-delimited --delimiter='=' --fields=1 ./.env.solarbuildingenvelopes.sample | sort) \
-	"
+	${dotenv-linter} diff /mnt/.env.sample /mnt/.env
+	${dotenv-linter} diff /mnt/.env.sample /mnt/.env.buildingenvelopedata.sample
+	${dotenv-linter} diff /mnt/.env.sample /mnt/.env.solarbuildingenvelopes.sample
 .PHONY : dotenv
 
 htpasswd : ## Create file ./nginx/.htpasswd if it does not exist
@@ -148,6 +145,7 @@ shellcheck = \
 		--user $(shell id --user):$(shell id --group) \
 		--volume "$(shell pwd):/mnt" \
 		--pull "always" \
+		--quiet \
 		koalaman/shellcheck:latest \
 		--enable=all \
 		--external-sources
@@ -159,6 +157,7 @@ dclint = \
 		--user $(shell id --user):$(shell id --group) \
 		--volume "$(shell pwd):/app" \
 		--pull "always" \
+		--quiet \
 		zavoloklom/dclint:latest \
 		--config /app/.dclintrc
 
@@ -169,6 +168,7 @@ hadolint = \
 		--user $(shell id --user):$(shell id --group) \
 		--volume ./.hadolint.yml:/.config/.hadolint.yaml \
 		--pull "always" \
+		--quiet \
 		hadolint/hadolint:latest \
 		hadolint \
 		--config /.config/.hadolint.yaml
@@ -181,7 +181,13 @@ hadolint = \
 # 	quay.io/checkmake/checkmake \
 # 	/Makefile \
 # 	/Makefile.development
-lint : ## Lint shell scripts, Docker Compose files, and Dockerfile
+lint : ## Lint .env files, shell scripts, Docker Compose files, and Dockerfile
+	@echo Lint .env Files
+	${dotenv-linter} \
+		check \
+		--recursive \
+		--ignore-checks UnorderedKey \
+		.
 	@echo Lint Shell Scripts
 	${shellcheck} ./*.sh
 	@echo Lint Docker Compose Files
@@ -190,11 +196,20 @@ lint : ## Lint shell scripts, Docker Compose files, and Dockerfile
 	${hadolint} - < ./Dockerfile
 .PHONY : lint
 
-fix : ## Fix Docker Compose linting violations
+fix : ## Fix .env files and Docker Compose linting violations
+	@echo Fix .env Files
+	${dotenv-linter} \
+		fix \
+		--no-backup \
+		--recursive \
+		--ignore-checks UnorderedKey \
+		.
+	@echo Fix Docker Compose Files
 	${dclint} --fix .
 .PHONY : fix
 
 format : ## Format shell scripts and Dockerfile
+	@echo Format Shell Scripts
 	docker run \
 		--rm \
 		--user $(shell id --user):$(shell id --group) \
@@ -207,11 +222,13 @@ format : ## Format shell scripts and Dockerfile
 		--case-indent \
 		--space-redirects \
 		$(shell find . -name "*.sh" -printf "/mnt/%h/%f ")
+	@echo Format Dockerfile
 	docker run \
 		--rm \
 		--user $(shell id --user):$(shell id --group) \
 		--volume "$(shell pwd):/pwd" \
 		--pull "always" \
+		--quiet \
 		ghcr.io/reteps/dockerfmt:latest \
 		--indent 2 \
 		--newline \
