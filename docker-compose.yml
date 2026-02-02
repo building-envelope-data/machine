@@ -50,7 +50,7 @@ services:
   logs:
     image: "victoriametrics/victoria-logs:v1.44.0"
     ports:
-      - "127.0.0.1:${LOGS_HTTP_PORT}:9428"
+      - "0.0.0.0:${LOGS_HTTP_PORT}:9428"
     command:
       - "-storageDataPath=/storage"
       - "-loggerFormat=json"
@@ -71,7 +71,7 @@ services:
   metrics:
     image: "victoriametrics/victoria-metrics:v1.135.0"
     ports:
-      - "127.0.0.1:${METRICS_HTTP_PORT}:8428"
+      - "0.0.0.0:${METRICS_HTTP_PORT}:8428"
     volumes:
       - metrics:/storage
     command:
