@@ -10,6 +10,32 @@ help : ## Print this help
 .PHONY : help
 .DEFAULT_GOAL := help
 
+dotenv : ## Assert that all variables in `./.env.sample` are available in `./.env`
+	${dotenv-linter} diff /mnt/.env /mnt/.env.sample
+	${dotenv-linter} diff /mnt/.env.buildingenvelopedata.sample /mnt/.env.sample
+	${dotenv-linter} diff /mnt/.env.solarbuildingenvelopes.sample /mnt/.env.sample
+	${dotenv-linter} diff /mnt/.env.development.sample /mnt/.env.sample
+.PHONY : dotenv
+
+htpasswd : ## Create file ./nginx/.htpasswd if it does not exist
+	if [ -f ./nginx/.htpasswd ] ; then \
+		sudo touch ./nginx/.htpasswd && \
+		sudo chmod 644 ./nginx/.htpasswd ; \
+	fi
+.PHONY : htpasswd
+
+user : htpasswd ## Add user `${USER}` (he/she will have access to restricted areas like staging and the Monit web interface with the correct password), for example, `make USER=jdoe user`
+	sudo htpasswd ./nginx/.htpasswd ${USER}
+.PHONY : user
+
+setup : OPTIONS =
+setup : htpasswd ## Setup machine by running `ansible-playbook` with options `${OPTIONS}`, for example, `make setup` or `make OPTIONS="--start-at-task 'Install Monit'" setup`
+	./ansible-playbook.sh \
+		./local.yml \
+		--skip-tags skip_in_development \
+		${OPTIONS}
+.PHONY : setup
+
 config : ## Dump Ansible config
 	ansible-config dump
 	ansible-config view
@@ -44,3 +70,21 @@ dry-run : ## Dry-run Ansible playbook
 		--check \
 		./local.yml
 .PHONY : dry-run
+
+vector : ## Validate Vector configuration
+	sudo vector validate \
+		/etc/vector/vector.yaml
+.PHONY : validate
+
+monit : ## Syntax-check Monit control file
+	sudo monit \
+		-t \
+		-c /etc/monit/monitrc
+.PHONY : monit
+
+msmtp : ## Check MSMTP configuration
+	msmtp --serverinfo
+.PHONY : msmtp
+
+test : lint syntax vector monit msmtp ## Test config files
+.PHONY : test

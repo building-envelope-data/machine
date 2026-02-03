@@ -9,18 +9,21 @@
       ansible.builtin.service:
         name: docker
         state: restarted
+      tags: skip_in_development
 
     - name: Reload Monit
       become: true
       ansible.builtin.service:
         name: monit
         state: reloaded
+      tags: skip_in_development
 
     - name: Reload Vector
       become: true
       ansible.builtin.service:
         name: vector
         state: reloaded
+      tags: skip_in_development
 
     - name: Send test email as root
       become: true
@@ -31,6 +34,7 @@
             | mail -s "Test SMTP `hostname`" root
         executable: /bin/bash
       changed_when: false
+      tags: skip_in_development
 
     - name: Send test email as cloud
       ansible.builtin.shell:
@@ -40,6 +44,7 @@
             | mail -s "Test SMTP `hostname`" cloud
         executable: /bin/bash
       changed_when: false
+      tags: skip_in_development
 
   pre_tasks:
     - name: Ensure environment variables used below are set
@@ -56,6 +61,7 @@
         - LOGS_HTTP_PORT
         - METRICS_HTTP_PORT
         - TELEMETRY_GPRC_PORT
+        - TELEMETRY_HTTP_PORT
         - EMAIL_ADDRESS
         - SMTP_HOST
         - SMTP_PORT
@@ -457,6 +463,7 @@
             LOGS_HTTP_PORT: '{{ lookup("env", "LOGS_HTTP_PORT") }}'
             METRICS_HTTP_PORT: '{{ lookup("env", "METRICS_HTTP_PORT") }}'
             TELEMETRY_GPRC_PORT: '{{ lookup("env", "TELEMETRY_GPRC_PORT") }}'
+            TELEMETRY_HTTP_PORT: '{{ lookup("env", "TELEMETRY_HTTP_PORT") }}'
           ansible.builtin.template:
             src: vector.yml.j2
             dest: /etc/vector/vector.yaml

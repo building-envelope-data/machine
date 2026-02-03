@@ -58,6 +58,7 @@ dotenv : ## Assert that all variables in `./.env.sample` are available in `./.en
 	${dotenv-linter} diff /mnt/.env /mnt/.env.sample
 	${dotenv-linter} diff /mnt/.env.buildingenvelopedata.sample /mnt/.env.sample
 	${dotenv-linter} diff /mnt/.env.solarbuildingenvelopes.sample /mnt/.env.sample
+	${dotenv-linter} diff /mnt/.env.development.sample /mnt/.env.sample
 .PHONY : dotenv
 
 htpasswd : ## Create file ./nginx/.htpasswd if it does not exist

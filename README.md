@@ -95,9 +95,10 @@ branch `main` is always deployable.
      metrics service
      [VictoriaMetrics](https://github.com/VictoriaMetrics/VictoriaMetrics) is
      listening;
-   - `TELEMETRY_GPRC_PORT` is the [gPRC](https://grpc.io/) port on which the
-     observability pipelines tool [Vector](https://vector.dev) listens for
-     [OpenTelemetry Protocol](https://opentelemetry.io/docs/specs/otlp/) data;
+   - `TELEMETRY_GPRC_PORT` or `TELEMETRY_HTTP_PORT` is the
+     [gPRC](https://grpc.io) and HTTP port on which the observability pipelines
+     tool [Vector](https://vector.dev) listens for [OpenTelemetry
+     Protocol](https://opentelemetry.io/docs/specs/otlp/) data;
    - `EMAIL_ADDRESS` is the email address of the person to be notified when
      there is some system-administration issue (for example
      [Monit](https://mmonit.com/monit/) sends such notifications)

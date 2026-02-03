@@ -99,9 +99,9 @@ services:
   machine:
     build:
       context: "."
-      dockerfile: "./Dockerfile"
+      dockerfile: "./Dockerfile.development"
     volumes:
-      - .:/app
+      - .:/app/machine
     environment:
       TELEMETRY_DATA_HOST: "host.docker.internal"
     extra_hosts:

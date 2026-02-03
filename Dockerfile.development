@@ -32,20 +32,20 @@ RUN \
   addgroup \
     --system \
     --gid "${GROUP_ID}" \
-    us && \
+    cloud && \
   adduser \
     --system \
-    --home /home/me \
+    --home /home/cloud \
     --uid "${USER_ID}" \
-    --ingroup us \
-    me && \
+    --ingroup cloud \
+    cloud && \
   usermod \
     --append \
     --groups sudo \
-    me && \
-  echo "me ALL=(ALL) NOPASSWD:ALL" \
-    >> /etc/sudoers.d/me && \
-  chmod 0440 /etc/sudoers.d/me && \
+    cloud && \
+  echo "cloud ALL=(ALL) NOPASSWD:ALL" \
+    >> /etc/sudoers.d/cloud && \
+  chmod 0440 /etc/sudoers.d/cloud && \
   rm \
     --recursive \
     --force \
@@ -65,32 +65,33 @@ RUN apt-get update \
   && apt-get install \
     --assume-yes \
     --no-install-recommends \
+    cron \
     less \
     make \
+    neovim \
     # npm \
     pipx \
     python3-apt \
+    systemd \
     tini \
   && rm \
     --recursive \
     --force \
     /var/lib/apt/lists/*
 
-ENV HOME=/home/me
-RUN mkdir --parents "${HOME}/app" \
+ENV HOME=/home/cloud
+RUN mkdir "${HOME}/machine" \
   && chown \
-    me:us \
-    "${HOME}" \
-  && chown \
-    me:us \
-    "${HOME}/app" \
-  && ln --symbolic "${HOME}/app" /app
+    --recursive \
+    cloud:cloud \
+    "${HOME}/machine" \
+  && ln --symbolic "${HOME}" /app
 
 ###########
-# As `me` #
+# As `cloud` #
 ###########
-USER me
-WORKDIR /app
+USER cloud
+WORKDIR /app/machine
 
 # RUN \
 #   sudo npm install --global npm@latest \
@@ -102,6 +103,21 @@ RUN pipx ensurepath \
   && pipx inject ansible-dev-tools ansible
 # eval '"$(register-python-argcomplete pipx)"' \
 #   >> "${HOME}/.bash_profile"
+
+RUN mkdir --parents /app/production/secrets \
+  && mkdir --parents /app/staging/secrets \
+  && touch /app/production/.env \
+  && touch /app/staging/.env \
+  && touch /app/production/secrets/postgres_password \
+  && touch /app/staging/secrets/postgres_password \
+  && touch /app/production/secrets/postgres_passwords \
+  && touch /app/staging/secrets/postgres_passwords \
+  && sudo chmod 600 /app/production/.env \
+  && sudo chmod 600 /app/staging/.env \
+  && sudo chmod 600 /app/production/secrets/postgres_password \
+  && sudo chmod 600 /app/staging/secrets/postgres_password \
+  && sudo chmod 600 /app/production/secrets/postgres_passwords \
+  && sudo chmod 600 /app/staging/secrets/postgres_passwords
 
 ENV SHELL=/bin/bash
 

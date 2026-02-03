@@ -1,5 +1,5 @@
 api:
-  # address: 0.0.0.0:{{ PIPELINES_HTTP_PORT }}
+  # address: 0.0.0.0:PIPELINES_HTTP_PORT
   enabled: false
   graphql: true
   playground: true
@@ -12,6 +12,9 @@ sources:
 
   docker_logs:
     type: docker_logs
+    # exclude_containers:
+    #   - database_production-backend
+    #   - database_staging-backend
 
   vector_logs:
     type: internal_logs
@@ -20,6 +23,8 @@ sources:
     type: opentelemetry
     grpc:
       address: 0.0.0.0:{{ TELEMETRY_GPRC_PORT }}
+    http:
+      address: 0.0.0.0:{{ TELEMETRY_HTTP_PORT }}
 
   host_metrics:
     type: host_metrics
@@ -43,13 +48,23 @@ sources:
   #   endpoints:
   #     - http://localhost:8000/basic_status
 
+transforms:
+  filtered_docker_logs:
+    type: filter
+    inputs:
+      - docker_logs
+    condition: |
+      # Exclude if container name matches the regex pattern
+      # The field `container_name` is added by the `docker_logs` source
+      !match(string!(.container_name), r'^[a-zA-Z0-9_]+-backend-[0-9]+$')
+
 sinks:
   logs:
     inputs:
       - journald
-      - docker_logs
+      - filtered_docker_logs
       - vector_logs
-      - opentelemetry
+      - opentelemetry.logs
     type: elasticsearch
     endpoints: [http://localhost:{{ LOGS_HTTP_PORT }}/insert/elasticsearch/]
     mode: bulk
@@ -70,7 +85,7 @@ sinks:
     inputs:
       - host_metrics
       - vector_metrics
-      - opentelemetry
+      - opentelemetry.metrics
     type: prometheus_remote_write
     endpoint: http://localhost:{{ METRICS_HTTP_PORT }}/api/v1/write
     healthcheck:
