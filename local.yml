@@ -457,7 +457,7 @@
             name: vector
             state: present
 
-        - name: Copy Vector configuration file
+        - name: Configure Vector
           become: true
           vars:
             LOGS_HTTP_PORT: '{{ lookup("env", "LOGS_HTTP_PORT") }}'
