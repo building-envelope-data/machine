@@ -67,27 +67,37 @@ branch `main` is always deployable.
    - `HOST` is the domain name without sub-domain;
    - `PRODUCTION_SUBDOMAIN`, `STAGING_SUBDOMAIN`, `TELEMETRY_SUBDOMAIN` are the
      sub-domains of the production instance `/app/production`, staging instance
-     `/app/staging`, and the telemetry services `pipelines`, `logs`, and
-     `metrics`. Note that none of these sub-domains can be empty. The reverse
-     proxy NGINX redirects requests to `${HOST}` without a sub-domain to such
-     with the sub-domain `${PRODUCTION_SUBDOMAIN}`. If the domain name is too
-     long, then NGINX will fail to start, for example, with the error message
-     `"Could not build the server_names_hash. You should increase
+     `/app/staging`, and the telemetry services `logs`, and `metrics`. Note
+     that none of these sub-domains can be empty. The reverse proxy NGINX
+     redirects requests to `${HOST}` without a sub-domain to such with the
+     sub-domain `${PRODUCTION_SUBDOMAIN}`. If the domain name is too long, then
+     NGINX will fail to start, for example, with the error message `"Could not
+     build the server_names_hash. You should increase
      server_names_hash_bucket_size."` and it becomes necessary to [tune the
      `server_names_hash_max_size` or `server_names_hash_bucket_size`
      directives](https://nginx.org/en/docs/http/server_names.html#optimization),
      in the above example just increase `server_names_hash_bucket_size` to the
      next power of two;
-   - `HTTP_PORT` and `HTTPS_PORT` are the HTTP and HTTPS ports on which the
-     NGINX reverse proxy is listening;
-   - `PRODUCTION_HTTP_PORT` or `STAGING_HTTP_PORT` is the HTTP port on which the
-     production instance `/app/production` or staging instance `/app/staging`
-     is listening;
    - `EXTRA_HOST` is an extra domain name for which the TLS certificate fetched
      from [Let's Encrypt](https://letsencrypt.org) shall also be valid apart
      from `${HOST}`, `${PRODUCTION_SUBDOMAIN}.${HOST}`,
      `${STAGING_SUBDOMAIN}.${HOST}`, and `${TELEMETRY_SUBDOMAIN}.${HOST}` (it
      is used in `./init-certbot.sh`);
+   - `HTTP_PORT` and `HTTPS_PORT` are the HTTP and HTTPS ports on which the
+     NGINX reverse proxy is listening;
+   - `PRODUCTION_HTTP_PORT` or `STAGING_HTTP_PORT` is the HTTP port on which the
+     production instance `/app/production` or staging instance `/app/staging`
+     is listening;
+   - `MONITOR_HTTP_PORT`, `LOGS_HTTP_PORT`, or `METRICS_HTTP_PORT` is the HTTP
+     port on which the monitoring utility [Monit](https://mmonit.com/monit/),
+     the logs service
+     [VictoriaLogs](https://github.com/VictoriaMetrics/VictoriaLogs), and the
+     metrics service
+     [VictoriaMetrics](https://github.com/VictoriaMetrics/VictoriaMetrics) is
+     listening;
+   - `TELEMETRY_GPRC_PORT` is the [gPRC](https://grpc.io/) port on which the
+     observability pipelines tool [Vector](https://vector.dev) listens for
+     [OpenTelemetry Protocol](https://opentelemetry.io/docs/specs/otlp/) data;
    - `EMAIL_ADDRESS` is the email address of the person to be notified when
      there is some system-administration issue (for example
      [Monit](https://mmonit.com/monit/) sends such notifications)
