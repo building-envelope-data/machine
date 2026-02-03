@@ -52,13 +52,14 @@
         - PRODUCTION_SUBDOMAIN
         - STAGING_SUBDOMAIN
         - TELEMETRY_SUBDOMAIN
+        - MONITOR_HTTP_PORT
+        - LOGS_HTTP_PORT
+        - METRICS_HTTP_PORT
+        - TELEMETRY_GPRC_PORT
         - EMAIL_ADDRESS
         - SMTP_HOST
         - SMTP_PORT
         - NETWORK_INTERFACE
-        - MONITOR_HTTP_PORT
-        - LOGS_HTTP_PORT
-        - METRICS_HTTP_PORT
 
     - name: Update package information
       become: true
@@ -226,10 +227,6 @@
 
         - name: Copy system-wide `mstprc` configuration file
           become: true
-          vars:
-            # The system-wide logfile must be `/var/log/msmtp` according to
-            # msmtp's AppArmor configuration `/etc/apparmor.d/usr.bin.msmtp`
-            MSMTP_LOGFILE: /var/log/msmtp
           ansible.builtin.template:
             src: msmtprc.j2
             dest: /etc/msmtprc
@@ -239,10 +236,6 @@
           notify: Send test email as root
 
         - name: Copy user-specific `mstprc` configuration file
-          vars:
-            # The user-specific logfile must be `~/.msmtp*.log` according to
-            # msmtp's AppArmor configuration `/etc/apparmor.d/usr.bin.msmtp`
-            MSMTP_LOGFILE: ~/.msmtp.log
           ansible.builtin.template:
             src: msmtprc.j2
             dest: ~/.msmtprc
@@ -308,16 +301,6 @@
 
     - name: Monitor system with Monit
       # https://mmonit.com/monit/
-      vars:
-        HOST: '{{ lookup("env", "HOST") }}'
-        PRODUCTION_HOST: '{{ lookup("env", "PRODUCTION_SUBDOMAIN") }}.{{ lookup("env", "HOST") }}'
-        STAGING_HOST: '{{ lookup("env", "STAGING_SUBDOMAIN") }}.{{ lookup("env", "HOST") }}'
-        TELEMETRY_HOST: '{{ lookup("env", "TELEMETRY_SUBDOMAIN") }}.{{ lookup("env", "HOST") }}'
-        EMAIL_ADDRESS: '{{ lookup("env", "EMAIL_ADDRESS") }}'
-        SMTP_HOST: '{{ lookup("env", "SMTP_HOST") }}'
-        SMTP_PORT: '{{ lookup("env", "SMTP_PORT") }}'
-        NETWORK_INTERFACE: '{{ lookup("env", "NETWORK_INTERFACE") }}'
-        MONITOR_HTTP_PORT: '{{ lookup("env", "MONITOR_HTTP_PORT") }}'
       block:
         - name: Add Debian backports
           # https://backports.debian.org/
@@ -334,6 +317,16 @@
 
         - name: Configure Monit
           become: true
+          vars:
+            HOST: '{{ lookup("env", "HOST") }}'
+            PRODUCTION_HOST: '{{ lookup("env", "PRODUCTION_SUBDOMAIN") }}.{{ lookup("env", "HOST") }}'
+            STAGING_HOST: '{{ lookup("env", "STAGING_SUBDOMAIN") }}.{{ lookup("env", "HOST") }}'
+            TELEMETRY_HOST: '{{ lookup("env", "TELEMETRY_SUBDOMAIN") }}.{{ lookup("env", "HOST") }}'
+            EMAIL_ADDRESS: '{{ lookup("env", "EMAIL_ADDRESS") }}'
+            SMTP_HOST: '{{ lookup("env", "SMTP_HOST") }}'
+            SMTP_PORT: '{{ lookup("env", "SMTP_PORT") }}'
+            NETWORK_INTERFACE: '{{ lookup("env", "NETWORK_INTERFACE") }}'
+            MONITOR_HTTP_PORT: '{{ lookup("env", "MONITOR_HTTP_PORT") }}'
           ansible.builtin.template:
             src: monitrc.j2
             dest: /etc/monit/monitrc
@@ -441,9 +434,6 @@
 
     - name: Vector
       become: true
-      vars:
-        LOGS_HTTP_PORT: '{{ lookup("env", "LOGS_HTTP_PORT") }}'
-        METRICS_HTTP_PORT: '{{ lookup("env", "METRICS_HTTP_PORT") }}'
       block:
         - name: Add Vector key
           ansible.builtin.apt_key:
@@ -463,6 +453,10 @@
 
         - name: Copy Vector configuration file
           become: true
+          vars:
+            LOGS_HTTP_PORT: '{{ lookup("env", "LOGS_HTTP_PORT") }}'
+            METRICS_HTTP_PORT: '{{ lookup("env", "METRICS_HTTP_PORT") }}'
+            TELEMETRY_GPRC_PORT: '{{ lookup("env", "TELEMETRY_GPRC_PORT") }}'
           ansible.builtin.template:
             src: vector.yml.j2
             dest: /etc/vector/vector.yaml
