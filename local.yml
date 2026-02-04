@@ -11,18 +11,18 @@
         state: restarted
       tags: skip_in_development
 
-    - name: Restart Monit
-      become: true
-      ansible.builtin.service:
-        name: monit
-        state: restarted
-      tags: skip_in_development
-
-    - name: Restart Vector
+    - name: Reload Vector
       become: true
       ansible.builtin.service:
         name: vector
-        state: restarted
+        state: reloaded
+      tags: skip_in_development
+
+    - name: Reload Monit
+      become: true
+      ansible.builtin.service:
+        name: monit
+        state: reloaded
       tags: skip_in_development
 
     - name: Send test email as root
@@ -264,6 +264,7 @@
 
         - name: Flush handlers to send test emails
           ansible.builtin.meta: flush_handlers
+
     - name: Configure Cron
       block:
         - name: Add paths to environment variable `PATH` for root's crontab
@@ -305,57 +306,6 @@
             special_time: daily
             job: "chronic make --directory=/app/machine prune-docker"
 
-    - name: Monitor system with Monit
-      # https://mmonit.com/monit/
-      block:
-        - name: Add Debian backports
-          # https://backports.debian.org/
-          become: true
-          ansible.builtin.apt_repository:
-            repo: deb [arch=amd64] http://deb.debian.org/debian {{ ansible_distribution_release | mandatory }}-backports main
-            state: present
-
-        - name: Install Monit
-          become: true
-          ansible.builtin.package:
-            name: monit
-            state: present
-
-        - name: Make Monit a systemd Service
-          become: true
-          ansible.builtin.copy:
-            src: monit.service
-            dest: /etc/systemd/system/monit.service
-            owner: root
-            group: root
-            mode: "0644"
-          notify:
-            - Restart Monit
-
-        - name: Configure Monit
-          become: true
-          vars:
-            HOST: '{{ lookup("env", "HOST") }}'
-            PRODUCTION_HOST: '{{ lookup("env", "PRODUCTION_SUBDOMAIN") }}.{{ lookup("env", "HOST") }}'
-            STAGING_HOST: '{{ lookup("env", "STAGING_SUBDOMAIN") }}.{{ lookup("env", "HOST") }}'
-            TELEMETRY_HOST: '{{ lookup("env", "TELEMETRY_SUBDOMAIN") }}.{{ lookup("env", "HOST") }}'
-            EMAIL_ADDRESS: '{{ lookup("env", "EMAIL_ADDRESS") }}'
-            SMTP_HOST: '{{ lookup("env", "SMTP_HOST") }}'
-            SMTP_PORT: '{{ lookup("env", "SMTP_PORT") }}'
-            NETWORK_INTERFACE: '{{ lookup("env", "NETWORK_INTERFACE") }}'
-            MONITOR_HTTP_PORT: '{{ lookup("env", "MONITOR_HTTP_PORT") }}'
-            FROM_EMAIL_ADDRESS: 'monit@{{ lookup("env", "HOST") }}'
-          ansible.builtin.template:
-            src: monitrc.j2
-            dest: /etc/monit/monitrc
-            owner: root
-            group: root
-            mode: "0600"
-          notify:
-            - Restart Monit
-
-        - name: Flush handlers to reload Monit
-          ansible.builtin.meta: flush_handlers
     - name: GnuPG
       become: true
       block:
@@ -441,7 +391,7 @@
             groups: docker
             append: true
 
-        - name: Enable Docker systemd service
+        - name: Enable Docker systemd service to start on boot
           ansible.builtin.service:
             name: docker
             enabled: true
@@ -483,7 +433,7 @@
             group: root
             mode: "0644"
           notify:
-            - Restart Vector
+            - Reload Vector
 
         - name: Add user `vector` to group `docker`
           ansible.builtin.user:
@@ -491,5 +441,69 @@
             groups: docker
             append: true
 
+        - name: Enable Vector systemd service to start on boot
+          ansible.builtin.systemd:
+            name: monit.service
+            enabled: true
+            state: started
+
         - name: Flush handlers to reload Vector
+          ansible.builtin.meta: flush_handlers
+
+    - name: Monitor system with Monit
+      # https://mmonit.com/monit/
+      block:
+        - name: Add Debian backports
+          # https://backports.debian.org/
+          become: true
+          ansible.builtin.apt_repository:
+            repo: deb [arch=amd64] http://deb.debian.org/debian {{ ansible_distribution_release | mandatory }}-backports main
+            state: present
+
+        - name: Install Monit
+          become: true
+          ansible.builtin.package:
+            name: monit
+            state: present
+
+        - name: Configure Monit
+          become: true
+          vars:
+            HOST: '{{ lookup("env", "HOST") }}'
+            PRODUCTION_HOST: '{{ lookup("env", "PRODUCTION_SUBDOMAIN") }}.{{ lookup("env", "HOST") }}'
+            STAGING_HOST: '{{ lookup("env", "STAGING_SUBDOMAIN") }}.{{ lookup("env", "HOST") }}'
+            TELEMETRY_HOST: '{{ lookup("env", "TELEMETRY_SUBDOMAIN") }}.{{ lookup("env", "HOST") }}'
+            EMAIL_ADDRESS: '{{ lookup("env", "EMAIL_ADDRESS") }}'
+            SMTP_HOST: '{{ lookup("env", "SMTP_HOST") }}'
+            SMTP_PORT: '{{ lookup("env", "SMTP_PORT") }}'
+            NETWORK_INTERFACE: '{{ lookup("env", "NETWORK_INTERFACE") }}'
+            MONITOR_HTTP_PORT: '{{ lookup("env", "MONITOR_HTTP_PORT") }}'
+            FROM_EMAIL_ADDRESS: 'monit@{{ lookup("env", "HOST") }}'
+          ansible.builtin.template:
+            src: monitrc.j2
+            dest: /etc/monit/monitrc
+            owner: root
+            group: root
+            mode: "0600"
+          notify:
+            - Reload Monit
+
+        - name: Make Monit a systemd service
+          become: true
+          ansible.builtin.copy:
+            src: monit.service
+            dest: /etc/systemd/system/monit.service
+            owner: root
+            group: root
+            mode: "0644"
+
+        - name: Enable Monit systemd service to start on boot
+          ansible.builtin.systemd:
+            name: monit.service
+            enabled: true
+            # reload daemon to make it notice the new monit.service file
+            daemon_reload: true
+            state: started
+
+        - name: Flush handlers to reload Monit
           ansible.builtin.meta: flush_handlers
