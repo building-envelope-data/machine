@@ -58,7 +58,7 @@ check system {{ HOST }}-system
     # 100%
     if cpu usage > 80% for 4 cycles then alert
 
-check filesystem data with path /
+check filesystem root with path /
     if space usage > 80% then alert
     if service time > 300 milliseconds for 5 cycles then alert
 
