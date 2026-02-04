@@ -12,6 +12,7 @@ set init
 
 # Configure email alerts
 set mailserver {{ SMTP_HOST }} port {{ SMTP_PORT }}
+set mail-format { from: {{ FROM_EMAIL_ADDRESS }} }
 set alert {{ EMAIL_ADDRESS }}
 
 # Test email alerts

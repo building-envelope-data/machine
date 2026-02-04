@@ -333,6 +333,7 @@
             SMTP_PORT: '{{ lookup("env", "SMTP_PORT") }}'
             NETWORK_INTERFACE: '{{ lookup("env", "NETWORK_INTERFACE") }}'
             MONITOR_HTTP_PORT: '{{ lookup("env", "MONITOR_HTTP_PORT") }}'
+            FROM_EMAIL_ADDRESS: 'monit@{{ lookup("env", "HOST") }}'
           ansible.builtin.template:
             src: monitrc.j2
             dest: /etc/monit/monitrc
