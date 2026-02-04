@@ -401,6 +401,7 @@
           ansible.builtin.meta: flush_handlers
 
     - name: Vector
+      # https://vector.dev/
       become: true
       block:
         - name: Add Vector key
@@ -420,7 +421,6 @@
             state: present
 
         - name: Configure Vector
-          become: true
           vars:
             LOGS_HTTP_PORT: '{{ lookup("env", "LOGS_HTTP_PORT") }}'
             METRICS_HTTP_PORT: '{{ lookup("env", "METRICS_HTTP_PORT") }}'
@@ -452,22 +452,20 @@
 
     - name: Monitor system with Monit
       # https://mmonit.com/monit/
+      become: true
       block:
         - name: Add Debian backports
           # https://backports.debian.org/
-          become: true
           ansible.builtin.apt_repository:
             repo: deb [arch=amd64] http://deb.debian.org/debian {{ ansible_distribution_release | mandatory }}-backports main
             state: present
 
         - name: Install Monit
-          become: true
           ansible.builtin.package:
             name: monit
             state: present
 
         - name: Configure Monit
-          become: true
           vars:
             HOST: '{{ lookup("env", "HOST") }}'
             PRODUCTION_HOST: '{{ lookup("env", "PRODUCTION_SUBDOMAIN") }}.{{ lookup("env", "HOST") }}'
@@ -489,7 +487,6 @@
             - Reload Monit
 
         - name: Make Monit a systemd service
-          become: true
           ansible.builtin.copy:
             src: monit.service
             dest: /etc/systemd/system/monit.service
