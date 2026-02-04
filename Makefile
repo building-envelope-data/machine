@@ -42,7 +42,11 @@ password : ## Generate a password
 .PHONY : password
 
 monit : ## Print Monit status and summary
+	@echo Syntax-Check the Control File
+	sudo monit -t
+	@echo Status
 	sudo monit status
+	@echo Summary
 	sudo monit summary
 .PHONY : monit
 
