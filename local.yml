@@ -321,6 +321,17 @@
             name: monit
             state: present
 
+        - name: Make Monit a systemd Service
+          become: true
+          ansible.builtin.copy:
+            src: monit.service
+            dest: /etc/systemd/system/monit.service
+            owner: root
+            group: root
+            mode: "0644"
+          notify:
+            - Restart Monit
+
         - name: Configure Monit
           become: true
           vars:
