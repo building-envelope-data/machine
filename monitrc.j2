@@ -143,7 +143,7 @@ check host {{ HOST }}-host with address {{ HOST }}
         for 3 cycles
     then alert
 
-{% for host in [PRODUCTION_HOST, STAGING_HOST, TELEMETRY_HOST] %}
+{% for host, http_status_code in [(PRODUCTION_HOST, 200), (STAGING_HOST, 401), (TELEMETRY_HOST, 401)] %}
 
     #---- {{ host }} ----#
 
@@ -151,11 +151,13 @@ check host {{ HOST }}-host with address {{ HOST }}
         if failed
             port 80
             with protocol http
+            and status = 301
             for 3 cycles
         then alert
         if failed
             port 443
             with protocol https
+            and status = {{ http_status_code }}
             and certificate valid > 7 days
             use ssl
             for 3 cycles
