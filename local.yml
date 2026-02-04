@@ -11,18 +11,18 @@
         state: restarted
       tags: skip_in_development
 
-    - name: Reload Monit
+    - name: Restart Monit
       become: true
       ansible.builtin.service:
         name: monit
-        state: reloaded
+        state: restarted
       tags: skip_in_development
 
-    - name: Reload Vector
+    - name: Restart Vector
       become: true
       ansible.builtin.service:
         name: vector
-        state: reloaded
+        state: restarted
       tags: skip_in_development
 
     - name: Send test email as root
@@ -341,7 +341,7 @@
             group: root
             mode: "0600"
           notify:
-            - Reload Monit
+            - Restart Monit
 
         - name: Flush handlers to reload Monit
           ansible.builtin.meta: flush_handlers
@@ -472,7 +472,7 @@
             group: root
             mode: "0644"
           notify:
-            - Reload Vector
+            - Restart Vector
 
         - name: Add user `vector` to group `docker`
           ansible.builtin.user:
