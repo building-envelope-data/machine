@@ -1,3 +1,6 @@
+# dclint disable service-image-require-explicit-tag
+# explicit tags of `autoheal` are multiple years old
+
 # Certbot setup inspired by
 # https://github.com/wmnnd/nginx-certbot/blob/master/docker-compose.yml
 # and
@@ -16,19 +19,19 @@ services:
   # Monitor and restart unhealthy docker containers
   # https://github.com/willfarrell/docker-autoheal
   autoheal:
-    deploy:
-      replicas: 1
+    image: "willfarrell/autoheal:latest"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock
     environment:
       AUTOHEAL_CONTAINER_LABEL: "autoheal"
       AUTOHEAL_START_PERIOD: "120"
       AUTOHEAL_DEFAULT_STOP_TIMEOUT: "60"
       AUTOHEAL_ONLY_MONITOR_RUNNING: "true"
-    image: "willfarrell/autoheal:latest"
     network_mode: "none"
     restart: "always"
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /var/run/docker.sock:/var/run/docker.sock
+    deploy:
+      replicas: 1
 
   # https://hub.docker.com/_/nginx
   reverse_proxy:
@@ -89,6 +92,8 @@ services:
   # https://hub.docker.com/r/victoriametrics/victoria-logs
   logs:
     image: "victoriametrics/victoria-logs:v1.44.0"
+    volumes:
+      - logs:/storage
     ports:
       - "0.0.0.0:${LOGS_HTTP_PORT}:9428"
     command:
@@ -98,11 +103,9 @@ services:
       # - -journald.streamFields=_HOSTNAME,_SYSTEMD_UNIT,_PID
       # - -journald.ignoreFields=MESSAGE_ID,INVOCATION_ID,USER_INVOCATION_ID
       # - -journald.ignoreFields=_BOOT_ID,_MACHINE_ID,_SYSTEMD_INVOCATION_ID,_STREAM_ID,_UID
-    volumes:
-      - logs:/storage
     restart: "always"
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:9428/health"]
+      test: [ "CMD", "wget", "-qO-", "http://127.0.0.1:9428/health" ]
       interval: "1s"
       timeout: "1s"
       retries: "10"
@@ -112,17 +115,17 @@ services:
   # https://hub.docker.com/r/victoriametrics/victoria-metrics
   metrics:
     image: "victoriametrics/victoria-metrics:v1.135.0"
-    ports:
-      - "0.0.0.0:${METRICS_HTTP_PORT}:8428"
     volumes:
       - metrics:/storage
+    ports:
+      - "0.0.0.0:${METRICS_HTTP_PORT}:8428"
     command:
       - "-storageDataPath=/storage"
       - "-loggerFormat=json"
       - "-retentionPeriod=7d"
     restart: "always"
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8428/health"]
+      test: [ "CMD", "wget", "-qO-", "http://127.0.0.1:8428/health" ]
       interval: "1s"
       timeout: "1s"
       retries: "10"
