@@ -45,6 +45,8 @@ services:
       interval: "5s"
       timeout: "5s"
       retries: "5"
+    labels:
+      autoheal: "true"
 
   # # Grafana instance configured with VictoriaLogs as datasource
   # # https://github.com/VictoriaMetrics/VictoriaLogs/blob/master/deployment/docker/compose-vl-single.yml
@@ -64,6 +66,8 @@ services:
   #   environment:
   #     - "GF_INSTALL_PLUGINS=victoriametrics-logs-datasource"
   #   restart: always
+  #   labels:
+  #     autoheal: "true"
 
   # https://hub.docker.com/r/victoriametrics/victoria-logs
   logs:
@@ -85,6 +89,8 @@ services:
       interval: "1s"
       timeout: "1s"
       retries: "10"
+    labels:
+      autoheal: "true"
 
   # https://hub.docker.com/r/victoriametrics/victoria-metrics
   metrics:
@@ -103,6 +109,8 @@ services:
       interval: "1s"
       timeout: "1s"
       retries: "10"
+    labels:
+      autoheal: "true"
 
   # Fetch TLS certificates from Let's Encrypt
   # https://hub.docker.com/r/certbot/certbot
@@ -113,6 +121,20 @@ services:
       - ./certbot/letsencrypt:/var/lib/letsencrypt # --work-dir
       - ./certbot/logs:/var/log/letsencrypt # --logs-dir
       - ./certbot/www:/var/www/certbot # --webroot-path
+
+  # Monitor and restart unhealthy docker containers
+  # https://github.com/willfarrell/docker-autoheal
+  autoheal:
+    deploy:
+      replicas: 1
+    environment:
+      AUTOHEAL_CONTAINER_LABEL: "autoheal"
+    image: "willfarrell/autoheal:latest"
+    network_mode: "none"
+    restart: "always"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock
 
   # Test for example `make setup` within `make machine`
   machine:
