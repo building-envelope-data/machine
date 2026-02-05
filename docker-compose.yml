@@ -13,6 +13,23 @@
 name: "machine"
 
 services:
+  # Monitor and restart unhealthy docker containers
+  # https://github.com/willfarrell/docker-autoheal
+  autoheal:
+    deploy:
+      replicas: 1
+    environment:
+      AUTOHEAL_CONTAINER_LABEL: "autoheal"
+      AUTOHEAL_START_PERIOD: "120"
+      AUTOHEAL_DEFAULT_STOP_TIMEOUT: "60"
+      AUTOHEAL_ONLY_MONITOR_RUNNING: "true"
+    image: "willfarrell/autoheal:latest"
+    network_mode: "none"
+    restart: "always"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+
   # https://hub.docker.com/_/nginx
   reverse_proxy:
     image: "nginx:1.29-trixie-otel"
@@ -121,20 +138,6 @@ services:
       - ./certbot/letsencrypt:/var/lib/letsencrypt # --work-dir
       - ./certbot/logs:/var/log/letsencrypt # --logs-dir
       - ./certbot/www:/var/www/certbot # --webroot-path
-
-  # Monitor and restart unhealthy docker containers
-  # https://github.com/willfarrell/docker-autoheal
-  autoheal:
-    deploy:
-      replicas: 1
-    environment:
-      AUTOHEAL_CONTAINER_LABEL: "autoheal"
-    image: "willfarrell/autoheal:latest"
-    network_mode: "none"
-    restart: "always"
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /var/run/docker.sock:/var/run/docker.sock
 
   # Test for example `make setup` within `make machine`
   machine:

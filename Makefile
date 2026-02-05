@@ -90,6 +90,7 @@ up : ## (Re)create and (re)start services
 		--renew-anon-volumes \
 		--remove-orphans \
 		--wait \
+		autoheal \
 		reverse_proxy \
 		logs \
 		metrics
