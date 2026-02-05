@@ -140,7 +140,7 @@ check file htpasswd with path /app/machine/nginx/.htpasswd
 check host {{ HOST }}-host with address {{ HOST }}
     if failed
         port 22
-        with protocol ssh
+        protocol ssh
         for 3 cycles
     then alert
 
@@ -151,18 +151,27 @@ check host {{ HOST }}-host with address {{ HOST }}
     check host {{ host }}-host with address {{ host }}
         if failed
             port 80
-            with protocol http
-            and status = 301
+            protocol http
+            status = 301
             for 3 cycles
         then alert
         if failed
             port 443
-            with protocol https
-            and status = {{ http_status_code }}
-            and certificate valid > 7 days
+            protocol https
+            status = {{ http_status_code }}
+            certificate valid > 7 days
             use ssl
             for 3 cycles
         then alert
+    {% if host == PRODUCTION_HOST %}
+        if failed
+            port 443
+            protocol https
+            request "/health"
+            status = 200
+            for 3 cycles
+        then alert
+    {% endif }
 
 {% endfor %}
 
