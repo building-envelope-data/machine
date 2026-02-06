@@ -292,13 +292,6 @@
             special_time: daily
             job: "chronic make --directory=/app/machine --file=/app/machine/maintenance.mk backup prune-backups"
 
-        - name: Rotate logs, vacuum `journald`, and clean-up backed up logs
-          become: true
-          ansible.builtin.cron:
-            name: journald-vacuuming
-            special_time: daily
-            job: "chronic make --directory=/app/machine --file=/app/machine/logs.mk rotate vacuum clean-up"
-
         - name: Renew Transport Layer Security (TLS) certificates needed for the `S` in `HTTPS`
           ansible.builtin.cron:
             name: tls-renewal
@@ -311,6 +304,13 @@
             name: docker-prune
             special_time: daily
             job: "chronic make --directory=/app/machine --file=/app/machine/maintenance.mk prune-docker"
+
+        - name: Rotate logs, vacuum `journald`, and clean-up backed up logs (as the root user)
+          become: true
+          ansible.builtin.cron:
+            name: journald-vacuuming
+            special_time: daily
+            job: "chronic make --directory=/app/machine --file=/app/machine/logs.mk rotate vacuum clean-up"
 
     - name: GnuPG
       become: true
