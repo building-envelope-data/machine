@@ -13,7 +13,7 @@ running_containers="$(docker ps --no-trunc --all --filter status=running --forma
 echo "  Running Containers: '${running_containers}'" | tr '\n' '\t'
 
 environment=machine
-services="$(make --silent --directory=/app/machine --file=./docker.mk list-services | tr '\n' ' ')"
+services="$(make --silent --directory=/app/machine --file=/app/machine/docker.mk list-services | tr '\n' ' ')"
 echo "  Environment: '${environment}'"
 echo "    Services: '${services}'"
 for service in ${services}; do
@@ -30,7 +30,7 @@ done
 
 for environment in staging production; do
   echo "  Environment: '${environment}'"
-  services="$(make --silent --directory=/app/"${environment}" --file=./docker.mk list-services | tr '\n' ' ')"
+  services="$(make --silent --directory=/app/"${environment}" --file=/app/"${environment}"/docker.mk list-services | tr '\n' ' ')"
   echo "    Services: '${services}'"
   for service in ${services}; do
     if echo "${running_containers}" | grep --quiet --extended-regexp "^[a-zA-Z]+_${environment}-${service}-[0-9] [ a-zA-Z0-9]+ \(healthy\)$"; then

@@ -128,6 +128,11 @@ reload-daemon : ## Reload Docker daemon
 		reload docker
 .PHONY : reload-daemon
 
+renew-tls : ## Renew Transport Layer Security (TLS) certificates needed for the `S` in `HTTPS` (used by Cron)
+	$(MAKE) --file=./certificates.mk renew
+	$(MAKE) deploy
+.PHONY : renew-tls
+
 shellcheck = \
 	docker run \
 		--rm \

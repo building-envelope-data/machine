@@ -20,12 +20,6 @@ help : ## Print this help
 .PHONY : help
 .DEFAULT_GOAL := help
 
-# TODO
-tls : ## Renew Transport Layer Security (TLS) certificates needed for the `S` in `HTTPS`
-	$(MAKE) renew
-	$(MAKE) --file=./Makfile deploy
-.PHONY : tls
-
 dummy : ## Create dummy certificates for `${DOMAIN}`
 	mkdir --parents "./certbot/conf/live/${DOMAIN}"
 	${docker_compose} run \
