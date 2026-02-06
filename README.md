@@ -183,7 +183,7 @@ or
 [Deploying a release of the database](https://github.com/building-envelope-data/database#deploying-a-release).
 Rebuilding the image and recreating the services are the important steps here,
 which can also be done in `/app/production` and `/app/staging` by running
-`./deploy.mk begin-maintenance deploy-services end-maintenance`.
+`./deploy.mk begin-maintenance services end-maintenance`.
 
 Additionally, to keep HTTPS, that is, HTTP over TLS, secure, regularly fetch
 SSL configuration and Diffie–Hellman parameters from certbot as explained in
