@@ -62,8 +62,7 @@ branch `main` is always deployable.
    `cp ./.env.sample ./.env && chmod 600 ./.env` (or
    `cp ./.env.buildingenvelopedata.sample ./.env && chmod 600 ./.env` or
    `cp ./.env.solarbuildingenvelopes.sample ./.env && chmod 600 ./.env`) and
-   adapt the `.env` file as needed for example inside `vi ./.env` or `nano
-   ./.env`. The `.env` variables
+   adapt the `.env` file as needed for example inside `vi ./.env` or `nano ./.env`. The `.env` variables
    - `HOST` is the domain name without sub-domain;
    - `PRODUCTION_SUBDOMAIN`, `STAGING_SUBDOMAIN`, `TELEMETRY_SUBDOMAIN` are the
      sub-domains of the production instance `/app/production`, staging instance
@@ -71,9 +70,7 @@ branch `main` is always deployable.
      that none of these sub-domains can be empty. The reverse proxy NGINX
      redirects requests to `${HOST}` without a sub-domain to such with the
      sub-domain `${PRODUCTION_SUBDOMAIN}`. If the domain name is too long, then
-     NGINX will fail to start, for example, with the error message `"Could not
-     build the server_names_hash. You should increase
-     server_names_hash_bucket_size."` and it becomes necessary to [tune the
+     NGINX will fail to start, for example, with the error message `"Could not build the server_names_hash. You should increase server_names_hash_bucket_size."` and it becomes necessary to [tune the
      `server_names_hash_max_size` or `server_names_hash_bucket_size`
      directives](https://nginx.org/en/docs/http/server_names.html#optimization),
      in the above example just increase `server_names_hash_bucket_size` to the
@@ -205,18 +202,18 @@ Our machines run Debian 12 "Bookworm" which reaches its end of life on June
 
 In the Ansible playbook `./setup.yaml`, periodic jobs are set-up.
 
-* System logs are are vacuumed daily keeping logs of the latest seven days.
-* The Transport Layer Security (TLS) certificates used by HTTPS, that is, HTTP
+- System logs are are vacuumed daily keeping logs of the latest seven days.
+- The Transport Layer Security (TLS) certificates used by HTTPS, that is, HTTP
   over TLS, are renewed daily if necessary.
-* The database is backed-up daily keeping the latest seven backups. To do so,
+- The database is backed-up daily keeping the latest seven backups. To do so,
   the production GNU Make target `backup` of the
   [`metabase`'s `deploy.mk`](https://github.com/building-envelope-data/metabase/blob/develop/deploy.mk)
   and
   [`database`'s `deploy.mk`](https://github.com/building-envelope-data/database/blob/develop/deploy.mk)
   are used.
-* The docker system is pruned daily without touching anything that is younger
+- The docker system is pruned daily without touching anything that is younger
   than one day.
-* Logs in `/var/log/` are rotated daily by the Debian-default Cron job
+- Logs in `/var/log/` are rotated daily by the Debian-default Cron job
   `/etc/cron.daily/logrotate`. It's configured in `/etc/logrotate.conf`.
 
 If a job fails, Cron sends an email to `${EMAIL_ADDRESS}` set in `./.env`.
@@ -225,17 +222,17 @@ If a job fails, Cron sends an email to `${EMAIL_ADDRESS}` set in `./.env`.
 
 For logs of periodic jobs see above.
 
-* Docker services logs are collected and stored by `journald` and can be
+- Docker services logs are collected and stored by `journald` and can be
   followed by running `make logs`.
-* Docker daemon logs are collected and stored by `journald` and can be
+- Docker daemon logs are collected and stored by `journald` and can be
   followed by running `./logs.mk daemon`.
-* Cron logs are collected and stored by `journald` and can be
+- Cron logs are collected and stored by `journald` and can be
   followed by running `./logs.mk cron`.
-* Monitoring logs are collected and stored by `journald` and can be
+- Monitoring logs are collected and stored by `journald` and can be
   followed by running `./logs.mk monit`.
-* SMTP client logs are collected and stored by `journald` and can be
+- SMTP client logs are collected and stored by `journald` and can be
   followed by running `./logs.mk msmtp`.
-* Certbot logs are written to `/certbot/logs/*.log.*` and the latest log-files
+- Certbot logs are written to `/certbot/logs/*.log.*` and the latest log-files
   can be followed by running `./logs.mk certbot`.
 
 ## Troubleshooting
@@ -270,6 +267,7 @@ healthy by running `make list`.
     [database](https://github.com/building-envelope-data/database) projects.
 
 ## Deploying the latest version
+
 1. Fetch and checkout the latest version by running `git fetch` and
    `git checkout --force main`.
 1. Deploy the new version by running `make deploy`.
