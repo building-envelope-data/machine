@@ -197,21 +197,4 @@ check host {{ HOST }}-host with address {{ HOST }}
         if failed gid cloud then alert
         if failed permission 600 then alert
 
-    check directory {{ environment }}-secrets with path /app/{{ environment }}/secrets/
-        if changed timestamp then alert
-
-    check file {{ environment }}-postgres_passwords with path /app/{{ environment }}/secrets/postgres_passwords
-        if failed checksum then alert
-        if changed timestamp then alert
-        if failed uid cloud then alert
-        if failed gid cloud then alert
-        if failed permission 600 then alert
-
-    check file {{ environment }}-postgres_password with path /app/{{ environment }}/secrets/postgres_password
-        if failed checksum then alert
-        if changed timestamp then alert
-        if failed uid cloud then alert
-        if failed gid cloud then alert
-        if failed permission 644 then alert
-
 {% endfor %}
