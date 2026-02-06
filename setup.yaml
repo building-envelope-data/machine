@@ -88,6 +88,12 @@
         autoclean: true
 
   tasks:
+    - name: Grant user `cloud` read-only access to journald
+      ansible.builtin.user:
+        name: cloud
+        groups: systemd-journal
+        append: true
+
     - name: Bash completion
       block:
         - name: Install Bash completion
@@ -284,7 +290,7 @@
           ansible.builtin.cron:
             name: database-backup
             special_time: daily
-            job: "chronic make --directory=/app/machine --file=/app/machine/maintenance.mk backup-database prune-backups"
+            job: "chronic make --directory=/app/machine --file=/app/machine/maintenance.mk backup prune-backups"
 
         - name: Rotate logs, vacuum `journald`, and clean-up backed up logs
           become: true

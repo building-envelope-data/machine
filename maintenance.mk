@@ -42,10 +42,10 @@ backup : ## Backup production database
 		--directory=/app/production \
 		--file=/app/production/deploy.mk \
 		--keep-going \
-		BACKUP_DIRECTORY=/app/data/backups/$(shell date +"\%Y-\%m-\%d_\%H_\%M_\%S") \
 		begin-maintenance \
 		backup \
 		end-maintenance
+		DIR=/app/data/backups/$(shell date +"\%Y-\%m-\%d_\%H_\%M_\%S")
 .PHONY : backup-database
 
 # Inspired by https://stackoverflow.com/questions/25785/delete-all-but-the-most-recent-x-files-in-bash/34862475#34862475
