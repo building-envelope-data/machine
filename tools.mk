@@ -1,3 +1,7 @@
+#!/usr/bin/env -S make --file
+
+include ./.env
+
 SHELL := /usr/bin/env bash
 .SHELLFLAGS := -o errexit -o errtrace -o nounset -o pipefail -c
 MAKEFLAGS += --warn-undefined-variables

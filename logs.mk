@@ -1,12 +1,10 @@
+#!/usr/bin/env -S make --file
+
 include ./.env
 
 SHELL := /usr/bin/env bash
 .SHELLFLAGS := -o errexit -o errtrace -o nounset -o pipefail -c
 MAKEFLAGS += --warn-undefined-variables
-
-docker_compose = \
-	docker compose \
-		--env-file ./.env
 
 # Taken from https://www.client9.com/self-documenting-makefiles/
 help : ## Print this help
