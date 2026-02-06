@@ -45,7 +45,7 @@ user : htpasswd ## Add user `${USER}` (he/she will have access to restricted are
 	sudo htpasswd ./nginx/.htpasswd "${USER}"
 .PHONY : user
 
-setup : OPTIONS = ""
+setup : OPTIONS =
 setup : htpasswd ## Setup machine by running `ansible-playbook` with options `${OPTIONS}`, for example, `./docker.mk setup` or `./docker.mk OPTIONS="--start-at-task 'Install Monit'" setup`
 	./ansible-playbook.sh \
 		./setup.yaml \
