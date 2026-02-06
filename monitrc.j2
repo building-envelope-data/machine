@@ -137,6 +137,13 @@ check file htpasswd with path /app/machine/nginx/.htpasswd
 # Hosts
 #----------------------------------------------------------------------------
 
+check host {{ SMTP_HOST }}-host with address {{ SMTP_HOST }}
+    if failed
+        port {{ SMTP_PORT }}
+        protocol smtp
+        for 3 cycles
+    then alert
+
 check host {{ HOST }}-host with address {{ HOST }}
     if failed
         port 22
