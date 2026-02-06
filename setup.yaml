@@ -504,5 +504,13 @@
             daemon_reload: true
             state: started
 
+        - name: Grant user `cloud` read-only access to Monit without a password
+          community.general.sudoers:
+            name: monit-nopasswd
+            user: username
+            commands: /usr/bin/monit
+            nopassword: yes
+            state: present
+
         - name: Flush handlers to reload Monit
           ansible.builtin.meta: flush_handlers
