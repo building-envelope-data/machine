@@ -24,28 +24,30 @@ dummy : ## Create dummy certificates for `${DOMAIN}`
 	mkdir --parents "./certbot/conf/live/${DOMAIN}"
 	${docker_compose} run \
 		--rm \
-		--entrypoint ' \
+		--user $(shell id --user):$(shell id --group) \
+		--entrypoint " \
 			openssl req \
 				-x509 \
 				-nodes \
 				-newkey rsa:4096 \
 				-days 1 \
-				-keyout "/etc/letsencrypt/live/${DOMAIN}/privkey.pem" \
-				-out "/etc/letsencrypt/live/${DOMAIN}/fullchain.pem" \
+				-keyout '/etc/letsencrypt/live/${DOMAIN}/privkey.pem' \
+				-out '/etc/letsencrypt/live/${DOMAIN}/fullchain.pem' \
 				-subj '/CN=localhost' \
-		' \
+		" \
 		certbot
 .PHONY : dummy
 
 delete : ## Delete certificates for `${DOMAIN}`
 	${docker_compose} run \
 		--rm \
-		--entrypoint ' \
-			rm --recursive --force \
-				"/etc/letsencrypt/live/${DOMAIN}" \
-				"/etc/letsencrypt/archive/${DOMAIN}" \
-				"/etc/letsencrypt/renewal/${DOMAIN}.conf" \
-		' \
+		--user $(shell id --user):$(shell id --group) \
+		--entrypoint " \
+			rm -r -f \
+				'/etc/letsencrypt/live/${DOMAIN}' \
+				'/etc/letsencrypt/archive/${DOMAIN}' \
+				'/etc/letsencrypt/renewal/${DOMAIN}.conf' \
+		" \
 		certbot
 .PHONY : delete-dummy
 
@@ -55,15 +57,15 @@ request : ## Request certificates
 	${docker_compose} run \
 		--rm \
 		--user $(shell id --user):$(shell id --group) \
-		--entrypoint ' \
+		--entrypoint " \
 			certbot certonly \
 				-v \
 				--non-interactive \
 				--webroot \
 				--webroot-path /var/www/certbot \
-				"${STAGING_ARG}" \
-				"${DOMAIN_ARGS}" \
-				--email "${EMAIL}" \
+				'${STAGING_ARG}' \
+				'${DOMAIN_ARGS}' \
+				--email '${EMAIL}' \
 				--keep-until-expiring \
 				--expand \
 				--renew-with-new-domains \
@@ -74,7 +76,7 @@ request : ## Request certificates
 				--hsts \
 				--uir \
 				--strict-permissions \
-		' \
+		" \
 		certbot
 .PHONY : request
 
