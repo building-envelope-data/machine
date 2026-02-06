@@ -12,7 +12,7 @@ bookworm](https://www.debian.org/releases/bookworm/) and one initially empty
 data disk. The data disk is partitioned, formatted, and mounted to `/app/data`
 as described below. There is a Debian user `cloud` with superuser privileges
 and a corresponding group `cloud`. The machine setup is mostly done by running
-the Ansible playbook `./local.yml` with `make setup` as the user `cloud`. The
+the Ansible playbook `./setup.yaml` with `make setup` as the user `cloud`. The
 machine runs two instances of the application, one for staging in
 `/app/staging` and the other for production in `/app/production`. Using
 [NGINX](https://nginx.org) as reverse proxy it directs traffic coming from the
@@ -106,7 +106,9 @@ branch `main` is always deployable.
      agent to be used to send emails through the Simple Mail Transfer
      Protocol (SMTP);
    - `NETWORK_INTERFACE` is the network interface to monitor with Monit (list
-     all with `make network-interfaces` or simply `ip link`);
+     all with `./tools.mk network-interfaces` or simply `ip link`);
+1. Prepare your remote control GNU Make by running
+   `ln --symbolic ./docker.mk ./Makefile`.
 1. If there is a firewall, configure it such that it allows the protocol TCP
    for ports 80 and 443.
 1. If the HTTP and HTTPS port configured in `.env` are not 80 and 443, then the
@@ -114,7 +116,7 @@ branch `main` is always deployable.
    `${HTTP_PORT}` and `${HTTPS_PORT}`.
 1. Format and mount hard disk for data to the directory `/app/data` as follows:
    1. Create the directory `/app/data` by running `mkdir /app/data`.
-   1. Scan for the data disk by running `make scan`.
+   1. Scan for the data disk by running `./tools.mk scan`.
    1. Figure out its name and size by running `lsblk`, for example, `sdb` and
       `50G`, and use this name and size instead of `sdx` and `XG` below.
    1. Partition the hard disk `/dev/sdx` by running
@@ -170,12 +172,12 @@ branch `main` is always deployable.
 
 Security upgrades are installed automatically and unattendedly by
 [`unattended-upgrades`](https://packages.debian.org/search?keywords=unattended-upgrades)
-as configured in the Ansible playbook `local.yml`. Non-security upgrades should
-be done weekly by running `make upgrade`. If the command asks you to
-reboot, then please do so and run `make end-maintenance` afterwards. Only run
-the possibly destructive command `make dist-upgrade` when you know what
-you are doing. See the entries `upgrade` and `dist-upgrade` in the `apt-get`
-manual `man apt-get`.
+as configured in the Ansible playbook `./setup.yaml`. Non-security upgrades should
+be done weekly by running `./maintenance.mk upgrade`. If the command asks you
+to reboot, then please do so and run `./maintenance.mk end` afterwards. Only
+run the possibly destructive command `./maintenance.mk dist-upgrade` when you
+know what you are doing. See the entries `upgrade` and `dist-upgrade` in the
+`apt-get` manual `man apt-get`.
 
 To install security upgrades in Docker services, redeploy the production and
 staging environments as described in
@@ -183,8 +185,8 @@ staging environments as described in
 or
 [Deploying a release of the database](https://github.com/building-envelope-data/database#deploying-a-release).
 Rebuilding the image and recreating the services are the important steps here,
-which can also be done by running
-`make --file=Makefile.production begin-maintenance deploy-services end-maintenance`.
+which can also be done in `/app/production` and `/app/staging` by running
+`./deploy.mk begin-maintenance deploy-services end-maintenance`.
 
 Additionally, to keep HTTPS, that is, HTTP over TLS, secure, regularly fetch
 SSL configuration and Diffie–Hellman parameters from certbot as explained in
@@ -201,16 +203,16 @@ Our machines run Debian 12 "Bookworm" which reaches its end of life on June
 
 ## Periodic jobs
 
-In the Ansible playbook `local.yml`, periodic jobs are set-up.
+In the Ansible playbook `./setup.yaml`, periodic jobs are set-up.
 
 * System logs are are vacuumed daily keeping logs of the latest seven days.
 * The Transport Layer Security (TLS) certificates used by HTTPS, that is, HTTP
   over TLS, are renewed daily if necessary.
 * The database is backed-up daily keeping the latest seven backups. To do so,
-  the production GNU Make targets `backup` and `prune-backups` of the
-  [`metabase`'s `Makefile.production`](https://github.com/building-envelope-data/metabase/blob/develop/Makefile.production)
+  the production GNU Make target `backup` of the
+  [`metabase`'s `deploy.mk`](https://github.com/building-envelope-data/metabase/blob/develop/deploy.mk)
   and
-  [`database`'s `Makefile.production`](https://github.com/building-envelope-data/database/blob/develop/Makefile.production)
+  [`database`'s `deploy.mk`](https://github.com/building-envelope-data/database/blob/develop/deploy.mk)
   are used.
 * The docker system is pruned daily without touching anything that is younger
   than one day.
@@ -226,15 +228,15 @@ For logs of periodic jobs see above.
 * Docker services logs are collected and stored by `journald` and can be
   followed by running `make logs`.
 * Docker daemon logs are collected and stored by `journald` and can be
-  followed by running `make daemon-logs`.
+  followed by running `./logs.mk daemon`.
 * Cron logs are collected and stored by `journald` and can be
-  followed by running `make cron-logs`.
+  followed by running `./logs.mk cron`.
 * Monitoring logs are collected and stored by `journald` and can be
-  followed by running `make monit-logs`.
+  followed by running `./logs.mk monit`.
 * SMTP client logs are collected and stored by `journald` and can be
-  followed by running `make smtp-logs`.
+  followed by running `./logs.mk msmtp`.
 * Certbot logs are written to `/certbot/logs/*.log.*` and the latest log-files
-  can be followed by running `make certbot-logs`.
+  can be followed by running `./logs.mk certbot`.
 
 ## Troubleshooting
 

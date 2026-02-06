@@ -280,31 +280,31 @@
             value: /usr/local/bin/:/usr/bin:/bin
             state: present
 
-        - name: Backup database
+        - name: Backup database and prune backups
           ansible.builtin.cron:
             name: database-backup
             special_time: daily
-            job: "chronic make --directory=/app/machine backup-database"
+            job: "chronic make --directory=/app/machine --file=./maintenance.mk backup-database prune-backups"
 
-        - name: Vacuum `journald`
+        - name: Rotate logs, vacuum `journald`, and clean-up backed up logs
           become: true
           ansible.builtin.cron:
             name: journald-vacuuming
             special_time: daily
-            job: "chronic make --directory=/app/machine vacuum-journald"
+            job: "chronic make --directory=/app/machine --file=./logs.mk rotate vacuum clean-up"
 
         - name: Renew Transport Layer Security (TLS) certificates needed for the `S` in `HTTPS`
           ansible.builtin.cron:
             name: tls-renewal
             special_time: daily
-            job: "chronic make --directory=/app/machine renew-tls"
+            job: "chronic make --directory=/app/machine --file=./certificates.mk tls"
 
         - name: Set periodic docker system prune
           # See https://docs.docker.com/config/pruning/#prune-everything
           ansible.builtin.cron:
             name: docker-prune
             special_time: daily
-            job: "chronic make --directory=/app/machine prune-docker"
+            job: "chronic make --directory=/app/machine --file=./maintenance.mk prune-docker"
 
     - name: GnuPG
       become: true
@@ -333,11 +333,7 @@
 
         - name: Install GnuPG
           ansible.builtin.package:
-            name:
-              # Keep the version in sync with the one in the Dockerfiles of the
-              # `database` repository where it is specified in the variable
-              # `GNUPG_VERSION`.
-              - gnupg2=2.5.17-1
+            name: gnupg2
             state: present
 
     - name: Docker
@@ -427,7 +423,7 @@
             TELEMETRY_GPRC_PORT: '{{ lookup("env", "TELEMETRY_GPRC_PORT") }}'
             TELEMETRY_HTTP_PORT: '{{ lookup("env", "TELEMETRY_HTTP_PORT") }}'
           ansible.builtin.template:
-            src: vector.yml.j2
+            src: vector.yaml.j2
             dest: /etc/vector/vector.yaml
             owner: root
             group: root

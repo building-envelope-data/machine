@@ -1,7 +1,7 @@
+/Makefile
 .env
 .htpasswd
 /certbot
 /tags*
 *.bak
 *.log
-histogramQuantile

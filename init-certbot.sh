@@ -50,8 +50,7 @@ if [[ ! -e "./certbot/conf/options-ssl-nginx.conf" ]] || [[ ! -e "./certbot/conf
 fi
 
 echo "### Creating dummy certificate for ${domains[0]} ..."
-mkdir --parents "./certbot/conf/live/${domains[0]}"
-make OUT_PATH="/etc/letsencrypt/live/${domains[0]}" dummy-certificates
+./certificates.mk DOMAIN="${domains[0]}" dummy
 echo
 
 echo "### (Re)deploying nginx ..."
@@ -59,7 +58,7 @@ make deploy
 echo
 
 echo "### Deleting dummy certificate for ${domains[0]} ..."
-make DOMAINS="${domains[0]}" delete-dummy-certificates
+./certificates.mk DOMAIN="${domains[0]}" delete
 echo
 
 echo "### Requesting Let's Encrypt certificate for ${domains[0]} ..."
@@ -73,11 +72,11 @@ done
 staging_arg=""
 if [[ ${staging} != "0" ]]; then staging_arg="--staging"; fi
 
-make \
+./certificates.mk \
   STAGING_ARG="${staging_arg}" \
   DOMAIN_ARGS="${domain_args}" \
   EMAIL="${email}" \
-  request-certificates
+  request
 echo
 
 echo "### (Re)deploying nginx ..."

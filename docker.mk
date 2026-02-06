@@ -1,0 +1,226 @@
+include ./.env
+
+SHELL := /usr/bin/env bash
+.SHELLFLAGS := -o errexit -o errtrace -o nounset -o pipefail -c
+MAKEFLAGS += --warn-undefined-variables
+
+docker_compose = \
+	docker compose \
+		--env-file ./.env
+
+dotenv_linter = \
+	docker run \
+		--rm \
+		--user $(shell id --user):$(shell id --group) \
+		--volume "$(shell pwd):/mnt" \
+		--pull "always" \
+		--quiet \
+		dotenvlinter/dotenv-linter:latest
+
+# Taken from https://www.client9.com/self-documenting-makefiles/
+help : ## Print this help
+	@awk -F ':|##' '/^[^\t].+?:.*?##/ {\
+		printf "\033[36m%-30s\033[0m %s\n", $$1, $$NF \
+	}' $(MAKEFILE_LIST)
+.PHONY : help
+.DEFAULT_GOAL := help
+
+dotenv : ## Assert that all variables in `./.env.sample` are available in `./.env`
+	${dotenv_linter} diff /mnt/.env "/mnt/.env.${ENVIRONMENT}.sample"
+	${dotenv_linter} diff /mnt/.env.development.sample /mnt/.env.production.sample
+	${dotenv_linter} diff /mnt/.env.buildingenvelopedata.sample /mnt/.env.production.sample
+	${dotenv_linter} diff /mnt/.env.solarbuildingenvelopes.sample /mnt/.env.production.sample
+.PHONY : dotenv
+
+htpasswd : ## Create file ./nginx/.htpasswd if it does not exist
+	if [ -f ./nginx/.htpasswd ] ; then \
+		sudo touch ./nginx/.htpasswd && \
+		sudo chmod 644 ./nginx/.htpasswd ; \
+	fi
+.PHONY : htpasswd
+
+user : htpasswd ## Add user `${USER}` (he/she will have access to restricted areas like staging and the Monit web interface with the correct password), for example, `make USER=jdoe user`
+	sudo htpasswd ./nginx/.htpasswd "${USER}"
+.PHONY : user
+
+setup : OPTIONS = ""
+setup : htpasswd ## Setup machine by running `ansible-playbook` with options `${OPTIONS}`, for example, `make setup` or `make OPTIONS="--start-at-task 'Install Monit'" setup`
+	./ansible-playbook.sh \
+		./setup.yaml \
+		--skip-tags "skip_in_${ENVIRONMENT}" \
+		${OPTIONS}
+.PHONY : setup
+
+pull : ## Pull images
+	${docker_compose} pull
+.PHONY : pull
+
+up : ## (Re)create and (re)start services
+	${docker_compose} up \
+		--force-recreate \
+		--renew-anon-volumes \
+		--remove-orphans \
+		--wait \
+		autoheal \
+		reverse_proxy \
+		logs \
+		metrics
+.PHONY : up
+
+deploy : dotenv setup pull up ## Deploy services, that is, assert ./.env file, setup machine, pull images, and (re)create and (re)start services
+.PHONY : deploy
+
+logs : ## Follow logs
+	${docker_compose} logs \
+		--since=24h \
+		--follow
+.PHONY : logs
+
+shell : ## Enter shell in the `reverse_proxy` service
+	${docker_compose} up \
+		--remove-orphans \
+		--wait \
+		reverse_proxy
+	${docker_compose} exec \
+		reverse_proxy \
+		bash
+.PHONY : shell
+
+machine : ## Enter shell in the `machine` service for debugging and testing, for example by running `make setup` or `make --file=Makefile.ansible lint`
+	COMPOSE_BAKE=true \
+		COMPOSE_DOCKER_CLI_BUILD=1 \
+			DOCKER_BUILDKIT=1 \
+				${docker_compose} build \
+					--build-arg GROUP_ID=$(shell id --group) \
+					--build-arg USER_ID=$(shell id --user) \
+					machine
+	${docker_compose} run \
+		--rm \
+		--remove-orphans \
+		--user $(shell id --user):$(shell id --group) \
+		machine \
+		bash
+.PHONY : shell
+
+down : ## Stop containers and remove containers, networks, volumes, and images created by `deploy`
+	${docker_compose} down \
+		--remove-orphans
+.PHONY : down
+
+list : ## List all containers with health status
+	${docker_compose} ps \
+		--no-trunc \
+		--all
+.PHONY : list
+
+list-services : ## List all services specified in the docker-compose file (used by Monit)
+	${docker_compose} config \
+		--services
+.PHONY : list-services
+
+# See https://docs.docker.com/config/containers/runmetrics/
+docker-stats : ## Show Docker run-time metrics
+	docker stats
+.PHONY : docker-stats
+
+reload-daemon : ## Reload Docker daemon
+	sudo systemctl \
+		reload docker
+.PHONY : reload-daemon
+
+shellcheck = \
+	docker run \
+		--rm \
+		--user $(shell id --user):$(shell id --group) \
+		--volume "$(shell pwd):/mnt" \
+		--pull "always" \
+		--quiet \
+		koalaman/shellcheck:latest \
+		--enable=all \
+		--external-sources
+
+dclint = \
+	docker run \
+		--rm \
+		--tty \
+		--user $(shell id --user):$(shell id --group) \
+		--volume "$(shell pwd):/app" \
+		--pull "always" \
+		--quiet \
+		zavoloklom/dclint:latest \
+		--config /app/.dclintrc
+
+hadolint = \
+	docker run \
+		--rm \
+		--interactive \
+		--user $(shell id --user):$(shell id --group) \
+		--volume ./.hadolint.yaml:/.config/.hadolint.yaml \
+		--pull "always" \
+		--quiet \
+		hadolint/hadolint:latest \
+		hadolint \
+		--config /.config/.hadolint.yaml
+
+# docker run \
+# 	--workdir / \
+# 	--volume ./checkmake.ini:/checkmake.ini \
+# 	--volume ./Makefile:/Makefile \
+# 	--volume ./Makefile.development:/Makefile.development \
+# 	quay.io/checkmake/checkmake \
+# 	/Makefile \
+# 	/Makefile.development
+lint : ## Lint .env files, shell scripts, Docker Compose files, and Dockerfile
+	@echo Lint .env Files
+	${dotenv_linter} \
+		check \
+		--recursive \
+		--ignore-checks UnorderedKey \
+		.
+	@echo Lint Shell Scripts
+	${shellcheck} ./*.sh
+	@echo Lint Docker Compose Files
+	${dclint} .
+	@echo Lint Dockerfiles
+	${hadolint} - < ./Dockerfile
+.PHONY : lint
+
+fix : ## Fix .env files and Docker Compose linting violations
+	@echo Fix .env Files
+	${dotenv_linter} \
+		fix \
+		--no-backup \
+		--recursive \
+		--ignore-checks UnorderedKey \
+		.
+	@echo Fix Docker Compose Files
+	${dclint} --fix .
+.PHONY : fix
+
+format : ## Format shell scripts and Dockerfile
+	@echo Format Shell Scripts
+	docker run \
+		--rm \
+		--user $(shell id --user):$(shell id --group) \
+		--volume "$(shell pwd):/mnt" \
+		--workdir /mnt \
+		mvdan/shfmt:latest \
+		--write \
+		--simplify \
+		--indent 2 \
+		--case-indent \
+		--space-redirects \
+		$(shell find . -name "*.sh" -printf "/mnt/%h/%f ")
+	@echo Format Dockerfile
+	docker run \
+		--rm \
+		--user $(shell id --user):$(shell id --group) \
+		--volume "$(shell pwd):/pwd" \
+		--pull "always" \
+		--quiet \
+		ghcr.io/reteps/dockerfmt:latest \
+		--indent 2 \
+		--newline \
+		--write \
+		$(shell find . -name "Dockerfile*" -printf "/pwd/%h/%f ")
+.PHONY : format

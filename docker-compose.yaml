@@ -2,16 +2,16 @@
 # explicit tags of `autoheal` are multiple years old
 
 # Certbot setup inspired by
-# https://github.com/wmnnd/nginx-certbot/blob/master/docker-compose.yml
+# https://github.com/wmnnd/nginx-certbot/blob/master/docker-compose.yaml
 # and
 # https://pentacent.medium.com/nginx-and-lets-encrypt-with-docker-in-less-than-5-minutes-b4b8a60d3a71
 # See also
 # https://certbot.eff.org/docs/install.html#running-with-docker
 
 # Telemetry (logs and metrics) setup inspired by
-# https://github.com/VictoriaMetrics/VictoriaLogs/blob/master/deployment/docker/compose-vl-single.yml
-# https://github.com/VictoriaMetrics/VictoriaLogs/blob/master/deployment/docker/victorialogs/compose-base.yml
-# https://github.com/VictoriaMetrics/VictoriaLogs/blob/master/deployment/docker/victorialogs/vector/compose-base.yml
+# https://github.com/VictoriaMetrics/VictoriaLogs/blob/master/deployment/docker/compose-vl-single.yaml
+# https://github.com/VictoriaMetrics/VictoriaLogs/blob/master/deployment/docker/victorialogs/compose-base.yaml
+# https://github.com/VictoriaMetrics/VictoriaLogs/blob/master/deployment/docker/victorialogs/vector/compose-base.yaml
 
 name: "machine"
 
@@ -69,7 +69,7 @@ services:
       autoheal: "true"
 
   # # Grafana instance configured with VictoriaLogs as datasource
-  # # https://github.com/VictoriaMetrics/VictoriaLogs/blob/master/deployment/docker/compose-vl-single.yml
+  # # https://github.com/VictoriaMetrics/VictoriaLogs/blob/master/deployment/docker/compose-vl-single.yaml
   # grafana:
   #   image: grafana/grafana:12.3.1
   #   depends_on:
@@ -79,7 +79,7 @@ services:
   #     - 3000:3000
   #   volumes:
   #     - grafanadata:/var/lib/grafana
-  #     - ./provisioning/datasources/victoriametrics-logs-datasource/single.yml:/etc/grafana/provisioning/datasources/single.yml
+  #     - ./provisioning/datasources/victoriametrics-logs-datasource/single.yaml:/etc/grafana/provisioning/datasources/single.yaml
   #     - ./provisioning/dashboards:/etc/grafana/provisioning/dashboards
   #     - ./../../dashboards/victorialogs.json:/var/lib/grafana/dashboards/victorialogs.json
   #     - ./../../dashboards/victorialogs-internal.json:/var/lib/grafana/dashboards/victorialogs-internal.json
