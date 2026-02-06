@@ -43,8 +43,8 @@ htpasswd : ## Create file ./nginx/.htpasswd if it does not exist
 	fi
 .PHONY : htpasswd
 
-user : htpasswd ## Add user `${USER}` (he/she will have access to restricted areas like staging and the Monit web interface with the correct password), for example, `./docker.mk USER=jdoe user`
-	sudo htpasswd ./nginx/.htpasswd "${USER}"
+user : htpasswd ## Add user `${NAME}` (he/she will have access to restricted areas like staging and the Monit web interface with the correct password), for example, `./docker.mk user NAME=jdoe`
+	sudo htpasswd ./nginx/.htpasswd "${NAME}"
 .PHONY : user
 
 setup : OPTIONS =
@@ -74,10 +74,12 @@ up : ## (Re)create and (re)start services
 deploy : dotenv setup pull up ## Deploy services, that is, assert ./.env file, setup machine, pull images, and (re)create and (re)start services
 .PHONY : deploy
 
-logs : ## Follow logs
+logs : SERVICES =
+logs : ## Follow logs of all services or just the services `${SERVICES}`, for example, `make logs` or `make logs SERVICES=reverse_proxy` or `make logs SERVICES="logs metrics"`
 	${docker_compose} logs \
-		--since=24h \
-		--follow
+		--since=1h \
+		--follow \
+		${SERVICES}
 .PHONY : logs
 
 shell : ## Enter shell in the `reverse_proxy` service
