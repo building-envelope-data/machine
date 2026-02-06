@@ -67,7 +67,7 @@ check filesystem data with path /app/data/
     if space usage > 95% then alert
     if service time > 300 milliseconds for 5 cycles then alert
 
-# List interfaces with `make network-interfaces`
+# List interfaces with `./tools.mk network-interfaces`
 check network {{ NETWORK_INTERFACE }}-network with interface {{ NETWORK_INTERFACE }}
     if failed link then alert
     if changed link then alert

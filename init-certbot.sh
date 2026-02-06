@@ -54,7 +54,7 @@ echo "### Creating dummy certificate for ${domains[0]} ..."
 echo
 
 echo "### (Re)deploying nginx ..."
-make deploy
+./docker.mk deploy
 echo
 
 echo "### Deleting dummy certificate for ${domains[0]} ..."
@@ -80,4 +80,4 @@ if [[ ${staging} != "0" ]]; then staging_arg="--staging"; fi
 echo
 
 echo "### (Re)deploying nginx ..."
-make deploy
+./docker.mk deploy

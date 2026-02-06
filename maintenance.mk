@@ -24,7 +24,7 @@ begin : ## Begin maintenance
 
 end : ## End maintenance
 	if [ -f /var/run/reboot-required ] ; then \
-		echo 'Reboot by running `make reboot` and afterwards run `cd /app/machine && make end-maintenance`' ; \
+		echo 'Reboot by running `./maintenance.mk reboot` and afterwards run `cd /app/machine && ./maintenance.mk end`' ; \
 	else \
 		for environment in staging production ; do \
 			$(MAKE) --directory=/app/$${environment} --file=./deploy.mk end ; \

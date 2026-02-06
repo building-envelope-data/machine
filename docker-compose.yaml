@@ -142,7 +142,7 @@ services:
       - ./certbot/logs:/var/log/letsencrypt # --logs-dir
       - ./certbot/www:/var/www/certbot # --webroot-path
 
-  # Test for example `make setup` within `make machine`
+  # Test for example `./docker.mk setup` within `./docker.mk machine`
   machine:
     build:
       context: "."

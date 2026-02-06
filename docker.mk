@@ -17,6 +17,8 @@ dotenv_linter = \
 		--quiet \
 		dotenvlinter/dotenv-linter:latest
 
+COMPOSE_BAKE=true \
+
 # Taken from https://www.client9.com/self-documenting-makefiles/
 help : ## Print this help
 	@awk -F ':|##' '/^[^\t].+?:.*?##/ {\
@@ -39,12 +41,12 @@ htpasswd : ## Create file ./nginx/.htpasswd if it does not exist
 	fi
 .PHONY : htpasswd
 
-user : htpasswd ## Add user `${USER}` (he/she will have access to restricted areas like staging and the Monit web interface with the correct password), for example, `make USER=jdoe user`
+user : htpasswd ## Add user `${USER}` (he/she will have access to restricted areas like staging and the Monit web interface with the correct password), for example, `./docker.mk USER=jdoe user`
 	sudo htpasswd ./nginx/.htpasswd "${USER}"
 .PHONY : user
 
 setup : OPTIONS = ""
-setup : htpasswd ## Setup machine by running `ansible-playbook` with options `${OPTIONS}`, for example, `make setup` or `make OPTIONS="--start-at-task 'Install Monit'" setup`
+setup : htpasswd ## Setup machine by running `ansible-playbook` with options `${OPTIONS}`, for example, `./docker.mk setup` or `./docker.mk OPTIONS="--start-at-task 'Install Monit'" setup`
 	./ansible-playbook.sh \
 		./setup.yaml \
 		--skip-tags "skip_in_${ENVIRONMENT}" \
@@ -86,21 +88,17 @@ shell : ## Enter shell in the `reverse_proxy` service
 		bash
 .PHONY : shell
 
-machine : ## Enter shell in the `machine` service for debugging and testing, for example by running `make setup` or `make --file=Makefile.ansible lint`
-	COMPOSE_BAKE=true \
-		COMPOSE_DOCKER_CLI_BUILD=1 \
-			DOCKER_BUILDKIT=1 \
-				${docker_compose} build \
-					--build-arg GROUP_ID=$(shell id --group) \
-					--build-arg USER_ID=$(shell id --user) \
-					machine
+machine : ## Enter shell in the `machine` service for debugging and testing, for example by running `./docker.mk setup` or `./tools.mk check` inside entered shell
+	${docker_compose} build \
+		--build-arg GROUP_ID=$(shell id --group) \
+		--build-arg USER_ID=$(shell id --user) \
+		machine
 	${docker_compose} run \
 		--rm \
 		--remove-orphans \
-		--user $(shell id --user):$(shell id --group) \
 		machine \
 		bash
-.PHONY : shell
+.PHONY : machine
 
 down : ## Stop containers and remove containers, networks, volumes, and images created by `deploy`
 	${docker_compose} down \
