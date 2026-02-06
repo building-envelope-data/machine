@@ -44,7 +44,7 @@ backup : ## Backup production database
 		--keep-going \
 		begin-maintenance \
 		backup \
-		end-maintenance
+		end-maintenance \
 		DIR=/app/data/backups/$(shell date +"\%Y-\%m-\%d_\%H_\%M_\%S")
 .PHONY : backup-database
 
