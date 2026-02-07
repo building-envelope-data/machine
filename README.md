@@ -143,14 +143,6 @@ branch `main` is always deployable.
    1. Create the directory `/app/data/backups` by running
       `mkdir /app/data/backups`.
 1. Set-up everything else with Ansible by running `make setup`.
-1. Fetch Transport Security Protocol (TLS) certificates from [Let's
-   Encrypt](https://letsencrypt.org) used for HTTPS by running
-   `./init-certbot.sh` (if you are unsure whether the script will work, set the
-   variable `staging` inside that script to `1` for a trial run).
-1. Restart Docker by running `sudo systemctl restart docker`. If you do not do
-   that, you will encounter the error: "Cannot start service database: OCI
-   runtime create failed: /app/data/docker/overlay2/.../merged is not an
-   absolute path or is a symlink: unknown".
 1. Before you try to interact with Docker in any way, log-out and log-in again
    such that the system knows that the user `cloud` is in the group `docker`
    (this was taken care of by Ansible). You could for example exit the SSH
@@ -161,6 +153,12 @@ branch `main` is always deployable.
    unix:///var/run/docker.sock: Get
    "http://%2Fvar%2Frun%2Fdocker.sock/v1.24/containers/json": dial unix
    /var/run/docker.sock: connect: permission denied".
+1. Fetch Transport Security Protocol (TLS) certificates from [Let's
+   Encrypt](https://letsencrypt.org) used for HTTPS by running
+   `./init-certbot.sh` (if you are unsure whether the script will work, set the
+   variable `staging` inside that script to `1` for a trial run).
+1. Start all services by running `make dotenv pull up`. On subsequent
+   deployments just run `make deploy` to also rerun `setup`.
 1. Continue with the second step of
    [setting up a Debian production machine of the metabase](https://github.com/building-envelope-data/metabase?tab=readme-ov-file#setting-up-a-debian-production-machine)
    or
