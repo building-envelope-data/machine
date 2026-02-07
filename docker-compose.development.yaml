@@ -32,6 +32,8 @@ services:
     restart: "always"
     deploy:
       replicas: 1
+    profiles:
+      - "manual"
 
   # https://hub.docker.com/_/nginx
   reverse_proxy:
