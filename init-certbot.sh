@@ -31,15 +31,15 @@ if [[ -d "./certbot" ]]; then
 fi
 
 echo "### Creating certbot config, working, logs, and certificates directories ./certbot/* ..."
-mkdir --parents "./certbot/conf/accounts"
-mkdir --parents "./certbot/letsencrypt"
-mkdir --parents "./certbot/logs"
-mkdir --parents "./certbot/www"
-chmod --recursive 755 "./certbot/conf"
-chmod --recursive 700 "./certbot/conf/accounts"
-chmod --recursive 755 "./certbot/letsencrypt"
-chmod --recursive 700 "./certbot/logs"
-chmod --recursive 755 "./certbot/www"
+mkdir --parents \
+  "./certbot/conf/accounts" \
+  "./certbot/letsencrypt" \
+  "./certbot/logs" \
+  "./certbot/www"
+chmod --recursive 755 "./certbot"
+chmod --recursive 700 \
+  "./certbot/conf/accounts" \
+  "./certbot/logs"
 
 if [[ ! -e "./certbot/conf/options-ssl-nginx.conf" ]] || [[ ! -e "./certbot/conf/ssl-dhparams.pem" ]]; then
   echo "### Downloading recommended TLS parameters ..."
@@ -49,10 +49,12 @@ if [[ ! -e "./certbot/conf/options-ssl-nginx.conf" ]] || [[ ! -e "./certbot/conf
   echo
 fi
 
+# Needed to (re)deploy nginx.
 echo "### Creating dummy certificate for ${domains[0]} ..."
 ./certificates.mk DOMAIN="${domains[0]}" dummy
 echo
 
+# Needed to serve certbots ACME challenge under /.well-known/acme-challenge/
 echo "### (Re)deploying nginx ..."
 ./docker.mk deploy
 echo

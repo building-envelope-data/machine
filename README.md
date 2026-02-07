@@ -104,8 +104,9 @@ branch `main` is always deployable.
      Protocol (SMTP);
    - `NETWORK_INTERFACE` is the network interface to monitor with Monit (list
      all with `./tools.mk network-interfaces` or simply `ip link`);
-1. Prepare your remote control GNU Make by running
-   `ln --symbolic ./docker.mk ./Makefile`.
+1. Prepare your remote controls GNU Make and Docker Compose by running
+   - `ln --symbolic ./docker-compose.production.yaml ./docker-compose.yaml` and
+   - `ln --symbolic ./docker.mk ./Makefile`.
 1. If there is a firewall, configure it such that it allows the protocol TCP
    for ports 80 and 443.
 1. If the HTTP and HTTPS port configured in `.env` are not 80 and 443, then the

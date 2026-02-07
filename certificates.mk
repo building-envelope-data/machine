@@ -8,10 +8,6 @@ MAKEFLAGS += --warn-undefined-variables
 
 COMPOSE_BAKE=true
 
-docker_compose = \
-	docker compose \
-		--env-file ./.env
-
 # Taken from https://www.client9.com/self-documenting-makefiles/
 help : ## Print this help
 	@awk -F ':|##' '/^[^\t].+?:.*?##/ {\
@@ -22,7 +18,7 @@ help : ## Print this help
 
 dummy : ## Create dummy certificates for `${DOMAIN}`
 	mkdir --parents "./certbot/conf/live/${DOMAIN}"
-	${docker_compose} run \
+	docker compose run \
 		--rm \
 		--user $(shell id --user):$(shell id --group) \
 		--entrypoint " \
@@ -39,7 +35,7 @@ dummy : ## Create dummy certificates for `${DOMAIN}`
 .PHONY : dummy
 
 delete : ## Delete certificates for `${DOMAIN}`
-	${docker_compose} run \
+	docker compose run \
 		--rm \
 		--user $(shell id --user):$(shell id --group) \
 		--entrypoint " \
@@ -54,7 +50,7 @@ delete : ## Delete certificates for `${DOMAIN}`
 # For certbot options see
 # https://eff-certbot.readthedocs.io/en/latest/using.html#certbot-commands
 request : ## Request certificates
-	${docker_compose} run \
+	docker compose run \
 		--rm \
 		--user $(shell id --user):$(shell id --group) \
 		--entrypoint " \
@@ -81,7 +77,7 @@ request : ## Request certificates
 .PHONY : request
 
 renew : ## Renew certificates
-	${docker_compose} run \
+	docker compose run \
 		--rm \
 		--entrypoint "certbot renew" \
 		certbot
