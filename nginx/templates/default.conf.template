@@ -90,7 +90,17 @@ server {
     }
 
     location /email {
-        return 404;
+        auth_basic "Restricted Area";
+        auth_basic_user_file /etc/apache2/.htpasswd;
+        proxy_pass http://production;
+        # return 404;
+    }
+    location /email/hubs {
+        auth_basic "Restricted Area";
+        auth_basic_user_file /etc/apache2/.htpasswd;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection $connection_upgrade;
+        proxy_pass http://production;
     }
 
     location /.well-known/acme-challenge/ {
@@ -121,9 +131,9 @@ server {
     }
 
     location /email/hubs {
-        proxy_pass http://staging;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection $connection_upgrade;
+        proxy_pass http://staging;
     }
 
     location /.well-known/acme-challenge/ {
