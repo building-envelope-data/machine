@@ -7,6 +7,7 @@ SHELL := /usr/bin/env bash
 MAKEFLAGS += --warn-undefined-variables
 
 COMPOSE_BAKE=true
+SERVICE=
 
 dotenv_linter = \
 	docker run \
@@ -54,7 +55,8 @@ setup : htpasswd ## Setup machine by running `ansible-playbook` with options `${
 .PHONY : setup
 
 pull : ## Pull images
-	docker compose pull
+	docker compose pull \
+		${SERVICE}
 .PHONY : pull
 
 up : ## (Re)create and (re)start services
@@ -62,27 +64,27 @@ up : ## (Re)create and (re)start services
 		--force-recreate \
 		--renew-anon-volumes \
 		--remove-orphans \
-		--wait
+		--wait \
+		${SERVICE}
 .PHONY : up
 
 deploy : dotenv setup pull up ## Deploy services, that is, assert ./.env file, setup machine, pull images, and (re)create and (re)start services
 .PHONY : deploy
 
-logs : SERVICES =
-logs : ## Follow logs of all services or just the services `${SERVICES}`, for example, `make logs` or `make logs SERVICES=reverse_proxy` or `make logs SERVICES="logs metrics"`
+logs : ## Follow logs of services, for example, `make logs` for all services or `make logs SERVICE=reverse_proxy` or `make logs SERVICE="logs metrics"`
 	docker compose logs \
 		--since=1h \
 		--follow \
-		${SERVICES}
+		${SERVICE}
 .PHONY : logs
 
-shell : ## Enter shell in the `reverse_proxy` service
+shell : ## Enter shell in the service `${SERVICE}`
 	docker compose up \
 		--remove-orphans \
 		--wait \
-		reverse_proxy
+		${SERVICE}
 	docker compose exec \
-		reverse_proxy \
+		${SERVICE} \
 		bash
 .PHONY : shell
 
@@ -100,13 +102,15 @@ machine : ## Enter shell in the `machine` service for debugging and testing, for
 
 down : ## Stop containers and remove containers, networks, volumes, and images created by `deploy`
 	docker compose down \
-		--remove-orphans
+		--remove-orphans \
+		${SERVICE}
 .PHONY : down
 
 list : ## List all containers with health status
 	docker compose ps \
 		--no-trunc \
-		--all
+		--all \
+		${SERVICE}
 .PHONY : list
 
 list-services : ## List all services specified in the docker-compose file (used by Monit)
