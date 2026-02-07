@@ -59,8 +59,8 @@ request : ## Request certificates
 				--non-interactive \
 				--webroot \
 				--webroot-path /var/www/certbot \
-				'${STAGING_ARG}' \
-				'${DOMAIN_ARGS}' \
+				${STAGING_ARG} \
+				${DOMAIN_ARGS} \
 				--email '${EMAIL}' \
 				--keep-until-expiring \
 				--expand \

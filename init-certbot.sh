@@ -56,18 +56,22 @@ echo
 
 # Needed to serve certbots ACME challenge under /.well-known/acme-challenge/
 echo "### (Re)deploying nginx ..."
-./docker.mk deploy
+./docker.mk pull up SERVICE=reverse_proxy
 echo
 
-echo "### Deleting dummy certificate for ${domains[0]} ..."
-./certificates.mk DOMAIN="${domains[0]}" delete
-echo
+if [[ "${ENVIRONMENT}" != "development" ]]; then
+  echo "### Deleting dummy certificate for ${domains[0]} ..."
+  ./certificates.mk DOMAIN="${domains[0]}" delete
+  echo
+fi
 
 echo "### Requesting Let's Encrypt certificate for ${domains[0]} ..."
-#Join ${domains} to -d args
+# Join ${domains} to -d args
 domain_args=""
 for domain in "${domains[@]}"; do
-  domain_args="${domain_args} -d ${domain}"
+  if [[ -n "${domain}" ]]; then
+    domain_args="${domain_args} -d \"${domain}\""
+  fi
 done
 
 # Enable staging mode if needed
@@ -80,6 +84,3 @@ if [[ ${staging} != "0" ]]; then staging_arg="--staging"; fi
   EMAIL="${email}" \
   request
 echo
-
-echo "### (Re)deploying nginx ..."
-./docker.mk deploy
