@@ -59,8 +59,7 @@ setup : htpasswd ## Setup machine by running `ansible-playbook` with options `${
 .PHONY : setup
 
 pull : ## Pull images
-	docker compose pull \
-		${SERVICE}
+	docker compose pull ${SERVICE}
 .PHONY : pull
 
 up : ## (Re)create and (re)start services
@@ -68,8 +67,7 @@ up : ## (Re)create and (re)start services
 		--force-recreate \
 		--renew-anon-volumes \
 		--remove-orphans \
-		--wait \
-		${SERVICE}
+		--wait ${SERVICE}
 .PHONY : up
 
 deploy : dotenv setup pull up ## Deploy services, that is, assert ./.env file, setup machine, pull images, and (re)create and (re)start services
@@ -78,14 +76,13 @@ deploy : dotenv setup pull up ## Deploy services, that is, assert ./.env file, s
 logs : ## Follow logs of services, for example, `make logs` for all services or `make logs SERVICE=reverse_proxy` or `make logs SERVICE="logs metrics"`
 	docker compose logs \
 		--since=1h \
-		--follow \
-		${SERVICE}
+		--follow ${SERVICE}
 .PHONY : logs
 
 shell : ## Enter shell in the service `${SERVICE}`
 	docker compose up \
 		--remove-orphans \
-		--wait \
+		--wait 
 		${SERVICE}
 	docker compose exec \
 		${SERVICE} \
@@ -108,15 +105,13 @@ machine : ## Enter shell in the `machine` service for debugging and testing, for
 
 down : ## Stop containers and remove containers, networks, volumes, and images created by `deploy`
 	docker compose down \
-		--remove-orphans \
-		${SERVICE}
+		--remove-orphans ${SERVICE}
 .PHONY : down
 
 list : ## List all containers with health status
 	docker compose ps \
 		--no-trunc \
-		--all \
-		${SERVICE}
+		--all ${SERVICE}
 .PHONY : list
 
 list-services : ## List all services specified in the docker-compose file (used by Monit)
