@@ -93,6 +93,8 @@ shell : ## Enter shell in the service `${SERVICE}`
 .PHONY : shell
 
 machine : ## Enter shell in the `machine` service for debugging and testing, for example by running `./docker.mk setup` or `./tools.mk check` inside entered shell
+	docker compose pull \
+		machine
 	docker compose build \
 		--build-arg GROUP_ID=$(shell id --group) \
 		--build-arg USER_ID=$(shell id --user) \

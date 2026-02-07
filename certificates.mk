@@ -20,6 +20,7 @@ dummy : ## Create dummy certificates for `${DOMAIN}`
 	mkdir --parents "./certbot/conf/live/${DOMAIN}"
 	docker compose run \
 		--rm \
+		--pull "always" \
 		--user $(shell id --user):$(shell id --group) \
 		--entrypoint " \
 			openssl req \
@@ -37,6 +38,7 @@ dummy : ## Create dummy certificates for `${DOMAIN}`
 delete : ## Delete certificates for `${DOMAIN}`
 	docker compose run \
 		--rm \
+		--pull "always" \
 		--user $(shell id --user):$(shell id --group) \
 		--entrypoint " \
 			rm -r -f \
@@ -52,6 +54,7 @@ delete : ## Delete certificates for `${DOMAIN}`
 request : ## Request certificates
 	docker compose run \
 		--rm \
+		--pull "always" \
 		--user $(shell id --user):$(shell id --group) \
 		--entrypoint " \
 			certbot certonly \
@@ -79,6 +82,7 @@ request : ## Request certificates
 renew : ## Renew certificates
 	docker compose run \
 		--rm \
+		--pull "always" \
 		--entrypoint "certbot renew" \
 		certbot
 .PHONY: renew
