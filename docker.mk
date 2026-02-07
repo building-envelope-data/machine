@@ -26,6 +26,10 @@ help : ## Print this help
 .PHONY : help
 .DEFAULT_GOAL := help
 
+name : ## Print value of variable `NAME`
+	@echo ${NAME}
+.PHONY : name
+
 dotenv : ## Assert that all variables in `./.env.sample` are available in `./.env`
 	${dotenv_linter} diff /mnt/.env "/mnt/.env.${ENVIRONMENT}.sample"
 	${dotenv_linter} diff /mnt/.env.development.sample /mnt/.env.production.sample

@@ -13,7 +13,7 @@
 # https://github.com/VictoriaMetrics/VictoriaLogs/blob/master/deployment/docker/victorialogs/compose-base.yaml
 # https://github.com/VictoriaMetrics/VictoriaLogs/blob/master/deployment/docker/victorialogs/vector/compose-base.yaml
 
-name: "machine"
+name: "${NAME}"
 
 services:
   # Monitor and restart unhealthy docker containers
