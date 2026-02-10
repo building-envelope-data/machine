@@ -1,4 +1,5 @@
 #!/usr/bin/env -S make --file
+SELF := $(lastword $(MAKEFILE_LIST))
 
 include ./.env
 
@@ -65,30 +66,40 @@ prune-backups : ## Keep the most recent 7 backups, delete the rest
 			rm --recursive --dir --
 .PHONY : prune-backups
 
+restart : ## Restart services, for example, `./maintenance.mk restart SERVICE=backend ENVIRONMENT=staging`
+	$(MAKE) \
+		--directory=/app/${ENVIRONMENT} \
+		--file=/app/${ENVIRONMENT}/docker.mk \
+		begin-maintenance \
+		restart \
+		end-maintenance \
+		SERVICE=${SERVICE}
+.PHONY : restart
+
 reboot : ## Reboot
 	sudo systemctl reboot
 .PHONY : reboot
 
 upgrade : ## Upgrade system (Is used to install the newest versions of all packages currently installed on the system from the sources enumerated in /etc/apt/sources.list. Packages currently installed with new versions available are retrieved and upgraded. Under no circumstances are currently installed packages removed, or packages not already installed retrieved and installed. New versions of currently installed packages that cannot be upgraded without changing the install status of another package will be left at their current version.)
-	$(MAKE) begin
+	$(MAKE) --file="${SELF}" begin
 	sudo apt-get --assume-yes update
 	sudo apt-get --assume-yes upgrade
 	sudo apt-get --assume-yes auto-remove
 	sudo apt-get --assume-yes clean
 	sudo apt-get --assume-yes auto-clean
 	pipx upgrade-all --include-injected
-	$(MAKE) end
+	$(MAKE) --file="${SELF}" end
 .PHONY : upgrade
 
 dist-upgrade : ## Upgrade system (In addition to performing the function of `upgrade`, also intelligently handles changing dependencies with new versions of packages. It will attempt to upgrade the most important packages at the expense of less important ones if necessary. It may therefore remove some packages.)
-	$(MAKE) begin
+	$(MAKE) --file="${SELF}" begin
 	sudo apt-get --assume-yes update
 	sudo apt-get --assume-yes dist-upgrade
 	sudo apt-get --assume-yes auto-remove
 	sudo apt-get --assume-yes clean
 	sudo apt-get --assume-yes auto-clean
 	pipx upgrade-all --include-injected
-	$(MAKE) end
+	$(MAKE) --file="${SELF}" end
 .PHONY : dist-upgrade
 
 dry-run-unattended-upgrades : ## Dry-run unattended upgrades for testing purposes

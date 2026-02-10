@@ -77,9 +77,12 @@ sinks:
       # https://manpages.ubuntu.com/manpages/focal//man7/systemd.journal-fields.7.html
       # https://vector.dev/docs/reference/configuration/sources/docker_logs/#output-logs
       # https://vector.dev/docs/reference/configuration/sources/internal_logs/#output-logs
+      # ... journald ... | . * ..
       _msg_field: MESSAGE,message
+      #            .. journald ... | .. * ...
       _time_field: SYSLOG_TIMESTAMP,timestamp
-      _stream_fields: _HOSTNAME,_COMM,_SYSTEMD_UNIT,host,source_type,container_name
+      #               ......... journald ......... | ..... * ...... | docker_logs  | ............. opentelemetry ................
+      _stream_fields: _HOSTNAME,_COMM,_SYSTEMD_UNIT,host,source_type,container_name,resources.service.name,attributes.Environment
 
   metrics:
     inputs:

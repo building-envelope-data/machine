@@ -1,4 +1,5 @@
 #!/usr/bin/env -S make --file
+SELF := $(lastword $(MAKEFILE_LIST))
 
 include ./.env
 
@@ -131,7 +132,7 @@ reload-daemon : ## Reload Docker daemon
 
 renew-tls : ## Renew Transport Layer Security (TLS) certificates needed for the `S` in `HTTPS` (used by Cron)
 	$(MAKE) --file=./certificates.mk renew
-	$(MAKE) deploy
+	$(MAKE) --file="${SELF}" deploy
 .PHONY : renew-tls
 
 shellcheck = \
