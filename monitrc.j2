@@ -44,8 +44,8 @@ set httpd
 #----------------------------------------------------------------------------
 
 check system {{ HOST }}-system
-    if loadavg (5min) > 3 then alert
-    if loadavg (15min) > 1 then alert
+    if loadavg (5min) > 4 then alert
+    if loadavg (15min) > 2 then alert
     if memory usage > 80% for 4 cycles then alert
     if swap usage > 20% for 4 cycles then alert
     # Test the user part of CPU usage
