@@ -358,8 +358,12 @@
           ansible.builtin.template:
             src: gnupg.conf.j2
             dest: ~/.gnupg/common.conf
-            owner: cloud
-            group: cloud
+            mode: "0600"
+
+        - name: Configure GnuPG Agent
+          ansible.builtin.template:
+            src: gpg-agent.conf.j2
+            dest: ~/.gnupg/gpg-agent.conf
             mode: "0600"
 
         - name: Kill GnuPG daemons to apply changes

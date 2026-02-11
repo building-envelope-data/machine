@@ -189,7 +189,7 @@ lint : ## Lint .env files, shell scripts, Docker Compose files, and Dockerfile
 	@echo Lint Docker Compose Files
 	${dclint} .
 	@echo Lint Dockerfiles
-	${hadolint} - < ./Dockerfile
+	${hadolint} - < ./Dockerfile.development
 .PHONY : lint
 
 fix : ## Fix .env files and Docker Compose linting violations
