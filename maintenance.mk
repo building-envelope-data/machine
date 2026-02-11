@@ -76,10 +76,10 @@ prune-backups : ## Keep the most recent 7 backups, delete the rest
 			rm --recursive --dir --
 .PHONY : prune-backups
 
-restart : ## Restart services, for example, `./maintenance.mk restart SERVICE=backend ENVIRONMENT=staging`
+restart : ## Restart service `${SERVICE}`, for example, `./maintenance.mk restart SERVICE=backend ENVIRONMENT=staging`
 	$(MAKE) \
 		--directory=/app/${ENVIRONMENT} \
-		--file=/app/${ENVIRONMENT}/docker.mk \
+		--file=/app/${ENVIRONMENT}/deploy.mk \
 		begin-maintenance \
 		restart \
 		end-maintenance \
