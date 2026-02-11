@@ -35,6 +35,16 @@ prune-docker : ## Prune docker
 	docker system prune \
 		--force \
 		--filter "until=24h"
+	docker image prune \
+		--force \
+		--all \
+		--filter "until=$(shell (30*24))h" \
+		--filter "label=com.docker.compose.service=backend"
+	docker image prune \
+		--force \
+		--all \
+		--filter "until=$(shell (30*24))h" \
+		--filter "label=com.docker.compose.service=frontend"
 .PHONY : prune-docker
 
 backup : ## Backup production database
