@@ -356,7 +356,7 @@
 
         - name: Configure GnuPG
           ansible.builtin.template:
-            src: gnupg.yaml.j2
+            src: gnupg.conf.j2
             dest: ~/.gnupg/common.conf
             owner: cloud
             group: cloud
