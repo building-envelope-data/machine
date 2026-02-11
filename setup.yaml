@@ -250,7 +250,7 @@
         - name: Copy user-specific `mstprc` configuration file
           ansible.builtin.template:
             src: msmtprc.j2
-            dest: ~/.msmtprc
+            dest: "{{ ansible_env.HOME | mandatory }}/.msmtprc"
             mode: "0644"
           notify: Send test email as cloud
 
@@ -355,15 +355,17 @@
             state: present
 
         - name: Configure GnuPG
+          become: false
           ansible.builtin.template:
             src: gnupg.conf.j2
-            dest: ~/.gnupg/common.conf
+            dest: /home/cloud/.gnupg/common.conf
             mode: "0600"
 
         - name: Configure GnuPG Agent
+          become: false
           ansible.builtin.template:
             src: gpg-agent.conf.j2
-            dest: ~/.gnupg/gpg-agent.conf
+            dest: /home/cloud/.gnupg/gpg-agent.conf
             mode: "0600"
 
         - name: Kill GnuPG daemons to apply changes
