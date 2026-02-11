@@ -354,13 +354,13 @@
             name: gnupg2
             state: present
 
-        - name: Disable keyboxd in GnuPG common.conf
-          ansible.builtin.lineinfile:
-            path: "~/.gnupg/common.conf"
-            line: "no-use-keyboxd"
-            create: yes
-            mode: '0600'
-            state: present
+        - name: Configure GnuPG
+          ansible.builtin.template:
+            src: gnupg.yaml.j2
+            dest: ~/.gnupg/common.conf
+            owner: cloud
+            group: cloud
+            mode: "0600"
 
         - name: Kill GnuPG daemons to apply changes
           ansible.builtin.command: "gpgconf --kill all"
