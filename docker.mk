@@ -55,7 +55,6 @@ setup : OPTIONS =
 setup : htpasswd ## Setup machine by running `ansible-playbook` with options `${OPTIONS}`, for example, `./docker.mk setup` or `./docker.mk OPTIONS="--start-at-task 'Install Monit'" setup`
 	./ansible-playbook.sh \
 		./setup.yaml \
-		--skip-tags "skip_in_${ENVIRONMENT}" \
 		${OPTIONS}
 .PHONY : setup
 
@@ -132,7 +131,7 @@ reload-daemon : ## Reload Docker daemon
 
 renew-tls : ## Renew Transport Layer Security (TLS) certificates needed for the `S` in `HTTPS` (used by Cron)
 	$(MAKE) --file=./certificates.mk renew
-	$(MAKE) --file="${SELF}" deploy
+	$(MAKE) --file="${SELF}" up SERVICE=reverse_proxy
 .PHONY : renew-tls
 
 shellcheck = \
