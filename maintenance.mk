@@ -38,12 +38,12 @@ prune-docker : ## Prune docker
 	docker image prune \
 		--force \
 		--all \
-		--filter "until=$(shell (30*24))h" \
+		--filter "until=$(shell echo $$((30*24)))h" \
 		--filter "label=com.docker.compose.service=backend"
 	docker image prune \
 		--force \
 		--all \
-		--filter "until=$(shell (30*24))h" \
+		--filter "until=$(shell echo $$((30*24)))h" \
 		--filter "label=com.docker.compose.service=frontend"
 .PHONY : prune-docker
 
@@ -56,7 +56,7 @@ backup : ## Backup production database
 		begin-maintenance \
 		backup \
 		end-maintenance \
-		DIR=/app/data/backups/$(shell date +"\%Y-\%m-\%d_\%H_\%M_\%S")
+		DIR="/app/data/backups/$(shell date +"\%Y-\%m-\%d_\%H_\%M_\%S")"
 .PHONY : backup-database
 
 # Inspired by https://stackoverflow.com/questions/25785/delete-all-but-the-most-recent-x-files-in-bash/34862475#34862475
