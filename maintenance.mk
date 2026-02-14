@@ -56,8 +56,8 @@ backup : ## Backup production database
 		begin-maintenance \
 		backup \
 		end-maintenance \
-		DIR="/app/data/backups/$(shell date +"\%Y-\%m-\%d_\%H_\%M_\%S")"
-.PHONY : backup-database
+		DIR="/app/data/backups/$(shell date +"%Y-%m-%d_%H_%M_%S")"
+.PHONY : backup
 
 # Inspired by https://stackoverflow.com/questions/25785/delete-all-but-the-most-recent-x-files-in-bash/34862475#34862475
 prune-backups : ## Keep the most recent 7 backups, delete the rest
