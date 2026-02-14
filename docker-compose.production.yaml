@@ -105,7 +105,7 @@ services:
     command:
       - "-storageDataPath=/storage"
       - "-loggerFormat=json"
-      - "-retentionPeriod=7d"
+      - "-retentionPeriod=1d"
     restart: "unless-stopped"
     healthcheck:
       test: [ "CMD", "wget", "-qO-", "http://127.0.0.1:8428/health" ]
