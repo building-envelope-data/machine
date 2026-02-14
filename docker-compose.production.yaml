@@ -13,26 +13,9 @@
 # https://github.com/VictoriaMetrics/VictoriaLogs/blob/master/deployment/docker/victorialogs/compose-base.yaml
 # https://github.com/VictoriaMetrics/VictoriaLogs/blob/master/deployment/docker/victorialogs/vector/compose-base.yaml
 
-name: "${NAME}"
+name: "${NAME}_${ENVIRONMENT}"
 
 services:
-  # Monitor and restart unhealthy docker containers
-  # https://github.com/willfarrell/docker-autoheal
-  autoheal:
-    image: "willfarrell/autoheal:latest"
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /var/run/docker.sock:/var/run/docker.sock
-    environment:
-      AUTOHEAL_CONTAINER_LABEL: "autoheal"
-      AUTOHEAL_START_PERIOD: "120"
-      AUTOHEAL_DEFAULT_STOP_TIMEOUT: "60"
-      AUTOHEAL_ONLY_MONITOR_RUNNING: "true"
-    network_mode: "none"
-    restart: "always"
-    deploy:
-      replicas: 1
-
   # https://hub.docker.com/_/nginx
   reverse_proxy:
     image: "nginx:1.29-trixie-otel"
@@ -59,7 +42,7 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     command: [ "nginx", "-g", "daemon off;" ]
-    restart: "always"
+    restart: "unless-stopped"
     healthcheck:
       test: [ "CMD-SHELL", "service nginx status || exit 1" ]
       interval: "5s"
@@ -85,7 +68,7 @@ services:
   #     - ./../../dashboards/victorialogs-internal.json:/var/lib/grafana/dashboards/victorialogs-internal.json
   #   environment:
   #     - "GF_INSTALL_PLUGINS=victoriametrics-logs-datasource"
-  #   restart: always
+  #   restart: "unless-stopped"
   #   labels:
   #     autoheal: "true"
 
@@ -103,7 +86,7 @@ services:
       # - -journald.streamFields=_HOSTNAME,_SYSTEMD_UNIT,_PID
       # - -journald.ignoreFields=MESSAGE_ID,INVOCATION_ID,USER_INVOCATION_ID
       # - -journald.ignoreFields=_BOOT_ID,_MACHINE_ID,_SYSTEMD_INVOCATION_ID,_STREAM_ID,_UID
-    restart: "always"
+    restart: "unless-stopped"
     healthcheck:
       test: [ "CMD", "wget", "-qO-", "http://127.0.0.1:9428/health" ]
       interval: "1s"
@@ -123,7 +106,7 @@ services:
       - "-storageDataPath=/storage"
       - "-loggerFormat=json"
       - "-retentionPeriod=7d"
-    restart: "always"
+    restart: "unless-stopped"
     healthcheck:
       test: [ "CMD", "wget", "-qO-", "http://127.0.0.1:8428/health" ]
       interval: "1s"
@@ -142,7 +125,27 @@ services:
       - ./certbot/logs:/var/log/letsencrypt # --logs-dir
       - ./certbot/www:/var/www/certbot # --webroot-path
     profiles:
-      - manual
+      - "manual"
+
+  # Monitor and restart unhealthy docker containers
+  # https://github.com/willfarrell/docker-autoheal
+  autoheal:
+    image: "willfarrell/autoheal:latest"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      AUTOHEAL_CONTAINER_LABEL: "autoheal"
+      AUTOHEAL_INTERVAL: 120 # check every 120 seconds
+      AUTOHEAL_START_PERIOD: 120 # wait 120 seconds before first health check
+      AUTOHEAL_DEFAULT_STOP_TIMEOUT: 60 # wait 60 seconds for a container to stop before killing during restarts
+      AUTOHEAL_ONLY_MONITOR_RUNNING: true
+    network_mode: "none"
+    restart: "unless-stopped"
+    deploy:
+      replicas: 1
+    profiles:
+      - "manual"
 
 volumes:
   logs:
