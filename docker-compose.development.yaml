@@ -13,7 +13,7 @@
 # https://github.com/VictoriaMetrics/VictoriaLogs/blob/master/deployment/docker/victorialogs/compose-base.yaml
 # https://github.com/VictoriaMetrics/VictoriaLogs/blob/master/deployment/docker/victorialogs/vector/compose-base.yaml
 
-name: "${NAME}"
+name: "${NAME}_${ENVIRONMENT}"
 
 services:
   # https://hub.docker.com/_/nginx
@@ -154,8 +154,10 @@ services:
       dockerfile: "./Dockerfile.development"
     volumes:
       - .:/app/machine
-    environment:
-      TELEMETRY_DATA_HOST: "host.docker.internal"
+    ports:
+      - "0.0.0.0:${MONITOR_HTTP_PORT:?required}:${MONITOR_HTTP_PORT:?required}"
+      - "0.0.0.0:${TELEMETRY_GPRC_PORT:?required}:${TELEMETRY_GPRC_PORT:?required}"
+      - "0.0.0.0:${TELEMETRY_HTTP_PORT:?required}:${TELEMETRY_HTTP_PORT:?required}"
     extra_hosts:
       - "host.docker.internal:host-gateway"
     profiles:
