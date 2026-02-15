@@ -439,16 +439,16 @@
       # https://vector.dev/
       become: true
       block:
-        - name: Add Vector key
-          ansible.builtin.apt_key:
-            url: https://keys.datadoghq.com/DATADOG_APT_KEY_CURRENT.public
-            id: 5F1E256061D813B125E156E8E6266D4AC0962C7D
-            state: present
-
         - name: Add Vector repository
-          ansible.builtin.apt_repository:
-            repo: deb [arch=amd64] https://apt.vector.dev stable vector-0
-            state: present
+          ansible.builtin.deb822_repository:
+              name: vector
+              types: deb
+              uris: "https://apt.vector.dev"
+              suites: stable
+              components: vector-0
+              architectures: amd64
+              signed_by: "https://keys.datadoghq.com/DATADOG_APT_KEY_CURRENT.public"
+              state: present
 
         - name: Install Vector
           ansible.builtin.package:
@@ -492,9 +492,14 @@
       block:
         - name: Add Debian backports
           # https://backports.debian.org/
-          ansible.builtin.apt_repository:
-            repo: deb [arch=amd64] http://deb.debian.org/debian {{ ansible_distribution_release | mandatory }}-backports main
-            state: present
+          ansible.builtin.deb822_repository:
+              name: debian-backports
+              types: deb
+              uris: "http://deb.debian.org/debian"
+              suites: "{{ ansible_distribution_release | mandatory }}-backports"
+              components: main
+              architectures: amd64
+              state: present
 
         - name: Install Monit
           ansible.builtin.package:
