@@ -52,10 +52,7 @@ backup : ## Backup production database
 	$(MAKE) \
 		--directory=/app/production \
 		--file=/app/production/deploy.mk \
-		--keep-going \
-		begin-maintenance \
 		backup \
-		end-maintenance \
 		DIR="/app/data/backups/$(shell date +"%Y-%m-%d_%H_%M_%S")"
 .PHONY : backup
 
@@ -76,10 +73,11 @@ prune-backups : ## Keep the most recent 7 backups, delete the rest
 			rm --recursive --dir --
 .PHONY : prune-backups
 
-restart : ## Restart service `${SERVICE}`, for example, `./maintenance.mk restart SERVICE=backend ENVIRONMENT=staging`
+restart : ## Restart service `${SERVICE}` in environment `${ENV}`, for example, `./maintenance.mk restart SERVICE=backend ENV=staging`
 	$(MAKE) \
-		--directory=/app/${ENVIRONMENT} \
-		--file=/app/${ENVIRONMENT}/deploy.mk \
+		--directory=/app/${ENV} \
+		--file=/app/${ENV}/deploy.mk \
+		--keep-going \
 		begin-maintenance \
 		restart \
 		end-maintenance \
