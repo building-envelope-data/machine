@@ -41,6 +41,15 @@ crontab : ## List user's and root's contab
 	sudo crontab -u root -l
 .PHONY : crontab
 
+# https://sshguard.net/docs/sshguard-setup.html
+sshguard : ## Inspect SSHGuard
+	systemctl cat sshguard
+	cat /etc/sshguard/sshguard.conf
+	sudo nft list set ip sshguard attackers
+	sudo nft list set ip6 sshguard attackers
+	sudo nft list table ip sshguard
+	sudo nft list table ip6 sshguard
+
 ansible-config : ## Dump Ansible config
 	ansible-config dump
 	ansible-config view

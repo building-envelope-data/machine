@@ -4,6 +4,13 @@
   connection: local
 
   handlers:
+    - name: Restart SSH
+      become: true
+      service:
+        name: sshd
+        state: restarted
+      when: lookup("env", "ENVIRONMENT") != "development"
+
     - name: Restart Docker
       become: true
       ansible.builtin.service:
@@ -330,6 +337,34 @@
             minute: 20
             hour: 3
             job: "chronic make --directory=/app/machine --file=/app/machine/logs.mk rotate vacuum clean-up"
+
+    - name: Protect SSH
+      block:
+        - name: Install nftables and SSHGuard
+          ansible.builtin.package:
+            name:
+              - nftables
+              - sshguard
+            state: present
+
+        - name: Enable SSHGuard service to start on boot
+          ansible.builtin.service:
+            name: sshguard
+            enabled: true
+            state: started
+
+        - name: Configure SSH
+          ansible.builtin.copy:
+            src: sshd_config.conf
+            dest: /etc/ssh/sshd_config
+            owner: root
+            group: root
+            mode: "0644"
+          notify:
+            - Restart SSH
+
+        - name: Flush handlers to restart SSH
+          ansible.builtin.meta: flush_handlers
 
     - name: GnuPG
       become: true
