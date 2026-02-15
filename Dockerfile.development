@@ -99,25 +99,27 @@ WORKDIR /app/machine
 
 RUN pipx ensurepath \
   && pipx install --include-deps ansible==12.3 \
-  && pipx install --include-deps ansible-dev-tools==26.1 \
-  && pipx inject ansible-dev-tools ansible
+  && pipx inject --include-deps --include-apps \
+    ansible \
+    python-debian==1.1.0 \
+    ansible-dev-tools==26.1
 # eval '"$(register-python-argcomplete pipx)"' \
 #   >> "${HOME}/.bash_profile"
 
-RUN mkdir --parents /app/production/secrets \
-  && mkdir --parents /app/staging/secrets \
+RUN mkdir --parents /app/{production,staging}/secrets \
   && touch /app/production/.env \
-  && touch /app/staging/.env \
-  && touch /app/production/secrets/postgres_password \
-  && touch /app/staging/secrets/postgres_password \
-  && touch /app/production/secrets/postgres_passwords \
-  && touch /app/staging/secrets/postgres_passwords \
-  && sudo chmod 600 /app/production/.env \
-  && sudo chmod 600 /app/staging/.env \
-  && sudo chmod 600 /app/production/secrets/postgres_password \
-  && sudo chmod 600 /app/staging/secrets/postgres_password \
-  && sudo chmod 600 /app/production/secrets/postgres_passwords \
-  && sudo chmod 600 /app/staging/secrets/postgres_passwords
+    /app/staging/.env \
+    /app/production/secrets/postgres_password \
+    /app/staging/secrets/postgres_password \
+    /app/production/secrets/postgres_passwords \
+    /app/staging/secrets/postgres_passwords \
+  && sudo chmod 600 \
+    /app/production/.env \
+    /app/staging/.env \
+    /app/production/secrets/postgres_password \
+    /app/staging/secrets/postgres_password \
+    /app/production/secrets/postgres_passwords \
+    /app/staging/secrets/postgres_passwords
 
 ENV SHELL=/bin/bash
 
