@@ -338,7 +338,8 @@
             hour: 3
             job: "chronic make --directory=/app/machine --file=/app/machine/logs.mk rotate vacuum clean-up"
 
-    - name: Protect SSH
+    - name: Harden SSH
+      become: true
       block:
         - name: Install nftables and SSHGuard
           ansible.builtin.package:
