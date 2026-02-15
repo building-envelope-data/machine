@@ -369,11 +369,6 @@
     - name: GnuPG
       become: true
       block:
-        - name: Install required dependency for deb822_repository
-          ansible.builtin.package:
-            name: python3-debian
-            state: present
-
         - name: Add GnuPG repository
           ansible.builtin.deb822_repository:
               name: gnupg2
@@ -394,11 +389,6 @@
       # Inspired by https://ops.tips/blog/docker-ansible-role/
       become: true
       block:
-        - name: Install required dependency for deb822_repository
-          ansible.builtin.package:
-            name: python3-debian
-            state: present
-
         - name: Add Docker repository
           ansible.builtin.deb822_repository:
               name: gnupg2
