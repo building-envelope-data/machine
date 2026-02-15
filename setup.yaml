@@ -9,21 +9,21 @@
       ansible.builtin.service:
         name: docker
         state: restarted
-      tags: skip_in_development
+      when: lookup("env", "ENVIRONMENT") != "development"
 
     - name: Reload Vector
       become: true
       ansible.builtin.service:
         name: vector
         state: reloaded
-      tags: skip_in_development
+      when: lookup("env", "ENVIRONMENT") != "development"
 
     - name: Reload Monit
       become: true
       ansible.builtin.service:
         name: monit
         state: reloaded
-      tags: skip_in_development
+      when: lookup("env", "ENVIRONMENT") != "development"
 
     - name: Send test email as root
       become: true
@@ -34,7 +34,7 @@
             | mail -s "Test SMTP `hostname`" root
         executable: /bin/bash
       changed_when: false
-      tags: skip_in_development
+      when: lookup("env", "ENVIRONMENT") != "development"
 
     - name: Send test email as cloud
       ansible.builtin.shell:
@@ -44,7 +44,7 @@
             | mail -s "Test SMTP `hostname`" cloud
         executable: /bin/bash
       changed_when: false
-      tags: skip_in_development
+      when: lookup("env", "ENVIRONMENT") != "development"
 
   pre_tasks:
     - name: Ensure environment variables used below are set
@@ -89,6 +89,7 @@
 
   tasks:
     - name: Grant user `cloud` read-only access to journald
+      become: true
       ansible.builtin.user:
         name: cloud
         groups: systemd-journal
@@ -327,27 +328,21 @@
     - name: GnuPG
       become: true
       block:
-        - name: Add GnuPG dependencies
+        - name: Install required dependency for deb822_repository
           ansible.builtin.package:
-            name:
-              - apt-transport-https
-              - ca-certificates
-              - curl
-              - gnupg2
-              - lsb-release
-            state: present
-
-        - name: Add GnuPG key
-          ansible.builtin.apt_key:
-            url: https://repos.gnupg.org/deb/gnupg/bookworm/gnupg-signing-key.gpg
-            id: 32097B719B3745D6E61DDA1B85C45AE3E1A2B355
+            name: python3-debian
             state: present
 
         - name: Add GnuPG repository
-          ansible.builtin.apt_repository:
-            repo: deb [arch=amd64] https://repos.gnupg.org/deb/gnupg/{{ ansible_distribution_release | mandatory }}/ {{ ansible_distribution_release | mandatory
-              }} main
-            state: present
+          ansible.builtin.deb822_repository:
+              name: gnupg2
+              types: deb
+              uris: "https://repos.gnupg.org/deb/gnupg/{{ ansible_distribution_release | mandatory }}/"
+              suites: "{{ ansible_distribution_release | mandatory }}"
+              components: main
+              architectures: amd64
+              signed_by: "https://repos.gnupg.org/deb/gnupg/bookworm/gnupg-signing-key.gpg"
+              state: present
 
         - name: Install GnuPG
           ansible.builtin.package:
@@ -358,36 +353,30 @@
       # Inspired by https://ops.tips/blog/docker-ansible-role/
       become: true
       block:
-        - name: Add Docker dependencies
+        - name: Install required dependency for deb822_repository
+          ansible.builtin.package:
+            name: python3-debian
+            state: present
+
+        - name: Add Docker repository
+          ansible.builtin.deb822_repository:
+              name: gnupg2
+              types: deb
+              uris: "https://download.docker.com/linux/debian"
+              suites: "{{ ansible_distribution_release | mandatory }}"
+              components: stable
+              architectures: amd64
+              signed_by: "https://download.docker.com/linux/debian/gpg"
+              state: present
+
+        - name: Install Docker Engine, containerd, and Docker Compose
           ansible.builtin.package:
             name:
-              - apt-transport-https
-              - ca-certificates
-              - curl
-              - gnupg2
-              - lsb-release
+              - docker-ce
+              - docker-ce-cli
+              - containerd.io
+              - docker-compose-plugin
             state: present
-
-        - name: Add Docker key
-          ansible.builtin.apt_key:
-            url: https://download.docker.com/linux/debian/gpg
-            id: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88
-            state: present
-
-        - name: Docker Community Edition
-          block:
-            - name: Add Docker repository
-              ansible.builtin.apt_repository:
-                repo: deb [arch=amd64] https://download.docker.com/linux/debian {{ ansible_distribution_release | mandatory }} stable
-                state: present
-            - name: Docker Engine, containerd, and Docker Compose
-              ansible.builtin.package:
-                name:
-                  - docker-ce
-                  - docker-ce-cli
-                  - containerd.io
-                  - docker-compose-plugin
-                state: present
 
         - name: Prepare default daemon configuration
           # For a list of options see
@@ -460,6 +449,7 @@
             name: monit.service
             enabled: true
             state: started
+          when: lookup("env", "ENVIRONMENT") != "development"
 
         - name: Flush handlers to reload Vector
           ansible.builtin.meta: flush_handlers

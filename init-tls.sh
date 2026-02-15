@@ -32,10 +32,8 @@ fi
 
 echo "### Creating certbot config, working, logs, and certificates directories ./certbot/* ..."
 mkdir --parents \
-  "./certbot/conf/accounts" \
-  "./certbot/letsencrypt" \
-  "./certbot/logs" \
-  "./certbot/www"
+  "./certbot/{conf,letsencrypt,logs,www}" \
+  "./certbot/conf/accounts"
 chmod --recursive 755 "./certbot"
 chmod --recursive 700 \
   "./certbot/conf/accounts" \
@@ -63,24 +61,24 @@ if [[ "${ENVIRONMENT}" != "development" ]]; then
   echo "### Deleting dummy certificate for ${domains[0]} ..."
   ./certificates.mk DOMAIN="${domains[0]}" delete
   echo
+
+  echo "### Requesting Let's Encrypt certificate for ${domains[0]} ..."
+  # Join ${domains} to -d args
+  domain_args=""
+  for domain in "${domains[@]}"; do
+    if [[ -n "${domain}" ]]; then
+      domain_args="${domain_args} -d \"${domain}\""
+    fi
+  done
+
+  # Enable staging mode if needed
+  staging_arg=""
+  if [[ ${staging} != "0" ]]; then staging_arg="--staging"; fi
+
+  ./certificates.mk \
+    STAGING_ARG="${staging_arg}" \
+    DOMAIN_ARGS="${domain_args}" \
+    EMAIL="${email}" \
+    request
+  echo
 fi
-
-echo "### Requesting Let's Encrypt certificate for ${domains[0]} ..."
-# Join ${domains} to -d args
-domain_args=""
-for domain in "${domains[@]}"; do
-  if [[ -n "${domain}" ]]; then
-    domain_args="${domain_args} -d \"${domain}\""
-  fi
-done
-
-# Enable staging mode if needed
-staging_arg=""
-if [[ ${staging} != "0" ]]; then staging_arg="--staging"; fi
-
-./certificates.mk \
-  STAGING_ARG="${staging_arg}" \
-  DOMAIN_ARGS="${domain_args}" \
-  EMAIL="${email}" \
-  request
-echo

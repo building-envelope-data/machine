@@ -79,7 +79,7 @@ branch `main` is always deployable.
      from [Let's Encrypt](https://letsencrypt.org) shall also be valid apart
      from `${HOST}`, `${PRODUCTION_SUBDOMAIN}.${HOST}`,
      `${STAGING_SUBDOMAIN}.${HOST}`, and `${TELEMETRY_SUBDOMAIN}.${HOST}` (it
-     is used in `./init-certbot.sh`);
+     is used in `./init-tls.sh`);
    - `HTTP_PORT` and `HTTPS_PORT` are the HTTP and HTTPS ports on which the
      NGINX reverse proxy is listening;
    - `PRODUCTION_HTTP_PORT` or `STAGING_HTTP_PORT` is the HTTP port on which the
@@ -155,7 +155,7 @@ branch `main` is always deployable.
    /var/run/docker.sock: connect: permission denied".
 1. Fetch Transport Security Protocol (TLS) certificates from [Let's
    Encrypt](https://letsencrypt.org) used for HTTPS by running
-   `./init-certbot.sh` (if you are unsure whether the script will work, set the
+   `./init-tls.sh` (if you are unsure whether the script will work, set the
    variable `staging` inside that script to `1` for a trial run).
 1. Start all services by running `make dotenv pull up`. On subsequent
    deployments just run `make deploy` to also rerun `setup`.
