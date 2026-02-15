@@ -51,7 +51,7 @@ branch `main` is always deployable.
    [Ansible](https://www.ansible.com) and
    [Ansible Development Tools](https://github.com/ansible/ansible-dev-tools)
    by running
-   `pipx ensurepath && pipx install --include-deps ansible && pipx install --include-deps python-debian && pipx inject ansible python-debian && pipx install --include-deps ansible-dev-tools && pipx inject ansible-dev-tools ansible`.
+   `pipx ensurepath && pipx install --include-deps ansible && pipx inject --include-deps --include-apps ansible python-debian ansible-dev-tools`.
 1. Create a symbolic link from `/app` to `~` by running
    `sudo ln --symbolic ~ /app`.
 1. Change into the app directory by running `cd /app`.
