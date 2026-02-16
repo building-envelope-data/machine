@@ -26,17 +26,17 @@ sources:
     http:
       address: 0.0.0.0:{{ TELEMETRY_HTTP_PORT }}
 
-  host_metrics:
-    type: host_metrics
-    filesystem:
-      mountpoints:
-        excludes:
-          - /run/docker/*
-          - /home/cloud/data
-          - /home/cloud/data/*
+  # host_metrics:
+  #   type: host_metrics
+  #   filesystem:
+  #     mountpoints:
+  #       excludes:
+  #         - /run/docker/*
+  #         - /home/cloud/data
+  #         - /home/cloud/data/*
 
-  vector_metrics:
-    type: internal_metrics
+  # vector_metrics:
+  #   type: internal_metrics
 
   # postgresql_metrics
   #   type: postgresql_metrics
@@ -84,12 +84,12 @@ sinks:
       #               ......... journald ......... | ..... * ...... | docker_logs  | ............. opentelemetry ................
       _stream_fields: _HOSTNAME,_COMM,_SYSTEMD_UNIT,host,source_type,container_name,resources.service.name,attributes.Environment
 
-  metrics:
-    inputs:
-      - host_metrics
-      - vector_metrics
-      - opentelemetry.metrics
-    type: prometheus_remote_write
-    endpoint: http://localhost:{{ METRICS_HTTP_PORT }}/api/v1/write
-    healthcheck:
-      enabled: false
+  # metrics:
+  #   inputs:
+  #     - host_metrics
+  #     - vector_metrics
+  #     - opentelemetry.metrics
+  #   type: prometheus_remote_write
+  #   endpoint: http://localhost:{{ METRICS_HTTP_PORT }}/api/v1/write
+  #   healthcheck:
+  #     enabled: false
