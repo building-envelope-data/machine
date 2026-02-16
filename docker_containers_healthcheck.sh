@@ -12,19 +12,17 @@ echo "Docker Healthcheck"
 running_containers="$(docker ps --no-trunc --all --filter status=running --format '{{.Names}} {{.Status}}')"
 echo "  Running Containers: '${running_containers}'" | tr '\n' '\t'
 
-environment=machine
+project=machine
 services="$(make --silent --directory=/app/machine --file=/app/machine/docker.mk list-services | tr '\n' ' ')"
-echo "  Environment: '${environment}'"
+echo "  project: '${project}'"
 echo "    Services: '${services}'"
 for service in ${services}; do
-  if [[ ${service} != "certbot" ]] && [[ ${service} != "machine" ]]; then
-    if echo "${running_containers}" | grep --quiet --extended-regexp "^${environment}-${service}-[0-9] [ a-zA-Z0-9]+ \(healthy\)$"; then
-      echo "    Service '${service}' is running and healthy"
-    else
-      service_info="$(docker ps --no-trunc --all --filter name="${environment}-${service}" --format '{{.ID}} {{.Image}} {{.Command}} {{.CreatedAt}} {{.Status}} {{.Ports}} {{.Names}}')"
-      echo "    Service '${service}' is not running and/or not healthy: ${service_info}"
-      exit 1
-    fi
+  if echo "${running_containers}" | grep --quiet --extended-regexp "^${project}_[a-zA-Z]+-${service}-[0-9] [ a-zA-Z0-9]+ \(healthy\)$"; then
+    echo "    Service '${service}' is running and healthy"
+  else
+    service_info="$(docker ps --no-trunc --all --filter name="${project}_^[a-zA-Z]+-${service}" --format '{{.ID}} {{.Image}} {{.Command}} {{.CreatedAt}} {{.Status}} {{.Ports}} {{.Names}}')"
+    echo "    Service '${service}' is not running and/or not healthy: ${service_info}"
+    exit 1
   fi
 done
 
