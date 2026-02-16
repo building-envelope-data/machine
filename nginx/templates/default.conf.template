@@ -122,17 +122,17 @@ server {
         proxy_pass http://staging;
     }
 
-    location /graphql/ {
+    location /graphql {
         auth_basic "off";
         proxy_pass http://staging;
     }
 
-    location /.well-known/ {
+    location /.well-known {
         auth_basic "off";
         proxy_pass http://staging;
     }
 
-    location /connect/ {
+    location /connect {
         auth_basic "off";
         proxy_pass http://staging;
     }
