@@ -114,6 +114,8 @@ services:
       retries: "10"
     labels:
       autoheal: "true"
+    profiles:
+      - "manual"
 
   # Fetch TLS certificates from Let's Encrypt
   # https://hub.docker.com/r/certbot/certbot
