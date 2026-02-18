@@ -40,23 +40,23 @@ map $http_upgrade $connection_upgrade {
 }
 
 upstream production {
-  server host.docker.internal:${PRODUCTION_HTTP_PORT};
+  server host.docker.internal:${PRODUCTION_HTTP_PORT} max_fails=0;
 }
 
 upstream staging {
-  server host.docker.internal:${STAGING_HTTP_PORT};
+  server host.docker.internal:${STAGING_HTTP_PORT} max_fails=0;
 }
 
 upstream monitor {
-  server host.docker.internal:${MONITOR_HTTP_PORT};
+  server host.docker.internal:${MONITOR_HTTP_PORT} max_fails=0;
 }
 
 upstream logs {
-  server host.docker.internal:${LOGS_HTTP_PORT};
+  server host.docker.internal:${LOGS_HTTP_PORT} max_fails=0;
 }
 
 upstream metrics {
-  server host.docker.internal:${METRICS_HTTP_PORT};
+  server host.docker.internal:${METRICS_HTTP_PORT} max_fails=0;
 }
 
 server {
