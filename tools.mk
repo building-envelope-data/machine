@@ -41,6 +41,22 @@ crontab : ## List user's and root's contab
 	sudo crontab -u root -l
 .PHONY : crontab
 
+job : ## Test run the command `${COMMAND}` in a Cron-like environment
+	env \
+		--ignore-environment \
+		HOME="$${HOME}" \
+		USER="$${USER}" \
+		PATH="/usr/local/bin/:/usr/bin:/bin" \
+		SHELL="/bin/sh" \
+		setsid \
+		${COMMAND} \
+		</dev/null \
+		>/tmp/cron_debug.log \
+		2>&1
+	cat /tmp/cron_debug.log
+	rm /tmp/cron_debug.log
+.PHONY : job
+
 # https://sshguard.net/docs/sshguard-setup.html
 sshguard : ## Inspect SSHGuard
 	systemctl cat sshguard
