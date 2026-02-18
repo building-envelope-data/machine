@@ -8,6 +8,7 @@ set -o pipefail
 trap 's=$?; echo >&2 "$0: Error on line "$LINENO": $BASH_COMMAND"; exit $s' ERR
 
 echo "Docker Healthcheck"
+exit_status=0
 
 running_containers="$(docker ps --no-trunc --all --filter status=running --format '{{.Names}} {{.Status}}')"
 echo "  Running Containers: '${running_containers}'" | tr '\n' '\t'
@@ -21,8 +22,8 @@ for service in ${services}; do
     echo "    Service '${service}' is running and healthy"
   else
     service_info="$(docker ps --no-trunc --all --filter name="${project}_^[a-zA-Z]+-${service}" --format '{{.ID}} {{.Image}} {{.Command}} {{.CreatedAt}} {{.Status}} {{.Ports}} {{.Names}}')"
-    echo "    Service '${service}' is not running and/or not healthy: ${service_info}"
-    exit 1
+    echo "    Service '${service}' is not running and/or not healthy: ${service_info}" >&2
+    exit_status=1
   fi
 done
 
@@ -35,9 +36,10 @@ for environment in staging production; do
       echo "    Service '${service}' is running and healthy"
     else
       service_info="$(docker ps --no-trunc --all --filter name="${environment}-${service}" --format '{{.ID}} {{.Image}} {{.Command}} {{.CreatedAt}} {{.Status}} {{.Ports}} {{.Names}}')"
-      echo "    Service '${service}' is not running and/or not healthy: ${service_info}"
+      echo "    Service '${service}' is not running and/or not healthy: ${service_info}" >&2
       exit 1
+      exit_status=2
     fi
   done
 done
-exit 0
+exit $exit_status
