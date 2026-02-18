@@ -37,7 +37,6 @@ for environment in staging production; do
     else
       service_info="$(docker ps --no-trunc --all --filter name="${environment}-${service}" --format '{{.ID}} {{.Image}} {{.Command}} {{.CreatedAt}} {{.Status}} {{.Ports}} {{.Names}}')"
       echo "    Service '${service}' is not running and/or not healthy: ${service_info}" >&2
-      exit 1
       exit_status=2
     fi
   done
