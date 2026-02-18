@@ -16,8 +16,8 @@ sources:
     #   - database_production-backend
     #   - database_staging-backend
 
-  vector_logs:
-    type: internal_logs
+  # vector_logs:
+  #   type: internal_logs
 
   opentelemetry:
     type: opentelemetry
@@ -63,7 +63,7 @@ sinks:
     inputs:
       - journald
       - filtered_docker_logs
-      - vector_logs
+      # - vector_logs
       - opentelemetry.logs
     type: elasticsearch
     endpoints: [http://localhost:{{ LOGS_HTTP_PORT }}/insert/elasticsearch/]
