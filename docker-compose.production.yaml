@@ -13,7 +13,7 @@
 # https://github.com/VictoriaMetrics/VictoriaLogs/blob/master/deployment/docker/victorialogs/compose-base.yaml
 # https://github.com/VictoriaMetrics/VictoriaLogs/blob/master/deployment/docker/victorialogs/vector/compose-base.yaml
 
-name: "${NAME}_${ENVIRONMENT}"
+name: "${NAME}"
 
 services:
   # https://hub.docker.com/_/nginx
@@ -41,10 +41,10 @@ services:
       - "0.0.0.0:${HTTPS_PORT:?required}:443"
     extra_hosts:
       - "host.docker.internal:host-gateway"
-    command: [ "nginx", "-g", "daemon off;" ]
+    command: ["nginx", "-g", "daemon off;"]
     restart: "unless-stopped"
     healthcheck:
-      test: [ "CMD-SHELL", "service nginx status || exit 1" ]
+      test: ["CMD-SHELL", "service nginx status || exit 1"]
       interval: "5s"
       timeout: "5s"
       retries: "5"
@@ -88,7 +88,7 @@ services:
       # - -journald.ignoreFields=_BOOT_ID,_MACHINE_ID,_SYSTEMD_INVOCATION_ID,_STREAM_ID,_UID
     restart: "unless-stopped"
     healthcheck:
-      test: [ "CMD", "wget", "-qO-", "http://127.0.0.1:9428/health" ]
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:9428/health"]
       interval: "1s"
       timeout: "1s"
       retries: "10"
@@ -108,7 +108,7 @@ services:
       - "-retentionPeriod=1d"
     restart: "unless-stopped"
     healthcheck:
-      test: [ "CMD", "wget", "-qO-", "http://127.0.0.1:8428/health" ]
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8428/health"]
       interval: "1s"
       timeout: "1s"
       retries: "10"
