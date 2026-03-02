@@ -6,31 +6,31 @@
   handlers:
     - name: Restart SSH
       become: true
-      service:
+      ansible.builtin.service:
         name: sshd
         state: restarted
-      when: lookup("env", "ENVIRONMENT") != "development"
+      when: environment != "development"
 
     - name: Restart Docker
       become: true
       ansible.builtin.service:
         name: docker
         state: restarted
-      when: lookup("env", "ENVIRONMENT") != "development"
+      when: environment != "development"
 
     - name: Reload Vector
       become: true
       ansible.builtin.service:
         name: vector
         state: reloaded
-      when: lookup("env", "ENVIRONMENT") != "development"
+      when: environment != "development"
 
     - name: Reload Monit
       become: true
       ansible.builtin.service:
         name: monit
         state: reloaded
-      when: lookup("env", "ENVIRONMENT") != "development"
+      when: environment != "development"
 
     - name: Send test email as root
       become: true
@@ -41,7 +41,7 @@
             | mail -s "Test SMTP `hostname`" root
         executable: /bin/bash
       changed_when: false
-      when: lookup("env", "ENVIRONMENT") != "development"
+      when: environment != "development"
 
     - name: Send test email as cloud
       ansible.builtin.shell:
@@ -51,7 +51,7 @@
             | mail -s "Test SMTP `hostname`" cloud
         executable: /bin/bash
       changed_when: false
-      when: lookup("env", "ENVIRONMENT") != "development"
+      when: environment != "development"
 
   pre_tasks:
     - name: Ensure environment variables used below are set
@@ -73,6 +73,24 @@
         - SMTP_HOST
         - SMTP_PORT
         - NETWORK_INTERFACE
+
+    - name: Set facts from environment variables
+      ansible.builtin.set_fact:
+        host: "{{ lookup('env', 'HOST') }}"
+        production_subdomain: "{{ lookup('env', 'PRODUCTION_SUBDOMAIN') }}"
+        staging_subdomain: "{{ lookup('env', 'STAGING_SUBDOMAIN') }}"
+        telemetry_subdomain: "{{ lookup('env', 'TELEMETRY_SUBDOMAIN') }}"
+        monitor_http_port: "{{ lookup('env', 'MONITOR_HTTP_PORT') }}"
+        logs_http_port: "{{ lookup('env', 'LOGS_HTTP_PORT') }}"
+        metrics_http_port: "{{ lookup('env', 'METRICS_HTTP_PORT') }}"
+        telemetry_grpc_port: "{{ lookup('env', 'TELEMETRY_GPRC_PORT') }}"
+        telemetry_http_port: "{{ lookup('env', 'TELEMETRY_HTTP_PORT') }}"
+        email_address: "{{ lookup('env', 'EMAIL_ADDRESS') }}"
+        smtp_host: "{{ lookup('env', 'SMTP_HOST') }}"
+        smtp_port: "{{ lookup('env', 'SMTP_PORT') }}"
+        network_interface: "{{ lookup('env', 'NETWORK_INTERFACE') }}"
+        environment: "{{ lookup('env', 'ENVIRONMENT') }}"
+        from_email_address: "server@{{ lookup('env', 'HOST') }}"
 
     - name: Update package information
       become: true
@@ -162,7 +180,7 @@
     - name: Hard disk management
       block:
         - name: Install Small Computer System Interface (SCSI) tools
-        # Provides `rescan-scsi-bus.sh` used by `make scan`.
+          # Provides `rescan-scsi-bus.sh` used by `make scan`.
           become: true
           ansible.builtin.package:
             name: scsitools
@@ -196,9 +214,9 @@
 
     - name: Install and configure `msmtp` to be used by Cron and other services to send emails
       vars:
-        FROM_EMAIL_ADDRESS: 'server@{{ lookup("env", "HOST") }}'
-        SMTP_HOST: '{{ lookup("env", "SMTP_HOST") }}'
-        SMTP_PORT: '{{ lookup("env", "SMTP_PORT") }}'
+        FROM_EMAIL_ADDRESS: 'server@{{ host }}'
+        SMTP_HOST: '{{ smtp_host }}'
+        SMTP_PORT: '{{ smtp_port }}'
       block:
         - name: Uninstall `mailutils` which includes GNU `mail`
           # The problem with GNU `mail` combined with `msmtp` is that aliases
@@ -265,7 +283,7 @@
         - name: Copy `aliases` configuration file
           become: true
           vars:
-            EMAIL_ADDRESS: '{{ lookup("env", "EMAIL_ADDRESS") }}'
+            EMAIL_ADDRESS: '{{ email_address }}'
           ansible.builtin.template:
             src: aliases.j2
             dest: /etc/aliases
@@ -372,14 +390,14 @@
       block:
         - name: Add GnuPG repository
           ansible.builtin.deb822_repository:
-              name: gnupg2
-              types: deb
-              uris: "https://repos.gnupg.org/deb/gnupg/{{ ansible_distribution_release | mandatory }}/"
-              suites: "{{ ansible_distribution_release | mandatory }}"
-              components: main
-              architectures: amd64
-              signed_by: "https://repos.gnupg.org/deb/gnupg/bookworm/gnupg-signing-key.gpg"
-              state: present
+            name: gnupg2
+            types: deb
+            uris: "https://repos.gnupg.org/deb/gnupg/{{ ansible_distribution_release | mandatory }}/"
+            suites: "{{ ansible_distribution_release | mandatory }}"
+            components: main
+            architectures: amd64
+            signed_by: "https://repos.gnupg.org/deb/gnupg/bookworm/gnupg-signing-key.gpg"
+            state: present
 
         - name: Install GnuPG
           ansible.builtin.package:
@@ -392,14 +410,14 @@
       block:
         - name: Add Docker repository
           ansible.builtin.deb822_repository:
-              name: docker
-              types: deb
-              uris: "https://download.docker.com/linux/debian"
-              suites: "{{ ansible_distribution_release | mandatory }}"
-              components: stable
-              architectures: amd64
-              signed_by: "https://download.docker.com/linux/debian/gpg"
-              state: present
+            name: docker
+            types: deb
+            uris: "https://download.docker.com/linux/debian"
+            suites: "{{ ansible_distribution_release | mandatory }}"
+            components: stable
+            architectures: amd64
+            signed_by: "https://download.docker.com/linux/debian/gpg"
+            state: present
 
         - name: Install Docker Engine, containerd, and Docker Compose
           ansible.builtin.package:
@@ -441,14 +459,14 @@
       block:
         - name: Add Vector repository
           ansible.builtin.deb822_repository:
-              name: vector
-              types: deb
-              uris: "https://apt.vector.dev"
-              suites: stable
-              components: vector-0
-              architectures: amd64
-              signed_by: "https://keys.datadoghq.com/DATADOG_APT_KEY_CURRENT.public"
-              state: present
+            name: vector
+            types: deb
+            uris: "https://apt.vector.dev"
+            suites: stable
+            components: vector-0
+            architectures: amd64
+            signed_by: "https://keys.datadoghq.com/DATADOG_APT_KEY_CURRENT.public"
+            state: present
 
         - name: Install Vector
           ansible.builtin.package:
@@ -457,10 +475,10 @@
 
         - name: Configure Vector
           vars:
-            LOGS_HTTP_PORT: '{{ lookup("env", "LOGS_HTTP_PORT") }}'
-            METRICS_HTTP_PORT: '{{ lookup("env", "METRICS_HTTP_PORT") }}'
-            TELEMETRY_GPRC_PORT: '{{ lookup("env", "TELEMETRY_GPRC_PORT") }}'
-            TELEMETRY_HTTP_PORT: '{{ lookup("env", "TELEMETRY_HTTP_PORT") }}'
+            LOGS_HTTP_PORT: '{{ logs_http_port }}'
+            METRICS_HTTP_PORT: '{{ metrics_http_port }}'
+            TELEMETRY_GPRC_PORT: '{{ telemetry_grpc_port }}'
+            TELEMETRY_HTTP_PORT: '{{ telemetry_http_port }}'
           ansible.builtin.template:
             src: vector.yaml.j2
             dest: /etc/vector/vector.yaml
@@ -478,10 +496,10 @@
 
         - name: Enable Vector systemd service to start on boot
           ansible.builtin.systemd:
-            name: monit.service
+            name: vector.service
             enabled: true
             state: started
-          when: lookup("env", "ENVIRONMENT") != "development"
+          when: environment != "development"
 
         - name: Flush handlers to reload Vector
           ansible.builtin.meta: flush_handlers
@@ -493,13 +511,13 @@
         - name: Add Debian backports
           # https://backports.debian.org/
           ansible.builtin.deb822_repository:
-              name: debian-backports
-              types: deb
-              uris: "http://deb.debian.org/debian"
-              suites: "{{ ansible_distribution_release | mandatory }}-backports"
-              components: main
-              architectures: amd64
-              state: present
+            name: debian-backports
+            types: deb
+            uris: "https://deb.debian.org/debian"
+            suites: "{{ ansible_distribution_release | mandatory }}-backports"
+            components: main
+            architectures: amd64
+            state: present
 
         - name: Install Monit
           ansible.builtin.package:
@@ -508,16 +526,16 @@
 
         - name: Configure Monit
           vars:
-            HOST: '{{ lookup("env", "HOST") }}'
-            PRODUCTION_HOST: '{{ lookup("env", "PRODUCTION_SUBDOMAIN") }}.{{ lookup("env", "HOST") }}'
-            STAGING_HOST: '{{ lookup("env", "STAGING_SUBDOMAIN") }}.{{ lookup("env", "HOST") }}'
-            TELEMETRY_HOST: '{{ lookup("env", "TELEMETRY_SUBDOMAIN") }}.{{ lookup("env", "HOST") }}'
-            EMAIL_ADDRESS: '{{ lookup("env", "EMAIL_ADDRESS") }}'
-            SMTP_HOST: '{{ lookup("env", "SMTP_HOST") }}'
-            SMTP_PORT: '{{ lookup("env", "SMTP_PORT") }}'
-            NETWORK_INTERFACE: '{{ lookup("env", "NETWORK_INTERFACE") }}'
-            MONITOR_HTTP_PORT: '{{ lookup("env", "MONITOR_HTTP_PORT") }}'
-            FROM_EMAIL_ADDRESS: 'monit@{{ lookup("env", "HOST") }}'
+            HOST: '{{ host }}'
+            PRODUCTION_HOST: '{{ production_subdomain }}.{{ host }}'
+            STAGING_HOST: '{{ staging_subdomain }}.{{ host }}'
+            TELEMETRY_HOST: '{{ telemetry_subdomain }}.{{ host }}'
+            EMAIL_ADDRESS: '{{ email_address }}'
+            SMTP_HOST: '{{ smtp_host }}'
+            SMTP_PORT: '{{ smtp_port }}'
+            NETWORK_INTERFACE: '{{ network_interface }}'
+            MONITOR_HTTP_PORT: '{{ monitor_http_port }}'
+            FROM_EMAIL_ADDRESS: 'monit@{{ host }}'
           ansible.builtin.template:
             src: monitrc.j2
             dest: /etc/monit/monitrc
@@ -546,7 +564,7 @@
         - name: Grant user `cloud` read-only access to Monit without a password
           community.general.sudoers:
             name: monit-nopasswd
-            user: username
+            user: cloud
             commands: /usr/bin/monit
             nopassword: yes
             state: present
