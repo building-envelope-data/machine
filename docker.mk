@@ -106,6 +106,9 @@ machine : ## Enter shell in the `machine` service for debugging and testing, for
 down : ## Stop containers and remove containers, networks, volumes, and images created by `deploy`
 	docker compose down \
 		--remove-orphans ${SERVICE}
+	docker volume prune \
+		--force \
+		--filter "label=com.docker.compose.project=${NAME}"
 .PHONY : down
 
 list : ## List all containers with health status
