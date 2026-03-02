@@ -170,6 +170,7 @@
           ansible.builtin.command:
             cmd: dpkg-reconfigure --force --frontend=noninteractive unattended-upgrades
             creates: /etc/apt/apt.conf.d/20auto-upgrades
+          changed_when: false
 
     - name: Install GNU Make
       become: true
@@ -396,7 +397,7 @@
             suites: "{{ ansible_distribution_release | mandatory }}"
             components: main
             architectures: amd64
-            signed_by: "https://repos.gnupg.org/deb/gnupg/bookworm/gnupg-signing-key.gpg"
+            signed_by: "https://repos.gnupg.org/deb/gnupg/{{ ansible_distribution_release | mandatory }}/gnupg-signing-key.gpg"
             state: present
 
         - name: Install GnuPG
