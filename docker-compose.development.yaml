@@ -26,6 +26,8 @@ services:
       - ./nginx/html:/etc/nginx/html:ro
       - ./certbot/conf:/etc/letsencrypt:ro
       - ./certbot/www:/var/www/certbot:ro
+      - ../development:/app/production:ro
+      - ../development:/app/staging:ro
     environment:
       HOST: "${HOST:?required}"
       PRODUCTION_SUBDOMAIN: "${PRODUCTION_SUBDOMAIN:?required}"

@@ -17,39 +17,39 @@ RUN \
 RUN \
   apt-get update && \
   apt-get install \
-    --assume-yes \
-    --no-install-recommends \
-    adduser \
-    sudo && \
+  --assume-yes \
+  --no-install-recommends \
+  adduser \
+  sudo && \
   existing_user_name="$( (getent passwd ${USER_ID} 2>/dev/null || true) | cut --delimiter=: --fields=1)" && \
   if test -n "${existing_user_name}"; then \
-    deluser "${existing_user_name}"; \
+  deluser "${existing_user_name}"; \
   fi && \
   existing_group_name="$( (getent group ${GROUP_ID} 2>/dev/null || true) | cut --delimiter=: --fields=1)" && \
   if test -n "${existing_group_name}"; then \
-    delgroup "${existing_group_name}"; \
+  delgroup "${existing_group_name}"; \
   fi && \
   addgroup \
-    --system \
-    --gid "${GROUP_ID}" \
-    cloud && \
+  --system \
+  --gid "${GROUP_ID}" \
+  cloud && \
   adduser \
-    --system \
-    --home /home/cloud \
-    --uid "${USER_ID}" \
-    --ingroup cloud \
-    cloud && \
+  --system \
+  --home /home/cloud \
+  --uid "${USER_ID}" \
+  --ingroup cloud \
+  cloud && \
   usermod \
-    --append \
-    --groups sudo \
-    cloud && \
+  --append \
+  --groups sudo \
+  cloud && \
   echo "cloud ALL=(ALL) NOPASSWD:ALL" \
-    >> /etc/sudoers.d/cloud && \
+  >> /etc/sudoers.d/cloud && \
   chmod 0440 /etc/sudoers.d/cloud && \
   rm \
-    --recursive \
-    --force \
-    /var/lib/apt/lists/*
+  --recursive \
+  --force \
+  /var/lib/apt/lists/*
 
 #############
 # As `root` #
@@ -63,28 +63,28 @@ RUN \
 ENV UBUNTU_CODENAME=jammy
 RUN apt-get update \
   && apt-get install \
-    --assume-yes \
-    --no-install-recommends \
-    cron \
-    less \
-    make \
-    neovim \
-    # npm \
-    pipx \
-    python3-apt \
-    systemd \
-    tini \
+  --assume-yes \
+  --no-install-recommends \
+  cron \
+  less \
+  make \
+  neovim \
+  # npm \
+  pipx \
+  python3-apt \
+  systemd \
+  tini \
   && rm \
-    --recursive \
-    --force \
-    /var/lib/apt/lists/*
+  --recursive \
+  --force \
+  /var/lib/apt/lists/*
 
 ENV HOME=/home/cloud
 RUN mkdir "${HOME}/machine" \
   && chown \
-    --recursive \
-    cloud:cloud \
-    "${HOME}/machine" \
+  --recursive \
+  cloud:cloud \
+  "${HOME}/machine" \
   && ln --symbolic "${HOME}" /app
 
 ###########
@@ -100,26 +100,19 @@ WORKDIR /app/machine
 RUN pipx ensurepath \
   && pipx install --include-deps ansible==12.3 \
   && pipx inject --include-deps --include-apps \
-    ansible \
-    python-debian==1.1.0 \
-    ansible-dev-tools==26.1
+  ansible \
+  python-debian==1.1.0 \
+  ansible-dev-tools==26.1
 # eval '"$(register-python-argcomplete pipx)"' \
 #   >> "${HOME}/.bash_profile"
 
-RUN mkdir --parents /app/{production,staging}/secrets \
+RUN mkdir --parents /app/{production,staging} \
   && touch /app/production/.env \
-    /app/staging/.env \
-    /app/production/secrets/postgres_password \
-    /app/staging/secrets/postgres_password \
-    /app/production/secrets/postgres_passwords \
-    /app/staging/secrets/postgres_passwords \
+  /app/staging/.env \
   && sudo chmod 600 \
-    /app/production/.env \
-    /app/staging/.env \
-    /app/production/secrets/postgres_password \
-    /app/staging/secrets/postgres_password \
-    /app/production/secrets/postgres_passwords \
-    /app/staging/secrets/postgres_passwords
+  /app/production/.env \
+  /app/staging/.env \
+  && sudo mkdir --mode=600 /etc/ssh
 
 ENV SHELL=/bin/bash
 

@@ -4,33 +4,39 @@
   connection: local
 
   handlers:
+    - name: Update package information
+      become: true
+      ansible.builtin.apt:
+        update_cache: true
+      changed_when: false
+
     - name: Restart SSH
       become: true
       ansible.builtin.service:
         name: sshd
         state: restarted
-      when: environment != "development"
+      when: dotenv_environment != "development"
 
     - name: Restart Docker
       become: true
       ansible.builtin.service:
         name: docker
         state: restarted
-      when: environment != "development"
+      when: dotenv_environment != "development"
 
     - name: Reload Vector
       become: true
       ansible.builtin.service:
         name: vector
         state: reloaded
-      when: environment != "development"
+      when: dotenv_environment != "development"
 
     - name: Reload Monit
       become: true
       ansible.builtin.service:
         name: monit
         state: reloaded
-      when: environment != "development"
+      when: dotenv_environment != "development"
 
     - name: Send test email as root
       become: true
@@ -41,7 +47,7 @@
             | mail -s "Test SMTP `hostname`" root
         executable: /bin/bash
       changed_when: false
-      when: environment != "development"
+      when: dotenv_environment != "development"
 
     - name: Send test email as cloud
       ansible.builtin.shell:
@@ -51,13 +57,13 @@
             | mail -s "Test SMTP `hostname`" cloud
         executable: /bin/bash
       changed_when: false
-      when: environment != "development"
+      when: dotenv_environment != "development"
 
   pre_tasks:
-    - name: Set facts from environment variables
+    - name: Awlays set facts from environment variables
       ansible.builtin.set_fact:
         # The filter `ansible.builtin.default(undef(), true)` yields undefined if the value evaluates to false or an empty string.
-        environment: "{{ lookup('ansible.builtin.env', 'ENVIRONMENT') | ansible.builtin.default(undef(), true) | ansible.builtin.mandatory }}"
+        dotenv_environment: "{{ lookup('ansible.builtin.env', 'ENVIRONMENT') | ansible.builtin.default(undef(), true) | ansible.builtin.mandatory }}"
         host: "{{ lookup('ansible.builtin.env', 'HOST') | ansible.builtin.default(undef(), true) | ansible.builtin.mandatory }}"
         production_subdomain: "{{ lookup('ansible.builtin.env', 'PRODUCTION_SUBDOMAIN') | ansible.builtin.default(undef(), true) | ansible.builtin.mandatory }}"
         staging_subdomain: "{{ lookup('ansible.builtin.env', 'STAGING_SUBDOMAIN') | ansible.builtin.default(undef(), true) | ansible.builtin.mandatory }}"
@@ -71,18 +77,21 @@
         smtp_host: "{{ lookup('ansible.builtin.env', 'SMTP_HOST') | ansible.builtin.default(undef(), true) | ansible.builtin.mandatory }}"
         smtp_port: "{{ lookup('ansible.builtin.env', 'SMTP_PORT') | ansible.builtin.default(undef(), true) | ansible.builtin.mandatory }}"
         network_interface: "{{ lookup('ansible.builtin.env', 'NETWORK_INTERFACE') | ansible.builtin.default(undef(), true) | ansible.builtin.mandatory }}"
+      tags: always
 
-    - name: Update package information
+    - name: Always update package information
       become: true
       ansible.builtin.apt:
         update_cache: true
       changed_when: false
+      tags: always
 
-    - name: Install access control list utilities (needed to escalate privileges, see https://github.com/ansible/ansible/issues/16052)
+    - name: Always install access control list utilities (needed to escalate privileges, see https://github.com/ansible/ansible/issues/16052)
       become: true
       ansible.builtin.package:
         name: acl
         state: present
+      tags: always
 
   post_tasks:
     - name: Clean (Advanced Package Tool) APT cache and remove unused dependencies
@@ -375,6 +384,10 @@
             architectures: amd64
             signed_by: "https://repos.gnupg.org/deb/gnupg/{{ ansible_distribution_release | mandatory }}/gnupg-signing-key.gpg"
             state: present
+          notify: Update package information
+
+        - name: Flush handlers to update package information
+          ansible.builtin.meta: flush_handlers
 
         - name: Install GnuPG
           ansible.builtin.package:
@@ -395,6 +408,10 @@
             architectures: amd64
             signed_by: "https://download.docker.com/linux/debian/gpg"
             state: present
+          notify: Update package information
+
+        - name: Flush handlers to update package information
+          ansible.builtin.meta: flush_handlers
 
         - name: Install Docker Engine, containerd, and Docker Compose
           ansible.builtin.package:
@@ -444,6 +461,10 @@
             architectures: amd64
             signed_by: "https://keys.datadoghq.com/DATADOG_APT_KEY_CURRENT.public"
             state: present
+          notify: Update package information
+
+        - name: Flush handlers to update package information
+          ansible.builtin.meta: flush_handlers
 
         - name: Install Vector
           ansible.builtin.package:
@@ -471,7 +492,6 @@
             name: vector.service
             enabled: true
             state: started
-          when: environment != "development"
 
         - name: Flush handlers to reload Vector
           ansible.builtin.meta: flush_handlers
@@ -490,6 +510,10 @@
             components: main
             architectures: amd64
             state: present
+          notify: Update package information
+
+        - name: Flush handlers to update package information
+          ansible.builtin.meta: flush_handlers
 
         - name: Install Monit
           ansible.builtin.package:
