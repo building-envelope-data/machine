@@ -54,43 +54,23 @@
       when: environment != "development"
 
   pre_tasks:
-    - name: Ensure environment variables used below are set
-      ansible.builtin.assert:
-        that:
-          - lookup('env', item) | length > 0
-        fail_msg: "The environment variable '{{ item }}' is not set."
-      loop:
-        - HOST
-        - PRODUCTION_SUBDOMAIN
-        - STAGING_SUBDOMAIN
-        - TELEMETRY_SUBDOMAIN
-        - MONITOR_HTTP_PORT
-        - LOGS_HTTP_PORT
-        - METRICS_HTTP_PORT
-        - TELEMETRY_GPRC_PORT
-        - TELEMETRY_HTTP_PORT
-        - EMAIL_ADDRESS
-        - SMTP_HOST
-        - SMTP_PORT
-        - NETWORK_INTERFACE
-
     - name: Set facts from environment variables
       ansible.builtin.set_fact:
-        host: "{{ lookup('env', 'HOST') }}"
-        production_subdomain: "{{ lookup('env', 'PRODUCTION_SUBDOMAIN') }}"
-        staging_subdomain: "{{ lookup('env', 'STAGING_SUBDOMAIN') }}"
-        telemetry_subdomain: "{{ lookup('env', 'TELEMETRY_SUBDOMAIN') }}"
-        monitor_http_port: "{{ lookup('env', 'MONITOR_HTTP_PORT') }}"
-        logs_http_port: "{{ lookup('env', 'LOGS_HTTP_PORT') }}"
-        metrics_http_port: "{{ lookup('env', 'METRICS_HTTP_PORT') }}"
-        telemetry_grpc_port: "{{ lookup('env', 'TELEMETRY_GPRC_PORT') }}"
-        telemetry_http_port: "{{ lookup('env', 'TELEMETRY_HTTP_PORT') }}"
-        email_address: "{{ lookup('env', 'EMAIL_ADDRESS') }}"
-        smtp_host: "{{ lookup('env', 'SMTP_HOST') }}"
-        smtp_port: "{{ lookup('env', 'SMTP_PORT') }}"
-        network_interface: "{{ lookup('env', 'NETWORK_INTERFACE') }}"
-        environment: "{{ lookup('env', 'ENVIRONMENT') }}"
-        from_email_address: "server@{{ lookup('env', 'HOST') }}"
+        # The filter `ansible.builtin.default(undef(), true)` yields undefined if the value evaluates to false or an empty string.
+        environment: "{{ lookup('ansible.builtin.env', 'ENVIRONMENT') | ansible.builtin.default(undef(), true) | ansible.builtin.mandatory }}"
+        host: "{{ lookup('ansible.builtin.env', 'HOST') | ansible.builtin.default(undef(), true) | ansible.builtin.mandatory }}"
+        production_subdomain: "{{ lookup('ansible.builtin.env', 'PRODUCTION_SUBDOMAIN') | ansible.builtin.default(undef(), true) | ansible.builtin.mandatory }}"
+        staging_subdomain: "{{ lookup('ansible.builtin.env', 'STAGING_SUBDOMAIN') | ansible.builtin.default(undef(), true) | ansible.builtin.mandatory }}"
+        telemetry_subdomain: "{{ lookup('ansible.builtin.env', 'TELEMETRY_SUBDOMAIN') | ansible.builtin.default(undef(), true) | ansible.builtin.mandatory }}"
+        monitor_http_port: "{{ lookup('ansible.builtin.env', 'MONITOR_HTTP_PORT') | ansible.builtin.default(undef(), true) | ansible.builtin.mandatory }}"
+        logs_http_port: "{{ lookup('ansible.builtin.env', 'LOGS_HTTP_PORT') | ansible.builtin.default(undef(), true) | ansible.builtin.mandatory }}"
+        metrics_http_port: "{{ lookup('ansible.builtin.env', 'METRICS_HTTP_PORT') | ansible.builtin.default(undef(), true) | ansible.builtin.mandatory }}"
+        telemetry_grpc_port: "{{ lookup('ansible.builtin.env', 'TELEMETRY_GPRC_PORT') | ansible.builtin.default(undef(), true) | ansible.builtin.mandatory }}"
+        telemetry_http_port: "{{ lookup('ansible.builtin.env', 'TELEMETRY_HTTP_PORT') | ansible.builtin.default(undef(), true) | ansible.builtin.mandatory }}"
+        email_address: "{{ lookup('ansible.builtin.env', 'EMAIL_ADDRESS') | ansible.builtin.default(undef(), true) | ansible.builtin.mandatory }}"
+        smtp_host: "{{ lookup('ansible.builtin.env', 'SMTP_HOST') | ansible.builtin.default(undef(), true) | ansible.builtin.mandatory }}"
+        smtp_port: "{{ lookup('ansible.builtin.env', 'SMTP_PORT') | ansible.builtin.default(undef(), true) | ansible.builtin.mandatory }}"
+        network_interface: "{{ lookup('ansible.builtin.env', 'NETWORK_INTERFACE') | ansible.builtin.default(undef(), true) | ansible.builtin.mandatory }}"
 
     - name: Update package information
       become: true
@@ -215,9 +195,7 @@
 
     - name: Install and configure `msmtp` to be used by Cron and other services to send emails
       vars:
-        FROM_EMAIL_ADDRESS: 'server@{{ host }}'
-        SMTP_HOST: '{{ smtp_host }}'
-        SMTP_PORT: '{{ smtp_port }}'
+        from_email_address: "server@{{ host }}"
       block:
         - name: Uninstall `mailutils` which includes GNU `mail`
           # The problem with GNU `mail` combined with `msmtp` is that aliases
@@ -283,8 +261,6 @@
 
         - name: Copy `aliases` configuration file
           become: true
-          vars:
-            EMAIL_ADDRESS: '{{ email_address }}'
           ansible.builtin.template:
             src: aliases.j2
             dest: /etc/aliases
@@ -475,11 +451,6 @@
             state: present
 
         - name: Configure Vector
-          vars:
-            LOGS_HTTP_PORT: '{{ logs_http_port }}'
-            METRICS_HTTP_PORT: '{{ metrics_http_port }}'
-            TELEMETRY_GPRC_PORT: '{{ telemetry_grpc_port }}'
-            TELEMETRY_HTTP_PORT: '{{ telemetry_http_port }}'
           ansible.builtin.template:
             src: vector.yaml.j2
             dest: /etc/vector/vector.yaml
@@ -527,16 +498,10 @@
 
         - name: Configure Monit
           vars:
-            HOST: '{{ host }}'
-            PRODUCTION_HOST: '{{ production_subdomain }}.{{ host }}'
-            STAGING_HOST: '{{ staging_subdomain }}.{{ host }}'
-            TELEMETRY_HOST: '{{ telemetry_subdomain }}.{{ host }}'
-            EMAIL_ADDRESS: '{{ email_address }}'
-            SMTP_HOST: '{{ smtp_host }}'
-            SMTP_PORT: '{{ smtp_port }}'
-            NETWORK_INTERFACE: '{{ network_interface }}'
-            MONITOR_HTTP_PORT: '{{ monitor_http_port }}'
-            FROM_EMAIL_ADDRESS: 'monit@{{ host }}'
+            from_email_address: "monit@{{ host }}"
+            production_host: "{{ production_subdomain }}.{{ host }}"
+            staging_host: "{{ staging_subdomain }}.{{ host }}"
+            telemetry_host: "{{ telemetry_subdomain }}.{{ host }}"
           ansible.builtin.template:
             src: monitrc.j2
             dest: /etc/monit/monitrc

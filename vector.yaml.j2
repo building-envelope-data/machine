@@ -22,9 +22,9 @@ sources:
   opentelemetry:
     type: opentelemetry
     grpc:
-      address: 0.0.0.0:{{ TELEMETRY_GPRC_PORT }}
+      address: 0.0.0.0:{{ telemetry_grpc_port }}
     http:
-      address: 0.0.0.0:{{ TELEMETRY_HTTP_PORT }}
+      address: 0.0.0.0:{{ telemetry_http_port }}
 
   # host_metrics:
   #   type: host_metrics
@@ -41,12 +41,12 @@ sources:
   # postgresql_metrics
   #   type: postgresql_metrics
   #   endpoints:
-  #     - postgresql://postgres:vector@localhost:5432/postgres
+  #     - postgresql://postgres:vector@127.0.0.1:5432/postgres
 
   # nginx_metrics:
   #   type: nginx_metrics
   #   endpoints:
-  #     - http://localhost:8000/basic_status
+  #     - http://127.0.0.1:8000/basic_status
 
 transforms:
   filtered_docker_logs:
@@ -66,7 +66,7 @@ sinks:
       # - vector_logs
       - opentelemetry.logs
     type: elasticsearch
-    endpoints: [http://localhost:{{ LOGS_HTTP_PORT }}/insert/elasticsearch/]
+    endpoints: [http://127.0.0.1:{{ logs_http_port }}/insert/elasticsearch/]
     mode: bulk
     api_version: v8
     compression: gzip
@@ -90,6 +90,6 @@ sinks:
   #     - vector_metrics
   #     - opentelemetry.metrics
   #   type: prometheus_remote_write
-  #   endpoint: http://localhost:{{ METRICS_HTTP_PORT }}/api/v1/write
+  #   endpoint: http://127.0.0.1:{{ metrics_http_port }}/api/v1/write
   #   healthcheck:
   #     enabled: false
