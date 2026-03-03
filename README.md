@@ -63,6 +63,7 @@ branch `main` is always deployable.
    `cp ./.env.buildingenvelopedata.sample ./.env && chmod 600 ./.env` or
    `cp ./.env.solarbuildingenvelopes.sample ./.env && chmod 600 ./.env`) and
    adapt the `.env` file as needed for example inside `vi ./.env` or `nano ./.env`. The `.env` variables
+   - `ENVIRONMENT` is the environment type, either `development` or `production`;
    - `HOST` is the domain name without sub-domain;
    - `PRODUCTION_SUBDOMAIN`, `STAGING_SUBDOMAIN`, `TELEMETRY_SUBDOMAIN` are the
      sub-domains of the production instance `/app/production`, staging instance
