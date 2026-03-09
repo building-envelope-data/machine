@@ -60,7 +60,7 @@
       when: dotenv_environment != "development"
 
   pre_tasks:
-    - name: Awlays set facts from environment variables
+    - name: Always set facts from environment variables
       ansible.builtin.set_fact:
         # The filter `ansible.builtin.default(undef(), true)` yields undefined if the value evaluates to false or an empty string.
         dotenv_environment: "{{ lookup('ansible.builtin.env', 'ENVIRONMENT') | ansible.builtin.default(undef(), true) | ansible.builtin.mandatory }}"
