@@ -43,7 +43,7 @@
       ansible.builtin.shell:
         cmd: |
           set -o pipefail
-          echo "Test email as root user from new/updated MSTMP at" `hostname` \
+          echo "Test email as root user from new/updated MSMTP at" `hostname` \
             | mail -s "Test SMTP `hostname`" root
         executable: /bin/bash
       changed_when: false
@@ -53,7 +53,7 @@
       ansible.builtin.shell:
         cmd: |
           set -o pipefail
-          echo "Test email as cloud user from new/updated MSTMP at" `hostname` \
+          echo "Test email as cloud user from new/updated MSMTP at" `hostname` \
             | mail -s "Test SMTP `hostname`" cloud
         executable: /bin/bash
       changed_when: false
