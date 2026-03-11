@@ -47,8 +47,7 @@ up : ## (Re)create and (re)start services
 	docker compose up \
 		--no-build \
 		--no-deps \
-		--force-recreate \
-		--renew-anon-volumes \
+		--no-recreate \
 		--remove-orphans \
 		--wait ${SERVICE}
 .PHONY : up
