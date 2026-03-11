@@ -100,7 +100,7 @@ check program docker with path "/usr/bin/systemctl --quiet is-active docker"
     if status != 0 then restart
     if 5 restarts within 5 cycles then alert
 
-check program docker_containers_healthcheck with path /app/machine/docker_containers_healthcheck.sh
+check program docker-containers-healthcheck with path /app/machine/docker-containers-healthcheck.sh
     if status != 0 for 3 cycles then alert
 
 #----------------------------------------------------------------------------
@@ -151,11 +151,11 @@ check host {{ host }}-host with address {{ host }}
         for 3 cycles
     then alert
 
-{% for host_fqdn, http_status_code in [(production_host, 200), (staging_host, 401), (telemetry_host, 401)] %}
+{% for fully_qualified_host, http_status_code in [(production_host, 200), (staging_host, 401), (telemetry_host, 401)] %}
 
-    #---- {{ host_fqdn }} ----#
+    #---- {{ fully_qualified_host }} ----#
 
-    check host {{ host_fqdn }}-host with address {{ host_fqdn }}
+    check host {{ fully_qualified_host }}-host with address {{ fully_qualified_host }}
         if failed
             port 80
             protocol http
@@ -170,7 +170,7 @@ check host {{ host }}-host with address {{ host }}
             use ssl
             for 3 cycles
         then alert
-    {% if host_fqdn == production_host %}
+    {% if fully_qualified_host == production_host %}
         if failed
             port 443
             protocol https

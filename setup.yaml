@@ -53,8 +53,8 @@
       ansible.builtin.shell:
         cmd: |
           set -o pipefail
-          echo "Test email as cloud user from new/updated MSMTP at" `hostname` \
-            | mail -s "Test SMTP `hostname`" cloud
+          echo "Test email as {{ ansible_user_id | mandatory }} user from new/updated MSMTP at" `hostname` \
+            | mail -s "Test SMTP `hostname`" {{ ansible_user_id | mandatory }}
         executable: /bin/bash
       changed_when: false
       when: dotenv_environment != "development"
@@ -105,7 +105,7 @@
     - name: Grant user `cloud` read-only access to journald
       become: true
       ansible.builtin.user:
-        name: cloud
+        name: "{{ ansible_user_id | mandatory }}"
         groups: systemd-journal
         append: true
 
@@ -310,7 +310,7 @@
             name: tls-renewal
             minute: 5
             hour: 3
-            job: "chronic make --directory=/app/machine --file=/app/machine/docker.mk renew-tls"
+            job: "chronic make --directory=/app/machine --file=/app/machine/maintenance.mk renew-tls"
 
         - name: Set periodic docker system prune
           # See https://docs.docker.com/config/pruning/#prune-everything
@@ -357,6 +357,36 @@
             name: sshguard
             enabled: true
             state: started
+
+        - name: Ensure ~/.ssh directory exists with 0700 permissions
+          ansible.builtin.file:
+            path: "{{ ansible_env.HOME | mandatory }}/.ssh"
+            mode: "0700"
+            owner: "{{ ansible_user_id | mandatory }}"
+            state: directory
+
+        - name: Ensure ~/.ssh/authorized_keys file exists with 0600 permissions
+          ansible.builtin.file:
+            path: "{{ ansible_env.HOME | mandatory }}/.ssh/authorized_keys"
+            mode: "0600"
+            owner: "{{ ansible_user_id | mandatory }}"
+            state: touch
+
+        - name: Ensure at least one SSH key is authorized
+          block:
+            - name: Count authorized SSH keys
+              ansible.builtin.command:
+                cmd: "grep --count --invert-match '^#|^$' {{ ansible_env.HOME | mandatory }}/.ssh/authorized_keys"
+              register: authorized_key_count
+              # `rc` below means return code, aka, status code.
+              failed_when: authorized_key_count.rc == 2
+              changed_when: false
+
+            - name: Fail if there are no authorized SSH keys
+              ansible.builtin.fail:
+                msg: "The ~/.ssh/authorized_keys file does not contain valid keys."
+              # Check if grep found 0 lines or if the file was missing entirely
+              when: authorized_key_count.stdout == "0"
 
         - name: Configure SSH
           ansible.builtin.copy:
@@ -434,7 +464,7 @@
 
         - name: Add user `cloud` to group `docker`
           ansible.builtin.user:
-            name: cloud
+            name: "{{ ansible_user_id | mandatory }}"
             groups: docker
             append: true
 
@@ -554,7 +584,7 @@
         - name: Grant user `cloud` read-only access to Monit without a password
           community.general.sudoers:
             name: monit-nopasswd
-            user: cloud
+            user: "{{ ansible_user_id | mandatory }}"
             commands: /usr/bin/monit
             nopassword: yes
             state: present

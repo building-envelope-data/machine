@@ -13,11 +13,10 @@ SERVICE=
 dotenv_linter = \
 	docker run \
 		--rm \
-		--user $(shell id --user):$(shell id --group) \
-		--volume "$(shell pwd):/mnt" \
-		--pull "always" \
+		--user $(id --user):$(id --group) \
+		--volume "$(pwd):/mnt" \
 		--quiet \
-		dotenvlinter/dotenv-linter:latest
+		dotenvlinter/dotenv-linter:4.0.0
 
 # Taken from https://www.client9.com/self-documenting-makefiles/
 help : ## Print this help
@@ -31,7 +30,7 @@ name : ## Print value of variable `NAME`
 	@echo ${NAME}
 .PHONY : name
 
-dotenv : ## Assert that all variables in `./.env.sample` are available in `./.env`
+dotenv : ## Assert that all variables in `./.env.${ENVIRONMENT}.sample` are available in `./.env`
 	${dotenv_linter} diff /mnt/.env "/mnt/.env.${ENVIRONMENT}.sample"
 	${dotenv_linter} diff /mnt/.env.development.sample /mnt/.env.production.sample
 	${dotenv_linter} diff /mnt/.env.production.buildingenvelopedata.sample /mnt/.env.production.sample
@@ -40,38 +39,19 @@ dotenv : ## Assert that all variables in `./.env.sample` are available in `./.en
 	${dotenv_linter} diff /mnt/.env.development.solarbuildingenvelopes.sample /mnt/.env.development.sample
 .PHONY : dotenv
 
-htpasswd : ## Create file ./nginx/.htpasswd if it does not exist
-	if [ -f ./nginx/.htpasswd ] ; then \
-		sudo touch ./nginx/.htpasswd && \
-		sudo chmod 644 ./nginx/.htpasswd ; \
-	fi
-.PHONY : htpasswd
-
-user : htpasswd ## Add user `${NAME}` (he/she will have access to restricted areas like staging and the Monit web interface with the correct password), for example, `./docker.mk user NAME=jdoe`
-	sudo htpasswd ./nginx/.htpasswd "${NAME}"
-.PHONY : user
-
-setup : OPTIONS =
-setup : htpasswd ## Setup machine by running `ansible-playbook` with options `${OPTIONS}`, for example, `./docker.mk setup` or `./docker.mk OPTIONS="--start-at-task 'Install Monit'" setup`
-	./ansible-playbook.sh \
-		./setup.yaml \
-		${OPTIONS}
-.PHONY : setup
-
 pull : ## Pull images
 	docker compose pull ${SERVICE}
 .PHONY : pull
 
 up : ## (Re)create and (re)start services
 	docker compose up \
+		--no-build \
+		--no-deps \
 		--force-recreate \
 		--renew-anon-volumes \
 		--remove-orphans \
 		--wait ${SERVICE}
 .PHONY : up
-
-deploy : dotenv setup pull up ## Deploy services, that is, assert ./.env file, setup machine, pull images, and (re)create and (re)start services
-.PHONY : deploy
 
 logs : ## Follow logs of services, for example, `make logs` for all services or `make logs SERVICE=reverse_proxy` or `make logs SERVICE="logs metrics"`
 	docker compose logs \
@@ -81,7 +61,9 @@ logs : ## Follow logs of services, for example, `make logs` for all services or 
 
 shell : ## Enter shell in the service `${SERVICE}`
 	docker compose up \
-		--remove-orphans \
+		--no-build \
+		--no-deps \
+		--no-recreate \
 		--wait 
 		${SERVICE}
 	docker compose exec \
@@ -132,19 +114,13 @@ reload-daemon : ## Reload Docker daemon
 		reload docker
 .PHONY : reload-daemon
 
-renew-tls : ## Renew Transport Layer Security (TLS) certificates needed for the `S` in `HTTPS` (used by Cron)
-	$(MAKE) --file=./certificates.mk renew
-	$(MAKE) --file="${SELF}" up SERVICE=reverse_proxy
-.PHONY : renew-tls
-
 shellcheck = \
 	docker run \
 		--rm \
 		--user $(shell id --user):$(shell id --group) \
 		--volume "$(shell pwd):/mnt" \
-		--pull "always" \
 		--quiet \
-		koalaman/shellcheck:latest \
+		koalaman/shellcheck:v0.11.0 \
 		--enable=all \
 		--external-sources
 
@@ -154,9 +130,8 @@ dclint = \
 		--tty \
 		--user $(shell id --user):$(shell id --group) \
 		--volume "$(shell pwd):/app" \
-		--pull "always" \
 		--quiet \
-		zavoloklom/dclint:latest \
+		zavoloklom/dclint:3.1.0 \
 		--config /app/.dclintrc
 
 hadolint = \
@@ -165,9 +140,8 @@ hadolint = \
 		--interactive \
 		--user $(shell id --user):$(shell id --group) \
 		--volume ./.hadolint.yaml:/.config/.hadolint.yaml \
-		--pull "always" \
 		--quiet \
-		hadolint/hadolint:latest \
+		hadolint/hadolint:v2.14.0-debian \
 		hadolint \
 		--config /.config/.hadolint.yaml
 
@@ -213,7 +187,7 @@ format : ## Format shell scripts and Dockerfile
 		--user $(shell id --user):$(shell id --group) \
 		--volume "$(shell pwd):/mnt" \
 		--workdir /mnt \
-		mvdan/shfmt:latest \
+		mvdan/shfmt:v3.13.0 \
 		--write \
 		--simplify \
 		--indent 2 \

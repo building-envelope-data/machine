@@ -1,44 +1,156 @@
-# Debian Production Machine
+# Machine
 
 The network of databases
-[buildingenvelopedata.org](https://www.buildingenvelopedata.org/) is based on
-databases and one metabase. This repository can be used to set up the machine
-either to deploy
-a [database](https://github.com/building-envelope-data/database) or to deploy
-the [metabase](https://github.com/building-envelope-data/metabase).
-
-The machine has two ext4 disks namely one root disk running [Debian
-bookworm](https://www.debian.org/releases/bookworm/) and one initially empty
-data disk. The data disk is partitioned, formatted, and mounted to `/app/data`
-as described below. There is a Debian user `cloud` with superuser privileges
-and a corresponding group `cloud`. The machine setup is mostly done by running
-the Ansible playbook `./setup.yaml` with `make setup` as the user `cloud`. The
-machine runs two instances of the application, one for staging in
-`/app/staging` and the other for production in `/app/production`. Using
-[NGINX](https://nginx.org) as reverse proxy it directs traffic coming from the
-sub-domain `staging` or `www` to the staging or production instance.
-
-Note that the
-[network of databases buildingenvelopedata.org](https://www.buildingenvelopedata.org)
-and the
-[TestLab Solar Facades product-data server](https://www.solarbuildingenvelopes.com)
-both run on machines provided by
-[Fraunhofer Cloud](https://cloudportal.fraunhofer.de) and some of the set-up
-information below may still be Fraunhofer Cloud specific. If you find that that
-is the case, please
-[report it on GitHub](https://github.com/building-envelope-data/machine/issues/new)
-and we will try to generalize it.
+[buildingenvelopedata.org](https://www.buildingenvelopedata.org)
+consists of one meta-data database and various product-data databases. Each
+database runs on its own physical or virtual machine. The present project
+sets up such a machine with a reverse proxy, production and staging
+environments, monitoring, telemetry, and what not to deploy the
+[metabase](https://github.com/building-envelope-data/metabase)
+or a
+[database](https://github.com/building-envelope-data/database).
 
 This project follows the
-[GitHub Flow](https://guides.github.com/introduction/flow/), in particular, the
-branch `main` is always deployable.
+[GitHub Flow](https://guides.github.com/introduction/flow/),
+in particular, the branch `main` is always deployable.
 
-## Setting up the machine
+## Development
 
-1. If there is a firewall, configure it such that it allows secure shell (ssh)
-   access on port 22. And if there are explicit port forwardings, forward the
-   public port 22 to port 22.
-1. Enter a shell on the production machine using `ssh` as the user `cloud`.
+### Getting Started
+
+In the end, the machine runs a reverse proxy, telemetry services, and one
+instance of the application for development in `${APP}/development`. Using
+[NGINX](https://nginx.org)
+as reverse proxy it directs traffic coming from the sub-domain `staging` or
+`www` to the development instance. And it directs traffic from the sub-domain
+`telemetry` to the services
+[VictoriaMetrics](https://victoriametrics.com/products/open-source/index.html)
+and
+[VictoriaLogs](https://victoriametrics.com/products/victorialogs/).
+
+1. Open your favorite shell, for example, good old
+   [Bourne Again SHell, aka, `bash`](https://www.gnu.org/software/bash/),
+   the somewhat newer
+   [Z shell, aka, `zsh`](https://www.zsh.org/),
+   or shiny new
+   [`fish`](https://fishshell.com/).
+1. Install [Git](https://git-scm.com) by running
+   `sudo apt install git-all` on [Debian](https://www.debian.org)-based
+   distributions like [Ubuntu](https://ubuntu.com), or
+   `sudo dnf install git` on [Fedora](https://getfedora.org) and closely-related
+   [RPM-Package-Manager](https://rpm.org)-based distributions like
+   [CentOS](https://www.centos.org). For further information see
+   [Installing Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git).
+1. Install
+   [Docker Engine](https://docs.docker.com/engine/)
+   with the
+   [Buildx](https://docs.docker.com/build/concepts/overview/#buildx)
+   plugin and the
+   [Docker Compose](https://docs.docker.com/compose/)
+   plugin by following the instructions on
+   [Install Docker Engine](https://docs.docker.com/engine/install/)
+   for your platform.
+1. Create an empty directory and navigate into it. It is referred to as `${APP}`
+   below.
+1. Clone the present repository into `${APP}/machine` by running
+   `git clone git@github.com:building-envelope-data/machine.git`.
+1. Change into the clone by running `cd ./machine`.
+1. Prepare the machine environment by running
+   `cp ./.env.development.sample ./.env && chmod 600 ./.env` (or
+   `cp ./.env.development.buildingenvelopedata.sample ./.env && chmod 600 ./.env` or
+   `cp ./.env.development.solarbuildingenvelopes.sample ./.env && chmod 600 ./.env`) and
+   adapt the `.env` file as needed for example inside `vi ./.env` or
+   `nano ./.env`. The `.env` variable
+   - `ENVIRONMENT` is the environment type, either `development` or `production`;
+   - `HOST` is the domain name without sub-domain;
+   - `PRODUCTION_SUBDOMAIN`, `STAGING_SUBDOMAIN`, `TELEMETRY_SUBDOMAIN` are the
+     sub-domains of the development instance `${APP}/development` and the
+     telemetry services `logs`, and `metrics`. Note that none of these
+     sub-domains can be empty. The reverse proxy NGINX redirects requests to
+     `${HOST}` without a sub-domain to such with the sub-domain
+     `${PRODUCTION_SUBDOMAIN}`.
+   - `EXTRA_HOST` is an extra domain name for which the self-signed TLS
+     certificate shall also be valid apart from `${HOST}`,
+     `${PRODUCTION_SUBDOMAIN}.${HOST}`, `${STAGING_SUBDOMAIN}.${HOST}`, and
+     `${TELEMETRY_SUBDOMAIN}.${HOST}` (it is used in `./init-tls.sh`);
+   - `HTTP_PORT` and `HTTPS_PORT` are the HTTP and HTTPS ports on which the
+     NGINX reverse proxy is listening;
+   - `PRODUCTION_HTTP_PORT` or `STAGING_HTTP_PORT` is the HTTP port on which the
+     development instance `${APP}/development` is listening;
+   - `MONITOR_HTTP_PORT`, `LOGS_HTTP_PORT`, or `METRICS_HTTP_PORT` is the HTTP
+     port on which the monitoring utility
+     [Monit](https://mmonit.com/monit/),
+     the logs service
+     [VictoriaLogs](https://github.com/VictoriaMetrics/VictoriaLogs),
+     and the metrics service
+     [VictoriaMetrics](https://github.com/VictoriaMetrics/VictoriaMetrics)
+     is listening;
+   - `TELEMETRY_GPRC_PORT` or `TELEMETRY_HTTP_PORT` is the
+     [gPRC](https://grpc.io) and HTTP port on which the observability pipelines
+     tool [Vector](https://vector.dev) listens for [OpenTelemetry
+     Protocol](https://opentelemetry.io/docs/specs/otlp/) data;
+   - `EMAIL_ADDRESS` is the email address of the person to be notified when
+     there is some system-administration issue (for example
+     [Monit](https://mmonit.com/monit/) sends such notifications)
+   - `SMTP_HOST` and `SMTP_PORT` are host and port of the message transfer
+     agent to be used to send emails through the Simple Mail Transfer
+     Protocol (SMTP);
+   - `NETWORK_INTERFACE` is the network interface to monitor with Monit (list
+     all with `./tools.mk network-interfaces` or simply `ip link`);
+1. Prepare your remote controls GNU Make and Docker Compose by running
+   - `ln --symbolic ./docker-compose.development.yaml ./docker-compose.yaml` and
+   - `ln --symbolic ./docker.mk ./Makefile`.
+1. Generate self-signed Transport Security Protocol (TLS) certificates
+   used for HTTPS by running `./init-tls.sh`.
+1. Start all services by running `make dotenv pull up`.
+1. Drop into `bash` with the working directory `/app/machine`, which is mounted
+   to the host's `.` directory, inside a fresh Docker container based on the
+   service `machine` in `./docker-compose.development.yaml` by running
+   `make machine`.
+1. Within that shell it is safe to run `./deploy.mk setup` to test the Ansible
+   playbook. And it is possible to run the tools `./tools.mk help`, for
+   example, `./tools.mk check` to lint, syntax-check, and validate config files.
+   Never run `./deploy.mk setup` or `./deploy.mk do` on the host as this would
+   make changes to your operating system.
+1. Drop out of the container by running `exit` or pressing `Ctrl-D`.
+1. Continue with the second step of
+   [Getting Started with the metabase](https://github.com/building-envelope-data/metabase?tab=readme-ov-file#getting-started)
+   or
+   [Getting Started with the database](https://github.com/building-envelope-data/database?tab=readme-ov-file#getting-started)
+
+## Deployment
+
+### Setting up the machine
+
+The machine has two ext4 disks namely one root disk running
+[Debian bookworm](https://www.debian.org/releases/bookworm/)
+and one initially empty data disk. The data disk is partitioned, formatted, and
+mounted to `/app/data` as described below. There is a Debian user `cloud` with
+superuser privileges and a corresponding group `cloud`. The machine setup is
+mostly done by running the Ansible playbook `./setup.yaml` with `./deploy.mk
+setup` as the user `cloud`. In the end, the machine runs a reverse proxy,
+telemetry services, and two instances of the application, one for staging in
+`/app/staging` and the other for production in `/app/production`. Using
+[NGINX](https://nginx.org)
+as reverse proxy it directs traffic coming from the sub-domain `staging` or
+`www` to the staging or production instance. And it directs traffic from the
+sub-domain `telemetry` to the services
+[VictoriaMetrics](https://victoriametrics.com/products/open-source/index.html)
+and
+[VictoriaLogs](https://victoriametrics.com/products/victorialogs/).
+
+1. If the machine runs behind a proxy with a firewall, configure it such that it
+   forwards the public port 22 to port 22 and allows secure shell (SSH) access
+   on port 22.
+1. Enter a shell on the production machine using `ssh` as the user `cloud` by
+   running something along the lines `ssh -A cloud@...`. The flag `-A` enables
+   forwarding of connections from an authentication agent such as `ssh-agent`,
+   which may be needed to communicate with Git repositories through `git`. Use
+   `ssh-add` beforehand locally to add keys to forward.
+1. Add your public key to `/home/cloud/.ssh/authorized_keys` (if not already
+   there). By running `./deploy.mk setup` below, the SSH daemon is configured in such
+   a way that only public key authentication is allowed. So if there is no
+   authorized key, you will be locked out.
 1. Install
    [GNU Make](https://www.gnu.org/software/make/),
    [Git](https://git-scm.com),
@@ -59,9 +171,9 @@ branch `main` is always deployable.
    `git clone git@github.com:building-envelope-data/machine.git`.
 1. Change into the clone by running `cd ./machine`.
 1. Prepare the machine environment by running
-   `cp ./.env.sample ./.env && chmod 600 ./.env` (or
-   `cp ./.env.buildingenvelopedata.sample ./.env && chmod 600 ./.env` or
-   `cp ./.env.solarbuildingenvelopes.sample ./.env && chmod 600 ./.env`) and
+   `cp ./.env.production.sample ./.env && chmod 600 ./.env` (or
+   `cp ./.env.production.buildingenvelopedata.sample ./.env && chmod 600 ./.env` or
+   `cp ./.env.production.solarbuildingenvelopes.sample ./.env && chmod 600 ./.env`) and
    adapt the `.env` file as needed for example inside `vi ./.env` or `nano ./.env`. The `.env` variables
    - `ENVIRONMENT` is the environment type, either `development` or `production`;
    - `HOST` is the domain name without sub-domain;
@@ -108,11 +220,10 @@ branch `main` is always deployable.
 1. Prepare your remote controls GNU Make and Docker Compose by running
    - `ln --symbolic ./docker-compose.production.yaml ./docker-compose.yaml` and
    - `ln --symbolic ./docker.mk ./Makefile`.
-1. If there is a firewall, configure it such that it allows the protocol TCP
+1. If the machine runs behind a proxy with a firewall, configure it such that
+   it forwards the public ports 80 and 443 to the ports `${HTTP_PORT}` and
+   `${HTTPS_PORT}` configured in the `.env` file and allows the protocol TCP
    for ports 80 and 443.
-1. If the HTTP and HTTPS port configured in `.env` are not 80 and 443, then the
-   public ports 80 and 443 must be forwarded to the configured ports
-   `${HTTP_PORT}` and `${HTTPS_PORT}`.
 1. Format and mount hard disk for data to the directory `/app/data` as follows:
    1. Create the directory `/app/data` by running `mkdir /app/data`.
    1. Scan for the data disk by running `./tools.mk scan`.
@@ -143,29 +254,25 @@ branch `main` is always deployable.
       running `sudo chown cloud:cloud /app/data`.
    1. Create the directory `/app/data/backups` by running
       `mkdir /app/data/backups`.
-1. Set-up everything else with Ansible by running `make setup`.
+1. Set-up everything else with Ansible by running `./deploy.mk setup`.
 1. Before you try to interact with Docker in any way, log-out and log-in again
    such that the system knows that the user `cloud` is in the group `docker`
    (this was taken care of by Ansible). You could for example exit the SSH
    session by running `exit` and start a fresh one as you did in the beginning.
-   If you do not do that, you will encounter a permission denied error. For
-   example, when running `docker ps` the error reads "Got permission denied
-   while trying to connect to the Docker daemon socket at
-   unix:///var/run/docker.sock: Get
-   "http://%2Fvar%2Frun%2Fdocker.sock/v1.24/containers/json": dial unix
-   /var/run/docker.sock: connect: permission denied".
 1. Fetch Transport Security Protocol (TLS) certificates from [Let's
    Encrypt](https://letsencrypt.org) used for HTTPS by running
    `./init-tls.sh` (if you are unsure whether the script will work, set the
    variable `staging` inside that script to `1` for a trial run).
-1. Start all services by running `make dotenv pull up`. On subsequent
-   deployments just run `make deploy` to also rerun `setup`.
+1. Create credentials to access the staging and telemetry sub-domains by running
+   `./docker.mk user NAME=${USER}`.
+1. Start all services by running `./deploy.mk dotenv services`. On subsequent
+   deployments just run `./deploy.mk do` to also rerun `setup`.
 1. Continue with the second step of
    [setting up a Debian production machine of the metabase](https://github.com/building-envelope-data/metabase?tab=readme-ov-file#setting-up-a-debian-production-machine)
    or
    [setting up a Debian production machine of a product-data database](https://github.com/building-envelope-data/database?tab=readme-ov-file#setting-up-a-debian-production-machine).
 
-## Upgrading the system
+### Upgrading the system
 
 Security upgrades are installed automatically and unattendedly by
 [`unattended-upgrades`](https://packages.debian.org/search?keywords=unattended-upgrades)
@@ -198,7 +305,7 @@ upgrade](https://www.debian.org/releases/stable/i386/release-notes/ch-upgrading.
 Our machines run Debian 12 "Bookworm" which reaches its end of life on June
 30th, 2028.
 
-## Periodic jobs
+### Periodic jobs
 
 In the Ansible playbook `./setup.yaml`, periodic jobs are set-up.
 
@@ -218,7 +325,7 @@ In the Ansible playbook `./setup.yaml`, periodic jobs are set-up.
 
 If a job fails, Cron sends an email to `${EMAIL_ADDRESS}` set in `./.env`.
 
-## Logs
+### Logs
 
 For logs of periodic jobs see above.
 
@@ -235,40 +342,45 @@ For logs of periodic jobs see above.
 - Certbot logs are written to `/certbot/logs/*.log.*` and the latest log-files
   can be followed by running `./logs.mk certbot`.
 
-## Troubleshooting
+### Troubleshooting
 
 If the website is not reachable, then check whether the reverse proxy is up and
-healthy by running `make list`.
+healthy by running `make list SERVICE=reverse_proxy`.
 
-- If not, identify the reason by studying the logs printed by `make logs`, fix
-  any issues if necessary, and [redeploy the reverse
-  proxy](#deploying-the-latest-version).
+- If not, identify the reason by studying the logs printed by
+  `make logs SERVICE=reverse_proxy`, fix any issues if necessary, and
+  [redeploy the reverse proxy](#deploying-the-latest-version).
 - If yes, check whether the reverse proxy receives requests by studying the
-  logs printed by `make logs`.
-  - If not, there may be an issue with the mapping
-    of the URL to the server managed by
-    [Fraunhofer ISE](https://www.ise.fraunhofer.de)
-    (you can find out more as elaborated in
+  logs printed by `make logs SERVICE=reverse_proxy`.
+  - If not, there may be an issue with the mapping of the URL to the server IP
+    address (you can find out more as elaborated in
     [Linux troubleshooting commands: 4 tools for DNS name resolution problems](https://www.redhat.com/sysadmin/DNS-name-resolution-troubleshooting-tools))
-    or an issue with the firewall settings or port forwardings configured in
-    the network settings for the public IP addresses in the
-    [Fraunhofer cloudportal](https://cloudportal.fraunhofer.de) (the firewall
-    must allow the protocol TCP for ports 80 and 443 and the public ports 80
-    and 443 must be forwarded to the HTTP and HTTPS ports configured in `.env`;
-    note that for secure shell access port 22 must be allowed and forwarded to
-    22).
+    or an issue with the firewall settings or port forwardings.
   - If yes, the reverse proxy may not be configured properly, for example, the
     ports of the production and staging web servers may not match the ones
     configured in `.env` in `/app/production` and `/app/staging`, or the
     production and staging web servers may be down or unhealthy, which you can
     check by running `make list` in `/app/production` and `/app/staging` and
-    troubleshoot as elaborated in the READMEs of the
-    [metabase](https://github.com/building-envelope-data/metabase) and
-    [database](https://github.com/building-envelope-data/database) projects.
+    troubleshoot as elaborated in
+    [metabase Troubleshooting](https://github.com/building-envelope-data/metabase?tab=readme-ov-file#troubleshooting-1)
+    and
+    [database Troubleshooting](https://github.com/building-envelope-data/database?tab=readme-ov-file#troubleshooting-1).
 
-## Deploying the latest version
+The domains
+[buildingenvelopedata.org](https://www.buildingenvelopedata.org)
+and
+[solarbuildingenvelopes.com](https://www.solarbuildingenvelopes.com)
+are managed by
+[Fraunhofer ISE](https://www.ise.fraunhofer.de)
+and should be mapped onto `192.102.163.92` or
+`192.102.162.39`.
+The corresponding servers run on infrastructure from
+[Fraunhofer Cloud](https://cloudportal.fraunhofer.de)
+and need explicit firewall settings and port forwardings.
+
+### Deploying the latest version
 
 1. Fetch and checkout the latest version by running `git fetch` and
-   `git checkout --force main`.
-1. Deploy the new version by running `make deploy`.
+   `git switch --discard-changes main`.
+1. Deploy the new version by running `./deploy.mk do`.
 1. Check that everything works by scanning the output of `make logs`.

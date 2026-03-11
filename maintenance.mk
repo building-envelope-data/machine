@@ -31,6 +31,11 @@ end : ## End maintenance
 	fi
 .PHONY : end
 
+renew-tls : ## Renew Transport Layer Security (TLS) certificates needed for the `S` in `HTTPS` (used by Cron)
+	$(MAKE) --file=./certificates.mk renew
+	$(MAKE) --file=./docker.mk up SERVICE=reverse_proxy
+.PHONY : renew-tls
+
 prune-docker : ## Prune docker
 	docker system prune \
 		--force \
