@@ -158,6 +158,8 @@ services:
       dockerfile: "./Dockerfile.development"
     volumes:
       - .:/app/machine
+      - ../development:/app/production
+      - ../development:/app/staging
     ports:
       - "0.0.0.0:${MONITOR_HTTP_PORT:?required}:${MONITOR_HTTP_PORT:?required}"
       - "0.0.0.0:${TELEMETRY_GPRC_PORT:?required}:${TELEMETRY_GPRC_PORT:?required}"
