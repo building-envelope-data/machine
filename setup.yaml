@@ -586,7 +586,7 @@
             name: monit-nopasswd
             user: "{{ ansible_user_id | mandatory }}"
             commands: /usr/bin/monit
-            nopassword: yes
+            nopassword: true
             state: present
 
         - name: Flush handlers to reload Monit

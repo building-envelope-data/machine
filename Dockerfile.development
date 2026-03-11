@@ -106,7 +106,9 @@ RUN pipx ensurepath \
 # eval '"$(register-python-argcomplete pipx)"' \
 #   >> "${HOME}/.bash_profile"
 
-RUN mkdir --parents /app/{production,staging} \
+RUN mkdir --parents /app/.ssh \
+  && echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKUg2JEPWwiqC3saYGX0cyNx6evyDdFZ281BE3hw0uWK" > /app/.ssh/authorized_keys \
+  && mkdir --parents /app/{production,staging} \
   && touch /app/production/.env \
   /app/staging/.env \
   && sudo chmod 600 \
