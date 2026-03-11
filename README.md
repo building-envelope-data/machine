@@ -50,6 +50,7 @@ and
    plugin by following the instructions on
    [Install Docker Engine](https://docs.docker.com/engine/install/)
    for your platform.
+1. Install [GNU Make](https://www.gnu.org/software/make/) with `sudo apt install make`.
 1. Create an empty directory and navigate into it. It is referred to as `${APP}`
    below.
 1. Clone the present repository into `${APP}/machine` by running
