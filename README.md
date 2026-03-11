@@ -35,7 +35,7 @@ and
    or shiny new
    [`fish`](https://fishshell.com/).
 1. Install [Git](https://git-scm.com) by running
-   `sudo apt install git-all` on [Debian](https://www.debian.org)-based
+   `sudo apt update && sudo apt install git-all` on [Debian](https://www.debian.org)-based
    distributions like [Ubuntu](https://ubuntu.com), or
    `sudo dnf install git` on [Fedora](https://getfedora.org) and closely-related
    [RPM-Package-Manager](https://rpm.org)-based distributions like
