@@ -241,7 +241,7 @@ and
    for ports 80 and 443.
 1. Format and mount hard disk for data to the directory `/app/data` as follows:
    1. Create the directory `/app/data` by running `mkdir /app/data`.
-   1. Scan for the data disk by running `./tools.mk scan`.
+   1. Scan for the data disk by running `./tools.mk rescan-disks`.
    1. Figure out its name and size by running `lsblk`, for example, `sdb` and
       `50G`, and use this name and size instead of `sdx` and `XG` below.
    1. Partition the hard disk `/dev/sdx` by running
