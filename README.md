@@ -14,6 +14,20 @@ This project follows the
 [GitHub Flow](https://guides.github.com/introduction/flow/),
 in particular, the branch `main` is always deployable.
 
+## Contents
+
+[Development](#development)
+
+- [Getting Started](#getting-started)
+
+[Deployment](#deployment)
+
+- [Setting up the machine](#setting-up-the-machine)
+- [Upgrading the system](#upgrading-the-system)
+- [Periodic jobs](#periodic-jobs)
+- [Logs](#logs)
+- [Troubleshooting](#troubleshooting)
+
 ## Development
 
 ### Getting Started
