@@ -272,6 +272,36 @@ and
    it forwards the public ports 80 and 443 to the ports `${HTTP_PORT}` and
    `${HTTPS_PORT}` configured in the `.env` file and allows the protocol TCP
    for ports 80 and 443.
+1. Format and mount hard disk for data to the directory `/app/data` as follows:
+   1. Create the directory `/app/data` by running `mkdir /app/data`.
+   1. Scan for the data disk by running `./tools.mk rescan-disks`.
+   1. Figure out its name and size by running `lsblk`, for example, `sdb` and
+      `50G`, and use this name and size instead of `sdx` and `XG` below.
+   1. Partition the hard disk `/dev/sdx` by running
+      `sudo parted --align=opt /dev/sdx mklabel gpt`
+      and
+      `sudo parted --align=opt /dev/sdx mkpart primary 0 XG`
+      or, if the command warns you that resulting partition is not properly
+      aligned for best performance: 1s % 4096s != 0s,
+      `sudo parted --align=opt /dev/sdx mkpart primary 4096s XG`.
+      If the number of sectors, 4096 above, is not correct, consult
+      [How to align partitions for best performance using parted](https://rainbow.chard.org/2013/01/30/how-to-align-partitions-for-best-performance-using-parted/)
+      for details on how to compute that number.
+   1. Format the partition `/dev/sdx1` of hard disk `/dev/sdx` by running
+      `sudo mkfs.ext4 -L data /dev/sdx1`
+      and mount it permanently by adding
+      `UUID=XXXX-XXXX-XXXX-XXXX-XXXX /app/data ext4 errors=remount-ro 0 1`
+      to the file `/etc/fstab` and running
+      `sudo mount --all && sudo systemctl daemon-reload`,
+      where the UUID is the one reported by
+      `sudo blkid | grep /dev/sdx1`.
+      Note that to list block devices and whether and where they are
+      mounted run `lsblk` and you could mount partitions temporarily by running
+      `sudo mount /dev/sdx1 /app/data`.
+   1. Change owner and group of `/app/data` to user and group `cloud` by
+      running `sudo chown cloud:cloud /app/data`.
+   1. Create the directory `/app/data/backups` by running
+      `mkdir /app/data/backups`.
 1. Set-up everything else with Ansible by running `./deploy.mk setup`.
 1. Before you try to interact with Docker in any way, log-out and log-in again
    such that the system knows that the user `cloud` is in the group `docker`
