@@ -13,8 +13,8 @@ SERVICE=
 dotenv_linter = \
 	docker run \
 		--rm \
-		--user $(id --user):$(id --group) \
-		--volume "$(pwd):/mnt" \
+		--user "$(shell id --user):$(shell id --group)" \
+		--volume "$(shell pwd):/mnt" \
 		--quiet \
 		dotenvlinter/dotenv-linter:4.0.0
 
@@ -30,6 +30,26 @@ name : ## Print value of variable `NAME`
 	@echo ${NAME}
 .PHONY : name
 
+environment : ## Print value of variable `ENVIRONMENT`
+	@echo ${ENVIRONMENT}
+.PHONY : environment
+
+symlink : ## Confirm that ./Makefile links to ./docker.mk and that ./docker-compose.yaml links to the correct ./docker-compose.*.yaml
+	if [[ ! -L "./Makefile" ]] || [[ ! "./Makefile" -ef "./docker.mk" ]]; then \
+	    echo "./docker-compose.yaml does not link to $${file}" >&2 ; \
+			exit 1 ; \
+	fi
+	if [[ "${ENVIRONMENT}" == "staging" ]]; then \
+		file="./docker-compose.production.yaml" ; \
+	else \
+		file="./docker-compose.${ENVIRONMENT}.yaml" ; \
+	fi && \
+	if [[ ! -L "./docker-compose.yaml" ]] || [[ ! "./docker-compose.yaml" -ef "$${file}" ]]; then \
+	    echo "./docker-compose.yaml does not link to $${file}" >&2 ; \
+			exit 2 ; \
+	fi
+.PHONY : symlink
+
 dotenv : ## Assert that all variables in `./.env.${ENVIRONMENT}.sample` are available in `./.env`
 	${dotenv_linter} diff /mnt/.env "/mnt/.env.${ENVIRONMENT}.sample"
 	${dotenv_linter} diff /mnt/.env.development.sample /mnt/.env.production.sample
@@ -39,11 +59,11 @@ dotenv : ## Assert that all variables in `./.env.${ENVIRONMENT}.sample` are avai
 	${dotenv_linter} diff /mnt/.env.development.solarbuildingenvelopes.sample /mnt/.env.development.sample
 .PHONY : dotenv
 
-pull : ## Pull images
+pull : symlink dotenv ## Pull images
 	docker compose pull ${SERVICE}
 .PHONY : pull
 
-up : ## (Re)create and (re)start services
+up : symlink dotenv ## (Re)create and (re)start services
 	docker compose up \
 		--no-build \
 		--no-deps \

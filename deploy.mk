@@ -27,6 +27,7 @@ help : ## Print this help
 .DEFAULT_GOAL := help
 
 do : ## Deploy services, that is, assert ./.env file, setup machine, pull images, and (re)create and (re)start services
+	$(MAKE) --file="${SELF}" symlink
 	$(MAKE) --file="${SELF}" dotenv
 	$(MAKE) --file="${SELF}" setup
 	$(MAKE) --file="${SELF}" services
@@ -66,12 +67,17 @@ services : ## (Re)create and (re)start services
 .PHONY : services
 
 symlink : ## Confirm that ./docker-compose.yaml links to the correct ./docker-compose.*.yaml
-	if [[ ${ENVIRONMENT} == "staging" ]]; then \
+	if [[ ! -L "./Makefile" ]] || [[ ! "./Makefile" -ef "./docker.mk" ]]; then \
+	    echo "./docker-compose.yaml does not link to $${file}" >&2 ; \
+			exit 1 ; \
+	fi
+	if [[ "${ENVIRONMENT}" == "staging" ]]; then \
 		file="./docker-compose.production.yaml" ; \
 	else \
 		file="./docker-compose.${ENVIRONMENT}.yaml" ; \
 	fi && \
-	if [[ ! -L "./docker-compose.yaml" ]] || [[ ! "./docker-compose.yaml" -ef $${file} ]]; then \
-	    echo "./docker-compose.yaml does not link to $${file}" ; \
+	if [[ ! -L "./docker-compose.yaml" ]] || [[ ! "./docker-compose.yaml" -ef "$${file}" ]]; then \
+	    echo "./docker-compose.yaml does not link to $${file}" >&2 ; \
+			exit 2 ; \
 	fi
 .PHONY : symlink
