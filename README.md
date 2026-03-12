@@ -14,6 +14,20 @@ This project follows the
 [GitHub Flow](https://guides.github.com/introduction/flow/),
 in particular, the branch `main` is always deployable.
 
+## Contents
+
+[Development](#development)
+
+- [Getting Started](#getting-started)
+
+[Deployment](#deployment)
+
+- [Setting up the machine](#setting-up-the-machine)
+- [Upgrading the system](#upgrading-the-system)
+- [Periodic jobs](#periodic-jobs)
+- [Logs](#logs)
+- [Troubleshooting](#troubleshooting)
+
 ## Development
 
 ### Getting Started
@@ -35,7 +49,7 @@ and
    or shiny new
    [`fish`](https://fishshell.com/).
 1. Install [Git](https://git-scm.com) by running
-   `sudo apt install git-all` on [Debian](https://www.debian.org)-based
+   `sudo apt update && sudo apt install git-all` on [Debian](https://www.debian.org)-based
    distributions like [Ubuntu](https://ubuntu.com), or
    `sudo dnf install git` on [Fedora](https://getfedora.org) and closely-related
    [RPM-Package-Manager](https://rpm.org)-based distributions like
@@ -50,6 +64,7 @@ and
    plugin by following the instructions on
    [Install Docker Engine](https://docs.docker.com/engine/install/)
    for your platform.
+1. Install [GNU Make](https://www.gnu.org/software/make/) with `sudo apt install make`.
 1. Create an empty directory and navigate into it. It is referred to as `${APP}`
    below.
 1. Clone the present repository into `${APP}/machine` by running
@@ -226,7 +241,7 @@ and
    for ports 80 and 443.
 1. Format and mount hard disk for data to the directory `/app/data` as follows:
    1. Create the directory `/app/data` by running `mkdir /app/data`.
-   1. Scan for the data disk by running `./tools.mk scan`.
+   1. Scan for the data disk by running `./tools.mk rescan-disks`.
    1. Figure out its name and size by running `lsblk`, for example, `sdb` and
       `50G`, and use this name and size instead of `sdx` and `XG` below.
    1. Partition the hard disk `/dev/sdx` by running
@@ -240,13 +255,11 @@ and
       [How to align partitions for best performance using parted](https://rainbow.chard.org/2013/01/30/how-to-align-partitions-for-best-performance-using-parted/)
       for details on how to compute that number.
    1. Format the partition `/dev/sdx1` of hard disk `/dev/sdx` by running
-      `sudo mkfs.ext4 -L data /dev/sdx1`
-      and mount it permanently by adding
+      `sudo mkfs.ext4 -L data /dev/sdx1`.
+   1. Run `sudo blkid | grep /dev/sdx1` and save the first UUID. Modify the
+      file `etc/fstab` for example with `sudo nano /etc/fstab` and add the line
       `UUID=XXXX-XXXX-XXXX-XXXX-XXXX /app/data ext4 errors=remount-ro 0 1`
-      to the file `/etc/fstab` and running
-      `sudo mount --all && sudo systemctl daemon-reload`,
-      where the UUID is the one reported by
-      `sudo blkid | grep /dev/sdx1`.
+      with the saved first UUID instead of `XXXX-XXXX-XXXX-XXXX-XXXX`. This mounts it permanently.
       Note that to list block devices and whether and where they are
       mounted run `lsblk` and you could mount partitions temporarily by running
       `sudo mount /dev/sdx1 /app/data`.
