@@ -36,8 +36,8 @@ environment : ## Print value of variable `ENVIRONMENT`
 
 symlink : ## Confirm that ./Makefile links to ./docker.mk and that ./docker-compose.yaml links to the correct ./docker-compose.*.yaml
 	if [[ ! -L "./Makefile" ]] || [[ ! "./Makefile" -ef "./docker.mk" ]]; then \
-	    echo "./docker-compose.yaml does not link to $${file}" >&2 ; \
-			exit 1 ; \
+		echo "./docker-compose.yaml does not link to $${file}" >&2 ; \
+		exit 1 ; \
 	fi
 	if [[ "${ENVIRONMENT}" == "staging" ]]; then \
 		file="./docker-compose.production.yaml" ; \
@@ -45,8 +45,8 @@ symlink : ## Confirm that ./Makefile links to ./docker.mk and that ./docker-comp
 		file="./docker-compose.${ENVIRONMENT}.yaml" ; \
 	fi && \
 	if [[ ! -L "./docker-compose.yaml" ]] || [[ ! "./docker-compose.yaml" -ef "$${file}" ]]; then \
-	    echo "./docker-compose.yaml does not link to $${file}" >&2 ; \
-			exit 2 ; \
+		echo "./docker-compose.yaml does not link to $${file}" >&2 ; \
+		exit 2 ; \
 	fi
 .PHONY : symlink
 
