@@ -257,13 +257,11 @@ and
       [How to align partitions for best performance using parted](https://rainbow.chard.org/2013/01/30/how-to-align-partitions-for-best-performance-using-parted/)
       for details on how to compute that number.
    1. Format the partition `/dev/sdx1` of hard disk `/dev/sdx` by running
-      `sudo mkfs.ext4 -L data /dev/sdx1`
-      and mount it permanently by adding
+      `sudo mkfs.ext4 -L data /dev/sdx1`.
+   1. Run `sudo blkid | grep /dev/sdx1` and save the first UUID. Modify the
+      file `etc/fstab` for example with `sudo nano /etc/fstab` and add the line
       `UUID=XXXX-XXXX-XXXX-XXXX-XXXX /app/data ext4 errors=remount-ro 0 1`
-      to the file `/etc/fstab` and running
-      `sudo mount --all && sudo systemctl daemon-reload`,
-      where the UUID is the one reported by
-      `sudo blkid | grep /dev/sdx1`.
+      with the saved first UUID instead of `XXXX-XXXX-XXXX-XXXX-XXXX`. This mounts it permanently.
       Note that to list block devices and whether and where they are
       mounted run `lsblk` and you could mount partitions temporarily by running
       `sudo mount /dev/sdx1 /app/data`.
