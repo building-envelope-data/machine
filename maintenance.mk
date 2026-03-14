@@ -26,7 +26,7 @@ end : ## End maintenance
 		echo 'Reboot by running `./maintenance.mk reboot` and afterwards run `cd /app/machine && ./maintenance.mk end`' ; \
 	else \
 		for environment in staging production ; do \
-			$(MAKE) --directory=/app/$${environment} --file=/app/$${environment}/deploy.mk end ; \
+			$(MAKE) --directory=/app/$${environment} --file=/app/$${environment}/deploy.mk end-maintenance ; \
 		done ; \
 	fi
 .PHONY : end
@@ -56,7 +56,7 @@ backup : ## Backup production database
 	mkdir --parents /app/data/backups
 	$(MAKE) \
 		--directory=/app/production \
-		--file=/app/production/deploy.mk \
+		--file=/app/production/database.mk \
 		backup \
 		DIR="/app/data/backups/$(shell date +"%Y-%m-%d_%H_%M_%S")"
 .PHONY : backup
