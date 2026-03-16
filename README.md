@@ -118,6 +118,8 @@ and
    - `ln --symbolic ./docker.mk ./Makefile`.
 1. Generate self-signed Transport Security Protocol (TLS) certificates
    used for HTTPS by running `./init-tls.sh`.
+1. Create a user who will have access to restricted areas like staging, email
+   and the Monit web interface for example with `./deploy.mk user NAME=jdoe`. Save the password.
 1. Start all services by running `make dotenv pull up`.
 1. Drop into `bash` with the working directory `/app/machine`, which is mounted
    to the host's `.` directory, inside a fresh Docker container based on the
@@ -132,8 +134,6 @@ and
    interface for example with `./deploy.mk user NAME=jdoe`. Save the
    credentials.
 1. Drop out of the container by running `exit` or pressing `Ctrl-D`.
-1. Create a user who will have access to restricted areas like staging, email
-   and the Monit web interface for example with `./deploy.mk user NAME=jdoe`. Save the password.
 1. Continue with the second step of
    [Getting Started with the metabase](https://github.com/building-envelope-data/metabase?tab=readme-ov-file#getting-started)
    or
@@ -283,7 +283,7 @@ and
    `./init-tls.sh` (if you are unsure whether the script will work, set the
    variable `staging` inside that script to `1` for a trial run).
 1. Create credentials to access the staging and telemetry sub-domains by running
-   `./docker.mk user NAME=${USER}`.
+   `./deploy.mk user NAME=${USER}`.
 1. Start all services by running `./deploy.mk dotenv services`. On subsequent
    deployments just run `./deploy.mk do` to also rerun `setup`.
 1. Continue with the second step of
