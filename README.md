@@ -132,6 +132,8 @@ and
    interface for example with `./deploy.mk user NAME=jdoe`. Save the
    credentials.
 1. Drop out of the container by running `exit` or pressing `Ctrl-D`.
+1. Create a user who will have access to restricted areas like staging, email
+   and the Monit web interface for example with `./deploy.mk user NAME=jdoe`. Save the password.
 1. Continue with the second step of
    [Getting Started with the metabase](https://github.com/building-envelope-data/metabase?tab=readme-ov-file#getting-started)
    or
