@@ -37,13 +37,13 @@ dotenv : ## Assert that all variables in `./.env.${ENVIRONMENT}.sample` are avai
 .PHONY : dotenv
 
 htpasswd : ## Create file ./nginx/.htpasswd if it does not exist
-	if [ -f ./nginx/.htpasswd ] ; then \
+	if [ ! -f ./nginx/.htpasswd ] ; then \
 		sudo touch ./nginx/.htpasswd && \
 		sudo chmod 644 ./nginx/.htpasswd ; \
 	fi
 .PHONY : htpasswd
 
-user : htpasswd ## Add user `${NAME}` (he/she will have access to restricted areas like staging and the Monit web interface with the correct password), for example, `./docker.mk user NAME=jdoe`
+user : htpasswd ## Add user `${NAME}` (he/she will have access to restricted areas like staging and the Monit web interface with the correct password), for example, `./deploy.mk user NAME=jdoe`
 	sudo htpasswd ./nginx/.htpasswd "${NAME}"
 .PHONY : user
 
