@@ -55,6 +55,7 @@ and
    [RPM-Package-Manager](https://rpm.org)-based distributions like
    [CentOS](https://www.centos.org). For further information see
    [Installing Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git).
+1. Install `htpasswd` with `sudo apt install apache2-utils`.
 1. Install
    [Docker Engine](https://docs.docker.com/engine/)
    with the
@@ -127,6 +128,9 @@ and
    example, `./tools.mk check` to lint, syntax-check, and validate config files.
    Never run `./deploy.mk setup` or `./deploy.mk do` on the host as this would
    make changes to your operating system.
+1. Create a user for restricted areas like staging, email and the Monit web 
+   interface for example with `./deploy.mk user NAME=jdoe`. Save the
+   credentials.
 1. Drop out of the container by running `exit` or pressing `Ctrl-D`.
 1. Continue with the second step of
    [Getting Started with the metabase](https://github.com/building-envelope-data/metabase?tab=readme-ov-file#getting-started)
