@@ -302,7 +302,7 @@ using `ssh`. Print which Debian version is installed by running `lsb_release
 --all`. Consult
 [Long Term Support](https://wiki.debian.org/LTS) for how long
 it is supported by the security team. If it is to be soon, then
-[perform an upgrade](https://www.debian.org/releases/stable/i386/release-notes/ch-upgrading.html).
+[perform an upgrade](https://www.debian.org/releases/stable/release-notes/upgrading.html).
 Our machines run Debian 12 "Bookworm" which is supported until June 11, 2026
 and reaches its end of life on June 30, 2028.
 
