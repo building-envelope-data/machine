@@ -13,8 +13,8 @@ SERVICE=
 dotenv_linter = \
 	docker run \
 		--rm \
-		--user $(id --user):$(id --group) \
-		--volume "$(pwd):/mnt" \
+		--user "$(shell id --user):$(shell id --group)" \
+		--volume "$(shell pwd):/mnt" \
 		--quiet \
 		dotenvlinter/dotenv-linter:4.0.0
 
