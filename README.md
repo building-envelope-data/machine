@@ -296,14 +296,15 @@ Additionally, to keep HTTPS, that is, HTTP over TLS, secure, regularly fetch
 SSL configuration and Diffie–Hellman parameters from certbot as explained in
 [issue #5](https://github.com/building-envelope-data/machine/issues/5).
 
-Before the installed version of Debian reaches its end of life, upgrade to the
-next major version. Enter a shell on the production machine using `ssh`. Print
-which Debian version is installed by running `lsb_release --all`. Consult [Long
-Term Support](https://wiki.debian.org/LTS) for when it reaches its end of life.
-If it is to be soon, then [perform an
-upgrade](https://www.debian.org/releases/stable/i386/release-notes/ch-upgrading.html).
-Our machines run Debian 12 "Bookworm" which reaches its end of life on June
-30th, 2028.
+Before the installed version of Debian stops receiving security updates,
+upgrade to the next major version. Enter a shell on the production machine
+using `ssh`. Print which Debian version is installed by running `lsb_release
+--all`. Consult
+[Long Term Support](https://wiki.debian.org/LTS) for how long
+it is supported by the security team. If it is to be soon, then
+[perform an upgrade](https://www.debian.org/releases/stable/i386/release-notes/ch-upgrading.html).
+Our machines run Debian 12 "Bookworm" which is supported until June 11, 2026
+and reaches its end of life on June 30, 2028.
 
 ### Periodic jobs
 
