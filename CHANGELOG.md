@@ -10,7 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Rely on new ansible features not available in the Debian-bookworm package archive --- delete the corresponding file in /etc/apt/sources.list.d/, remove ansible with `sudo apt remove ansible`, install pipx with `sudo apt install pipx && pipx ensurepath`, and reinstall ansible with `pipx install --include-deps ansible && pipx inject --include-deps --include-apps ansible python-debian ansible-dev-tools`
-- Switch to the structured deb822 format for personal package archives in /etc/apt/sources.list.d/ --- you may need to remove ansible managed /etc/apt/sources.list.d/*.list files before running `make setup`
-- Harden SSH daemon, in particular, allow *only* publickey authentication (for details see ./sshd_config.conf) --- make sure that you don't lock yourself out by running `make setup` and disconnecting without a secure SSH key (for example an ed25519 key) added to /home/cloud/.ssh/authorized_keys
+- Switch to the structured deb822 format for personal package archives in /etc/apt/sources.list.d/ --- you may need to remove ansible managed /etc/apt/sources.list.d/\*.list files before running `make setup`
+- Harden SSH daemon, in particular, allow _only_ publickey authentication (for details see ./sshd_config.conf) --- make sure that you don't lock yourself out by running `make setup` and disconnecting without a secure SSH key (for example an ed25519 key) added to /home/cloud/.ssh/authorized_keys
+- Switch to [containerd image store](https://docs.docker.com/engine/storage/containerd/) --- you need to pull and build all images after the switch and run `sudo rm -rf /var/lib/docker/overlay2` to delete the legacy images.
 
 [Unreleased]: https://github.com/building-envelope-data/database/compare/v1.0.0...HEAD

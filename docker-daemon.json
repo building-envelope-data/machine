@@ -1,6 +1,8 @@
 {
-    "data-root": "/app/data/docker",
-    "live-restore": true,
-    "log-driver": "journald",
-    "storage-driver": "overlay2"
+  "data-root": "/app/data/docker",
+  "live-restore": true,
+  "log-driver": "journald",
+  "features": {
+    "containerd-snapshotter": true
+  }
 }
