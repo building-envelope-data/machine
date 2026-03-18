@@ -2,7 +2,7 @@
 # check=error=true
 # Available versions are listed on https://hub.docker.com/r/docker/dockerfile
 
-FROM debian:bookworm
+FROM debian:trixie
 SHELL ["/bin/bash", "-o", "errexit", "-o", "nounset", "-o", "pipefail", "-c"]
 
 ARG GROUP_ID

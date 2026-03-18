@@ -123,7 +123,7 @@ and
 ### Setting up the machine
 
 The machine has two ext4 disks namely one root disk running
-[Debian bookworm](https://www.debian.org/releases/bookworm/)
+[Debian "Trixie"](https://www.debian.org/releases/trixie/)
 and one initially empty data disk. The data disk is partitioned, formatted, and
 mounted to `/app/data` as described below. There is a Debian user `cloud` with
 superuser privileges and a corresponding group `cloud`. The machine setup is
@@ -155,9 +155,9 @@ and
    [GNU Make](https://www.gnu.org/software/make/),
    [Git](https://git-scm.com),
    [pipx](https://github.com/pypa/pipx),
-   [scsitools](https://packages.debian.org/bookworm/scsitools),
+   [scsitools](https://packages.debian.org/trixie/scsitools),
    [GNU Parted](https://www.gnu.org/software/parted/manual/parted.html), and
-   [e2fsprogs](https://packages.debian.org/bookworm/e2fsprogs)
+   [e2fsprogs](https://packages.debian.org/trixie/e2fsprogs)
    by running `sudo apt-get install make git pipx scsitools parted e2fsprogs`, and
    install
    [Ansible](https://www.ansible.com) and
@@ -303,7 +303,7 @@ using `ssh`. Print which Debian version is installed by running `lsb_release
 [Long Term Support](https://wiki.debian.org/LTS) for how long
 it is supported by the security team. If it is to be soon, then
 [perform an upgrade](https://www.debian.org/releases/stable/release-notes/upgrading.html).
-Our machines run Debian 12 "Bookworm" which is supported until June 11, 2026
+Our machines run Debian 12 "Trixie" which is supported until June 11, 2026
 and reaches its end of life on June 30, 2028.
 
 ### Periodic jobs
