@@ -53,8 +53,8 @@
       ansible.builtin.shell:
         cmd: |
           set -o pipefail
-          echo "Test email as {{ ansible_user_id | ansible.builtin.mandatory }} user from new/updated MSMTP at" `hostname` \
-            | mail -s "Test SMTP `hostname`" {{ ansible_user_id | ansible.builtin.mandatory }}
+          echo "Test email as {{ ansible_facts['user_id'] | ansible.builtin.mandatory }} user from new/updated MSMTP at" `hostname` \
+            | mail -s "Test SMTP `hostname`" {{ ansible_facts['user_id'] | ansible.builtin.mandatory }}
         executable: /bin/bash
       changed_when: false
       when: dotenv_environment != "development"
@@ -105,7 +105,7 @@
     - name: Grant user `cloud` read-only access to journald
       become: true
       ansible.builtin.user:
-        name: "{{ ansible_user_id | ansible.builtin.mandatory }}"
+        name: "{{ ansible_facts['user_id'] | ansible.builtin.mandatory }}"
         groups: systemd-journal
         append: true
 
@@ -121,7 +121,7 @@
         # The comment also mentions an alternative better solution that uses a `~/.bashrc.d` directory.
         - name: Source Bash completion scripts in `~/.bashrc`
           ansible.builtin.blockinfile:
-            dest: "{{ ansible_env.HOME | ansible.builtin.mandatory }}/.bashrc"
+            dest: "{{ ansible_facts['env']['HOME'] | ansible.builtin.mandatory }}/.bashrc"
             block: |
               for file in /etc/bash_completion.d/* ; do
                   source "$file"
@@ -264,7 +264,7 @@
         - name: Copy user-specific `mstprc` configuration file
           ansible.builtin.template:
             src: msmtprc.j2
-            dest: "{{ ansible_env.HOME | ansible.builtin.mandatory }}/.msmtprc"
+            dest: "{{ ansible_facts['env']['HOME'] | ansible.builtin.mandatory }}/.msmtprc"
             mode: "0644"
           notify: Send test email as cloud
 
@@ -360,23 +360,23 @@
 
         - name: Ensure ~/.ssh directory exists with 0700 permissions
           ansible.builtin.file:
-            path: "{{ ansible_env.HOME | ansible.builtin.mandatory }}/.ssh"
+            path: "{{ ansible_facts['env']['HOME'] | ansible.builtin.mandatory }}/.ssh"
             mode: "0700"
-            owner: "{{ ansible_user_id | ansible.builtin.mandatory }}"
+            owner: "{{ ansible_facts['user_id'] | ansible.builtin.mandatory }}"
             state: directory
 
         - name: Ensure ~/.ssh/authorized_keys file exists with 0600 permissions
           ansible.builtin.file:
-            path: "{{ ansible_env.HOME | ansible.builtin.mandatory }}/.ssh/authorized_keys"
+            path: "{{ ansible_facts['env']['HOME'] | ansible.builtin.mandatory }}/.ssh/authorized_keys"
             mode: "0600"
-            owner: "{{ ansible_user_id | ansible.builtin.mandatory }}"
+            owner: "{{ ansible_facts['user_id'] | ansible.builtin.mandatory }}"
             state: touch
 
         - name: Ensure at least one SSH key is authorized
           block:
             - name: Count authorized SSH keys
               ansible.builtin.command:
-                cmd: "grep --count --invert-match '^#|^$' {{ ansible_env.HOME | ansible.builtin.mandatory }}/.ssh/authorized_keys"
+                cmd: "grep --count --invert-match '^#|^$' {{ ansible_facts['env']['HOME'] | ansible.builtin.mandatory }}/.ssh/authorized_keys"
               register: authorized_key_count
               # `rc` below means return code, aka, status code.
               failed_when: authorized_key_count.rc == 2
@@ -408,11 +408,11 @@
           ansible.builtin.deb822_repository:
             name: gnupg2
             types: deb
-            uris: "https://repos.gnupg.org/deb/gnupg/{{ ansible_distribution_release | ansible.builtin.mandatory }}/"
-            suites: "{{ ansible_distribution_release | ansible.builtin.mandatory }}"
+            uris: "https://repos.gnupg.org/deb/gnupg/{{ ansible_facts['distribution_release'] | ansible.builtin.mandatory }}/"
+            suites: "{{ ansible_facts['distribution_release'] | ansible.builtin.mandatory }}"
             components: main
             architectures: amd64
-            signed_by: "https://repos.gnupg.org/deb/gnupg/{{ ansible_distribution_release | ansible.builtin.mandatory }}/gnupg-signing-key.gpg"
+            signed_by: "https://repos.gnupg.org/deb/gnupg/{{ ansible_facts['distribution_release'] | ansible.builtin.mandatory }}/gnupg-signing-key.gpg"
             state: present
           notify: Update package information
 
@@ -433,7 +433,7 @@
             name: docker
             types: deb
             uris: "https://download.docker.com/linux/debian"
-            suites: "{{ ansible_distribution_release | ansible.builtin.mandatory }}"
+            suites: "{{ ansible_facts['distribution_release'] | ansible.builtin.mandatory }}"
             components: stable
             architectures: amd64
             signed_by: "https://download.docker.com/linux/debian/gpg"
@@ -464,7 +464,7 @@
 
         - name: Add user `cloud` to group `docker`
           ansible.builtin.user:
-            name: "{{ ansible_user_id | ansible.builtin.mandatory }}"
+            name: "{{ ansible_facts['user_id'] | ansible.builtin.mandatory }}"
             groups: docker
             append: true
 
@@ -536,7 +536,7 @@
             name: debian-backports
             types: deb
             uris: "https://deb.debian.org/debian"
-            suites: "{{ ansible_distribution_release | ansible.builtin.mandatory }}-backports"
+            suites: "{{ ansible_facts['distribution_release'] | ansible.builtin.mandatory }}-backports"
             components: main
             architectures: amd64
             state: present
@@ -584,7 +584,7 @@
         - name: Grant user `cloud` read-only access to Monit without a password
           community.general.sudoers:
             name: monit-nopasswd
-            user: "{{ ansible_user_id | ansible.builtin.mandatory }}"
+            user: "{{ ansible_facts['user_id'] | ansible.builtin.mandatory }}"
             commands: /usr/bin/monit
             nopassword: true
             state: present
