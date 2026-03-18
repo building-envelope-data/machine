@@ -56,11 +56,11 @@ and
    `git clone git@github.com:building-envelope-data/machine.git`.
 1. Change into the clone by running `cd ./machine`.
 1. Prepare the machine environment by running
-   `cp ./.env.development.sample ./.env && chmod 600 ./.env` (or
-   `cp ./.env.development.buildingenvelopedata.sample ./.env && chmod 600 ./.env` or
-   `cp ./.env.development.solarbuildingenvelopes.sample ./.env && chmod 600 ./.env`) and
-   adapt the `.env` file as needed for example inside `vi ./.env` or
-   `nano ./.env`. The `.env` variable
+   `cp ./.env.development.sample ./.env` (or
+   `cp ./.env.development.buildingenvelopedata.sample ./.env` or
+   `cp ./.env.development.solarbuildingenvelopes.sample ./.env`)
+   and `chmod 600 ./.env` and adapt the dotenv file as needed for example
+   inside `vi ./.env` or `nano ./.env`. The `.env` variable
    - `ENVIRONMENT` is the environment type, either `development` or `production`;
    - `HOST` is the domain name without sub-domain;
    - `PRODUCTION_SUBDOMAIN`, `STAGING_SUBDOMAIN`, `TELEMETRY_SUBDOMAIN` are the
@@ -171,10 +171,12 @@ and
    `git clone git@github.com:building-envelope-data/machine.git`.
 1. Change into the clone by running `cd ./machine`.
 1. Prepare the machine environment by running
-   `cp ./.env.production.sample ./.env && chmod 600 ./.env` (or
-   `cp ./.env.production.buildingenvelopedata.sample ./.env && chmod 600 ./.env` or
-   `cp ./.env.production.solarbuildingenvelopes.sample ./.env && chmod 600 ./.env`) and
-   adapt the `.env` file as needed for example inside `vi ./.env` or `nano ./.env`. The `.env` variables
+   `cp ./.env.production.sample /app/data/.env.machine` (or
+   `cp ./.env.production.buildingenvelopedata.sample /app/data/.env.machine` or
+   `cp ./.env.production.solarbuildingenvelopes.sample /app/data/.env.machine`)
+   and `chmod 600 /app/data/.env && ln --symbolic /app/data/.env.machine ./.env`
+   and adapt the dotenv file as needed for example inside `vi ./.env` or
+   `nano ./.env`. The `.env` variables
    - `ENVIRONMENT` is the environment type, either `development` or `production`;
    - `HOST` is the domain name without sub-domain;
    - `PRODUCTION_SUBDOMAIN`, `STAGING_SUBDOMAIN`, `TELEMETRY_SUBDOMAIN` are the
