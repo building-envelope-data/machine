@@ -530,21 +530,6 @@
       # https://mmonit.com/monit/
       become: true
       block:
-        - name: Add Debian backports
-          # https://backports.debian.org/
-          ansible.builtin.deb822_repository:
-            name: debian-backports
-            types: deb
-            uris: "https://deb.debian.org/debian"
-            suites: "{{ ansible_facts['distribution_release'] | ansible.builtin.mandatory }}-backports"
-            components: main
-            architectures: amd64
-            state: present
-          notify: Update package information
-
-        - name: Flush handlers to update package information
-          ansible.builtin.meta: flush_handlers
-
         - name: Install Monit
           ansible.builtin.package:
             name: monit
