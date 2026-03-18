@@ -13,6 +13,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Switch to the structured deb822 format for personal package archives in /etc/apt/sources.list.d/ --- you may need to remove ansible managed /etc/apt/sources.list.d/\*.list files before running `make setup`
 - Harden SSH daemon, in particular, allow _only_ publickey authentication (for details see ./sshd_config.conf) --- make sure that you don't lock yourself out by running `make setup` and disconnecting without a secure SSH key (for example an ed25519 key) added to /home/cloud/.ssh/authorized_keys
 - Switch to [containerd image store](https://docs.docker.com/engine/storage/containerd/) --- you need to pull and build all images after the switch and run `sudo rm -rf /var/lib/docker/overlay2` to delete the legacy images.
-- Upgrade to Debian "Trixie" --- follow the instructions on [Upgrades from Debian 12 (bookworm)](https://www.debian.org/releases/stable/release-notes/upgrading.html)
+- Upgrade to Debian "Trixie" --- follow the instructions on [Upgrades from Debian 12 (bookworm)](https://www.debian.org/releases/stable/release-notes/upgrading.html) and then reinstall Ansible for the new Python version `pipx uninstall-all && pipx ensurepath && pipx install --include-deps ansible && pipx inject --include-deps --include-apps ansible python-debian ansible-dev-tools`
 
 [Unreleased]: https://github.com/building-envelope-data/database/compare/v1.0.0...HEAD
