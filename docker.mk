@@ -94,6 +94,8 @@ machine : ## Enter shell in the `machine` service for debugging and testing, for
 	docker compose pull \
 		machine
 	docker compose build \
+		--pull \
+		--check \
 		--build-arg GROUP_ID=$(shell id --group) \
 		--build-arg USER_ID=$(shell id --user) \
 		machine
