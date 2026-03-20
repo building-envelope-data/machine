@@ -38,7 +38,7 @@ dotenv : ## Assert that all variables in `./.env.${ENVIRONMENT}.sample` are avai
 .PHONY : dotenv
 
 htpasswd : ## Create file ./nginx/.htpasswd if it does not exist
-	if [ -f ./nginx/.htpasswd ] ; then \
+	if [ ! -f ./nginx/.htpasswd ] ; then \
 		sudo touch ./nginx/.htpasswd && \
 		sudo chmod 644 ./nginx/.htpasswd ; \
 	fi
