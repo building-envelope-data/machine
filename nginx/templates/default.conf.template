@@ -22,7 +22,6 @@ ssl_certificate /etc/letsencrypt/live/${HOST}/fullchain.pem;
 ssl_certificate_key /etc/letsencrypt/live/${HOST}/privkey.pem;
 
 ssl_stapling off;
-ssl_stapling_verify on;
 
 include /etc/letsencrypt/options-ssl-nginx.conf;
 ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
