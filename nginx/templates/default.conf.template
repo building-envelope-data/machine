@@ -19,6 +19,7 @@ proxy_cache_bypass      $http_upgrade;
 proxy_connect_timeout   30s;
 proxy_send_timeout      30s;
 proxy_read_timeout      60s;
+proxy_intercept_errors  on;
 
 # Use big buffers for the OpenId Connect cookies
 proxy_buffer_size       128k;
@@ -38,6 +39,8 @@ ssl_stapling off;
 include /etc/letsencrypt/options-ssl-nginx.conf;
 ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
 
+# Distniguish through which proxies the request passed
+add_header X-Proxy-Layer "outer" always;
 # Enable HSTS
 add_header Strict-Transport-Security "max-age=63072000; includeSubdomains; preload" always;
 # Avoid click-jacking attacks: https://developer.mozilla.org/en-US/docs/Web/Security/Types_of_attacks#click-jacking
@@ -79,7 +82,20 @@ upstream metrics {
 
 server {
     listen *:80;
+    listen *:443 ssl;
     server_tokens off;
+    server_name _; # any (sub)domain not explicitly defined (below)
+
+    location / {
+        add_header Content-Type application/json always;
+        return 404 '{"errors": [{"code": "SUBDOMAIN_NOT_FOUND", "message": "The requested subdomain does not exist.", "path": []}]}';
+    }
+}
+
+server {
+    listen *:80;
+    server_tokens off;
+    server_name ${EXTRA_HOST};
 
     location / {
         return 301 https://$host$request_uri;
@@ -97,7 +113,7 @@ server {
     listen *:443 ssl;
     server_name ${HOST};
     server_tokens off;
-    return 301 https://${PRODUCTION_SUBDOMAIN}.${HOST}$request_uri;
+    return 301 https://${PRODUCTION_SUBDOMAIN}.$http_host$request_uri;
 }
 
 server {
@@ -134,6 +150,66 @@ server {
 
     location /.well-known/acme-challenge/ {
         root /var/www/certbot;
+    }
+
+    error_page 404 @not_found;
+    location @not_found {
+        internal;
+        add_header Content-Type application/json always;
+        return 404 '{"errors": [{"code": "NOT_FOUND", "message": "The requested resource could not be found.", "path": []}]}';
+    }
+
+    error_page 408 @request_timeout;
+    location @request_timeout {
+        internal;
+        add_header Content-Type application/json always;
+        return 408 '{"errors": [{"code": "REQUEST_TIMEOUT", "message": "The server timed out waiting for the request. Please check your network connection and try again.", "path": []}]}';
+    }
+
+    error_page 413 @content_too_large;
+    location @content_too_large {
+        internal;
+        add_header Content-Type application/json always;
+        return 413 '{"errors": [{"code": "CONTENT_TOO_LARGE", "message": "The uploaded file is too large. Please reduce the size and try again.", "path": []}]}';
+    }
+
+    error_page 429 @too_many_requests;
+    location @too_many_requests {
+        internal;
+        add_header Retry-After 60 always;
+        add_header Content-Type application/json always;
+        return 429 '{"errors": [{"code": "TOO_MANY_REQUESTS", "message": "Rate limit exceeded. Please slow down and try again later.", "path": []}]}';
+    }
+
+    error_page 501 @not_implemented;
+    location @not_implemented {
+        internal;
+        add_header Content-Type application/json always;
+        return 501 '{"errors": [{"code": "NOT_IMPLEMENTED", "message": "The HTTP method used is not supported.", "path": []}]}';
+    }
+
+    error_page 502 @bad_gateway;
+    location @bad_gateway {
+        internal;
+        add_header Retry-After 120 always;
+        add_header Content-Type application/json always;
+        return 502 '{"errors": [{"code": "BAD_GATEWAY", "message": "The upstream server is temporarily unable to handle the request. Please try again in 2 minutes.", "path": []}]}';
+    }
+
+    error_page 504 @gateway_timeout;
+    location @gateway_timeout {
+        internal;
+        add_header Retry-After 120 always;
+        add_header Content-Type application/json always;
+        return 504 '{"errors": [{"code": "GATEWAY_TIMEOUT", "message": "The upstream server took too long to respond. This may be due to high load. Please try again in 2 minutes.", "path": []}]}';
+    }
+
+    error_page 503 @service_unavailable;
+    location @service_unavailable {
+        internal;
+        add_header Retry-After 120 always;
+        add_header Content-Type application/json always;
+        return 503 '{"errors": [{"code": "SERVICE_UNAVAILABLE", "message": "The system is under maintenance. Please try again in 2 minutes.", "path": []}]}';
     }
 }
 
