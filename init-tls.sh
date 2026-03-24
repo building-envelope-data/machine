@@ -32,7 +32,10 @@ fi
 
 echo "### Creating certbot config, working, logs, and certificates directories ./certbot/* ..."
 mkdir --parents \
-  "./certbot/{conf,letsencrypt,logs,www}" \
+  "./certbot/conf" \
+  "./certbot/letsencrypt" \
+  "./certbot/logs" \
+  "./certbot/www" \
   "./certbot/conf/accounts"
 chmod --recursive 755 "./certbot"
 chmod --recursive 700 \
