@@ -128,24 +128,25 @@ server {
     location /_next/webpack-hmr {
         proxy_pass http://production;
         proxy_read_timeout 86400s;
+        proxy_send_timeout 86400s;
     }
 
     location /api/upload-file {
+        proxy_pass http://production;
         client_max_body_size 0;
         client_body_timeout 0;
-        proxy_pass http://production;
     }
 
     location /email {
+        proxy_pass http://production;
         auth_basic "Restricted Area";
         auth_basic_user_file /etc/apache2/.htpasswd;
-        proxy_pass http://production;
         # return 404;
     }
     location /email/hubs {
+        proxy_pass http://production;
         auth_basic "Restricted Area";
         auth_basic_user_file /etc/apache2/.htpasswd;
-        proxy_pass http://production;
     }
 
     location /.well-known/acme-challenge/ {
@@ -231,24 +232,27 @@ server {
     }
 
     location /api/upload-file {
+        proxy_pass http://production;
         client_max_body_size 0;
         client_body_timeout 0;
-        proxy_pass http://production;
+        proxy_read_timeout 0;
+        proxy_send_timeout 0;
+        proxy_request_buffering off;
     }
 
     location /graphql {
-        auth_basic "off";
         proxy_pass http://staging;
+        auth_basic "off";
     }
 
     location /.well-known {
-        auth_basic "off";
         proxy_pass http://staging;
+        auth_basic "off";
     }
 
     location /connect {
-        auth_basic "off";
         proxy_pass http://staging;
+        auth_basic "off";
     }
 
     location /email/hubs {
@@ -274,19 +278,19 @@ server {
     }
 
     location /monitor/ {
+        proxy_pass http://monitor;
         # Monit has its own basic authentication
         auth_basic "off";
         rewrite ^/monitor/(.*)$ /$1 break;
-        proxy_pass http://monitor;
     }
 
     location /logs/ {
-        rewrite ^/logs/(.*)$ /$1 break;
         proxy_pass http://logs;
+        rewrite ^/logs/(.*)$ /$1 break;
     }
 
     location /metrics/ {
-        rewrite ^/metrics/(.*)$ /$1 break;
         proxy_pass http://metrics;
+        rewrite ^/metrics/(.*)$ /$1 break;
     }
 }
