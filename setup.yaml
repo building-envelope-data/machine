@@ -109,27 +109,11 @@
         groups: systemd-journal
         append: true
 
-    - name: Bash completion
-      block:
-        - name: Install Bash completion
-          become: true
-          ansible.builtin.package:
-            name: bash-completion
-            state: present
-
-        # Inspired by https://stackoverflow.com/questions/40316836/update-bashrc-with-virtualenv-info-using-ansible/40317125#40317125
-        # The comment also mentions an alternative better solution that uses a `~/.bashrc.d` directory.
-        - name: Source Bash completion scripts in `~/.bashrc`
-          ansible.builtin.blockinfile:
-            dest: "{{ ansible_facts['env']['HOME'] | ansible.builtin.mandatory }}/.bashrc"
-            block: |
-              for file in /etc/bash_completion.d/* ; do
-                  source "$file"
-              done
-            marker: "# {mark} ANSIBLE MANAGED BLOCK - bash-completion"
-            insertbefore: BOF
-            create: true
-            mode: "0644"
+    - name: Install Bash completion
+      become: true
+      ansible.builtin.package:
+        name: bash-completion
+        state: present
 
     - name: Upgrades
       block:
