@@ -134,7 +134,10 @@ server {
     location /api/upload-file {
         proxy_pass http://production;
         client_max_body_size 0;
-        client_body_timeout 0;
+        client_body_timeout 300s;
+        proxy_read_timeout 300s;
+        proxy_send_timeout 300s;
+        proxy_request_buffering off;
     }
 
     location /email {
@@ -234,9 +237,9 @@ server {
     location /api/upload-file {
         proxy_pass http://production;
         client_max_body_size 0;
-        client_body_timeout 0;
-        proxy_read_timeout 0;
-        proxy_send_timeout 0;
+        client_body_timeout 300s;
+        proxy_read_timeout 300s;
+        proxy_send_timeout 300s;
         proxy_request_buffering off;
     }
 
