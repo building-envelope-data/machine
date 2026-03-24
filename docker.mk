@@ -114,6 +114,16 @@ down : ## Stop containers and remove containers, networks, volumes, and images c
 		--filter "label=com.docker.compose.project=${NAME}"
 .PHONY : down
 
+restart : ## Restart services (and await their health), for example, `make restart` to restart all services or `make restart SERVICE=reverse_proxy` or `make restart SERVICE="database backend"`
+	docker compose restart \
+		--no-deps ${SERVICE}
+	docker compose up \
+		--no-build \
+		--no-deps \
+		--no-recreate \
+		--wait ${SERVICE}
+.PHONY : restart
+
 list : ## List all containers with health status
 	docker compose ps \
 		--no-trunc \
