@@ -184,7 +184,7 @@ and
    [Ansible](https://www.ansible.com) and
    [Ansible Development Tools](https://github.com/ansible/ansible-dev-tools)
    by running
-   `pipx ensurepath && pipx install --include-deps ansible && pipx inject --include-deps --include-apps ansible python-debian ansible-dev-tools`.
+   `pipx ensurepath && pipx install --include-deps ansible && pipx inject --include-deps --include-apps ansible python-debian ansible-dev-tools && export PATH="$HOME/.local/bin:$PATH"`.
 1. Create a symbolic link from `/app` to `~` by running
    `sudo ln --symbolic ~ /app`.
 1. Change into the app directory by running `cd /app`.
