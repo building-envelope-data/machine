@@ -179,8 +179,8 @@ and
    [scsitools](https://packages.debian.org/trixie/scsitools),
    [GNU Parted](https://www.gnu.org/software/parted/manual/parted.html), and
    [e2fsprogs](https://packages.debian.org/trixie/e2fsprogs)
-   by running `sudo apt-get install make git pipx scsitools parted e2fsprogs`, and
-   install
+   by running `sudo apt-get update` and
+   `sudo apt-get install make git pipx scsitools parted e2fsprogs`. Install
    [Ansible](https://www.ansible.com) and
    [Ansible Development Tools](https://github.com/ansible/ansible-dev-tools)
    by running
