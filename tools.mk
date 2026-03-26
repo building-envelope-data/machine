@@ -36,7 +36,7 @@ monit : ## Print Monit status and summary
 	sudo monit summary
 .PHONY : monit
 
-crontab : ## List user's and root's contab
+crontab : ## List user's and root's crontab
 	crontab -l
 	sudo crontab -u root -l
 .PHONY : crontab

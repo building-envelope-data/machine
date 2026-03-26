@@ -14,6 +14,20 @@ This project follows the
 [GitHub Flow](https://guides.github.com/introduction/flow/),
 in particular, the branch `main` is always deployable.
 
+## Contents
+
+[Development](#development)
+
+- [Getting Started](#getting-started)
+
+[Deployment](#deployment)
+
+- [Setting up the machine](#setting-up-the-machine)
+- [Upgrading the system](#upgrading-the-system)
+- [Periodic jobs](#periodic-jobs)
+- [Logs](#logs)
+- [Troubleshooting](#troubleshooting)
+
 ## Development
 
 ### Getting Started
@@ -35,12 +49,13 @@ and
    or shiny new
    [`fish`](https://fishshell.com/).
 1. Install [Git](https://git-scm.com) by running
-   `sudo apt install git-all` on [Debian](https://www.debian.org)-based
+   `sudo apt update && sudo apt install git-all` on [Debian](https://www.debian.org)-based
    distributions like [Ubuntu](https://ubuntu.com), or
    `sudo dnf install git` on [Fedora](https://getfedora.org) and closely-related
    [RPM-Package-Manager](https://rpm.org)-based distributions like
    [CentOS](https://www.centos.org). For further information see
    [Installing Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git).
+1. Install `htpasswd` with `sudo apt install apache2-utils`.
 1. Install
    [Docker Engine](https://docs.docker.com/engine/)
    with the
@@ -50,6 +65,7 @@ and
    plugin by following the instructions on
    [Install Docker Engine](https://docs.docker.com/engine/install/)
    for your platform.
+1. Install [GNU Make](https://www.gnu.org/software/make/) with `sudo apt install make`.
 1. Create an empty directory and navigate into it. It is referred to as `${APP}`
    below.
 1. Clone the present repository into `${APP}/machine` by running
@@ -102,6 +118,8 @@ and
    - `ln --symbolic ./docker.mk ./Makefile`.
 1. Generate self-signed Transport Security Protocol (TLS) certificates
    used for HTTPS by running `./init-tls.sh`.
+1. Create a user who will have access to restricted areas like staging, email
+   and the Monit web interface for example with `./deploy.mk user NAME=jdoe`. Save the password.
 1. Start all services by running `make dotenv pull up`.
 1. Drop into `bash` with the working directory `/app/machine`, which is mounted
    to the host's `.` directory, inside a fresh Docker container based on the
@@ -112,6 +130,9 @@ and
    example, `./tools.mk check` to lint, syntax-check, and validate config files.
    Never run `./deploy.mk setup` or `./deploy.mk do` on the host as this would
    make changes to your operating system.
+1. Create a user for restricted areas like staging, email and the Monit web 
+   interface for example with `./deploy.mk user NAME=jdoe`. Save the
+   credentials.
 1. Drop out of the container by running `exit` or pressing `Ctrl-D`.
 1. Continue with the second step of
    [Getting Started with the metabase](https://github.com/building-envelope-data/metabase?tab=readme-ov-file#getting-started)
@@ -158,12 +179,12 @@ and
    [scsitools](https://packages.debian.org/trixie/scsitools),
    [GNU Parted](https://www.gnu.org/software/parted/manual/parted.html), and
    [e2fsprogs](https://packages.debian.org/trixie/e2fsprogs)
-   by running `sudo apt-get install make git pipx scsitools parted e2fsprogs`, and
-   install
+   by running `sudo apt-get update` and
+   `sudo apt-get install make git pipx scsitools parted e2fsprogs curl`. Install
    [Ansible](https://www.ansible.com) and
    [Ansible Development Tools](https://github.com/ansible/ansible-dev-tools)
    by running
-   `pipx ensurepath && pipx install --include-deps ansible && pipx inject --include-deps --include-apps ansible python-debian ansible-dev-tools`.
+   `pipx ensurepath && pipx install --include-deps ansible && pipx inject --include-deps --include-apps ansible python-debian ansible-dev-tools && export PATH="$HOME/.local/bin:$PATH"`.
 1. Create a symbolic link from `/app` to `~` by running
    `sudo ln --symbolic ~ /app`.
 1. Change into the app directory by running `cd /app`.
@@ -228,7 +249,7 @@ and
    for ports 80 and 443.
 1. Format and mount hard disk for data to the directory `/app/data` as follows:
    1. Create the directory `/app/data` by running `mkdir /app/data`.
-   1. Scan for the data disk by running `./tools.mk scan`.
+   1. Scan for the data disk by running `./tools.mk rescan-disks`.
    1. Figure out its name and size by running `lsblk`, for example, `sdb` and
       `50G`, and use this name and size instead of `sdx` and `XG` below.
    1. Partition the hard disk `/dev/sdx` by running
@@ -242,13 +263,11 @@ and
       [How to align partitions for best performance using parted](https://rainbow.chard.org/2013/01/30/how-to-align-partitions-for-best-performance-using-parted/)
       for details on how to compute that number.
    1. Format the partition `/dev/sdx1` of hard disk `/dev/sdx` by running
-      `sudo mkfs.ext4 -L data /dev/sdx1`
-      and mount it permanently by adding
+      `sudo mkfs.ext4 -L data /dev/sdx1`.
+   1. Run `sudo blkid | grep /dev/sdx1` and save the first UUID. Modify the
+      file `etc/fstab` for example with `sudo nano /etc/fstab` and add the line
       `UUID=XXXX-XXXX-XXXX-XXXX-XXXX /app/data ext4 errors=remount-ro 0 1`
-      to the file `/etc/fstab` and running
-      `sudo mount --all && sudo systemctl daemon-reload`,
-      where the UUID is the one reported by
-      `sudo blkid | grep /dev/sdx1`.
+      with the saved first UUID instead of `XXXX-XXXX-XXXX-XXXX-XXXX`. This mounts it permanently.
       Note that to list block devices and whether and where they are
       mounted run `lsblk` and you could mount partitions temporarily by running
       `sudo mount /dev/sdx1 /app/data`.
@@ -264,9 +283,9 @@ and
 1. Fetch Transport Security Protocol (TLS) certificates from [Let's
    Encrypt](https://letsencrypt.org) used for HTTPS by running
    `./init-tls.sh` (if you are unsure whether the script will work, set the
-   variable `staging` inside that script to `1` for a trial run).
+   variable `staging` inside that script to `1` for a trial run). If there are problems which you can fix, run `./maintenance.mk prune-docker`, because the scripts uses `--no-recreate` for the containers.
 1. Create credentials to access the staging and telemetry sub-domains by running
-   `./docker.mk user NAME=${USER}`.
+   `./deploy.mk user NAME=${USER}`.
 1. Start all services by running `./deploy.mk dotenv services`. On subsequent
    deployments just run `./deploy.mk do` to also rerun `setup`.
 1. Continue with the second step of

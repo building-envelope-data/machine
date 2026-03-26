@@ -28,6 +28,7 @@ services:
       - ./certbot/www:/var/www/certbot:ro
     environment:
       HOST: "${HOST:?required}"
+      EXTRA_HOST: "${EXTRA_HOST:?required}"
       PRODUCTION_SUBDOMAIN: "${PRODUCTION_SUBDOMAIN:?required}"
       STAGING_SUBDOMAIN: "${STAGING_SUBDOMAIN:?required}"
       TELEMETRY_SUBDOMAIN: "${TELEMETRY_SUBDOMAIN:?required}"
@@ -44,10 +45,15 @@ services:
     command: ["nginx", "-g", "daemon off;"]
     restart: "unless-stopped"
     healthcheck:
-      test: ["CMD-SHELL", "service nginx status || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          'test -s /run/nginx.pid && kill -0 "$(cat /run/nginx.pid)" || exit 1',
+        ]
+      start_period: "20s"
       interval: "5s"
       timeout: "5s"
-      retries: "5"
+      retries: "10"
     labels:
       autoheal: "true"
 

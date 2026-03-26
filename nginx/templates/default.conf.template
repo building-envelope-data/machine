@@ -117,6 +117,20 @@ server {
 }
 
 server {
+    listen *:80;
+    server_name ${PRODUCTION_SUBDOMAIN}.${HOST} ${STAGING_SUBDOMAIN}.${HOST} ${TELEMETRY_SUBDOMAIN}.${HOST};
+    server_tokens off;
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
     listen *:443 ssl;
     server_name ${PRODUCTION_SUBDOMAIN}.${HOST};
     server_tokens off;

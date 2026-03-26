@@ -44,7 +44,7 @@ htpasswd : ## Create file ./nginx/.htpasswd if it does not exist
 	fi
 .PHONY : htpasswd
 
-user : htpasswd ## Add user `${NAME}` (he/she will have access to restricted areas like staging and the Monit web interface with the correct password), for example, `./docker.mk user NAME=jdoe`
+user : htpasswd ## Add user `${NAME}` (he/she will have access to restricted areas like staging and the Monit web interface with the correct password), for example, `./deploy.mk user NAME=jdoe`
 	sudo htpasswd ./nginx/.htpasswd "${NAME}"
 .PHONY : user
 
