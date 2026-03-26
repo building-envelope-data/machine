@@ -30,6 +30,7 @@ services:
       - ../development:/app/staging:ro
     environment:
       HOST: "${HOST:?required}"
+      EXTRA_HOST: "${EXTRA_HOST:?required}"
       PRODUCTION_SUBDOMAIN: "${PRODUCTION_SUBDOMAIN:?required}"
       STAGING_SUBDOMAIN: "${STAGING_SUBDOMAIN:?required}"
       TELEMETRY_SUBDOMAIN: "${TELEMETRY_SUBDOMAIN:?required}"
