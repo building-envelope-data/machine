@@ -283,7 +283,7 @@ and
 1. Fetch Transport Security Protocol (TLS) certificates from [Let's
    Encrypt](https://letsencrypt.org) used for HTTPS by running
    `./init-tls.sh` (if you are unsure whether the script will work, set the
-   variable `staging` inside that script to `1` for a trial run).
+   variable `staging` inside that script to `1` for a trial run). If there are problems which you can fix, run `./maintenance.mk prune-docker`, because the scripts uses `--no-recreate` for the containers.
 1. Create credentials to access the staging and telemetry sub-domains by running
    `./deploy.mk user NAME=${USER}`.
 1. Start all services by running `./deploy.mk dotenv services`. On subsequent
