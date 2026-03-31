@@ -84,23 +84,16 @@ server {
     listen *:80;
     listen *:443 ssl;
     server_tokens off;
-    server_name _; # any (sub)domain not explicitly defined (below)
+    server_name _; # match any (sub)domain not explicitly defined (below)
 
     location / {
-        add_header Content-Type application/json always;
-        return 404 '{"errors": [{"code": "SUBDOMAIN_NOT_FOUND", "message": "The requested subdomain does not exist.", "path": []}]}';
-    }
-}
-
-server {
-    listen *:80;
-    server_tokens off;
-    server_name ${EXTRA_HOST};
-
-    location / {
-        return 301 https://$host$request_uri;
+        return 301 https://${PRODUCTION_SUBDOMAIN}.${HOST}$request_uri;
+        # add_header Content-Type application/json always;
+        # return 404 '{"errors": [{"code": "DOMAIN_NOT_FOUND", "message": "The requested (sub)domain does not exist.", "path": []}]}';
     }
 
+    # serve certbots HTTP ACME challenge
+    # for the server name `EXTRA_HOST` if it is not empty
     location /.well-known/acme-challenge/ {
         root /var/www/certbot;
     }
@@ -152,6 +145,7 @@ server {
         auth_basic_user_file /etc/apache2/.htpasswd;
     }
 
+    # serve certbots HTTP ACME challenge
     location /.well-known/acme-challenge/ {
         root /var/www/certbot;
     }
@@ -262,6 +256,7 @@ server {
         proxy_pass http://staging;
     }
 
+    # serve certbots HTTP ACME challenge
     location /.well-known/acme-challenge/ {
         auth_basic "off";
         root /var/www/certbot;
