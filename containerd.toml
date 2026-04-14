@@ -9,4 +9,7 @@ root = "/app/data/containerd"
 state = "/app/run/containerd"
 
 # disable the Container Runtime Interface (CRI) needed for Kubernetes
-disabled_plugins = ["cri"]
+disabled_plugins = [
+  "io.containerd.cri.v1.runtime",
+  "io.containerd.cri.v1.images",
+]
