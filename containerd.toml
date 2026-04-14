@@ -1,0 +1,12 @@
+# https://containerd.io/docs/main/man/containerd-config.toml.5/
+
+version = 3
+
+# store the persistent data (images, content store, metadata) in custom path (instead of /var/lib/containerd)
+root = "/app/data/containerd"
+
+# keep the transient data (sockets, task state, mount points) in custom path (instead of /run/containerd)
+state = "/app/run/containerd"
+
+# disable the Container Runtime Interface (CRI) needed for Kubernetes
+disabled_plugins = ["cri"]

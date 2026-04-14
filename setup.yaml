@@ -24,6 +24,13 @@
         state: restarted
       when: dotenv_environment != "development"
 
+    - name: Restart containerd
+      become: true
+      ansible.builtin.service:
+        name: containerd
+        state: restarted
+      when: dotenv_environment != "development"
+
     - name: Reload Vector
       become: true
       ansible.builtin.service:
@@ -458,7 +465,17 @@
             enabled: true
             state: started
 
-        - name: Flush handlers to restart Docker
+        - name: Configure containerd
+          # For a list of options see
+          # https://containerd.io/docs/main/man/containerd-config.toml.5/
+          ansible.builtin.copy:
+            src: ./containerd.toml
+            dest: /etc/containerd/config.toml
+            mode: "0644"
+          notify:
+            - Restart containerd
+
+        - name: Flush handlers to restart Docker and containerd
           ansible.builtin.meta: flush_handlers
 
     - name: Vector
