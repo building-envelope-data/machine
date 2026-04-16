@@ -225,7 +225,7 @@ and
    `cp ./.env.production.sample /app/data/.env.machine` (or
    `cp ./.env.production.buildingenvelopedata.sample /app/data/.env.machine` or
    `cp ./.env.production.solarbuildingenvelopes.sample /app/data/.env.machine`)
-   and `chmod 600 /app/data/.env && ln --symbolic /app/data/.env.machine ./.env`
+   and `chmod 600 /app/data/.env.machine && ln --symbolic /app/data/.env.machine ./.env`
    and adapt the dotenv file as needed for example inside `vi ./.env` or
    `nano ./.env`. The `.env` variables
    - `ENVIRONMENT` is the environment type, either `development` or `production`;
