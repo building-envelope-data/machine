@@ -14,6 +14,20 @@ This project follows the
 [GitHub Flow](https://guides.github.com/introduction/flow/),
 in particular, the branch `main` is always deployable.
 
+## Contents
+
+[Development](#development)
+
+- [Getting Started](#getting-started)
+
+[Deployment](#deployment)
+
+- [Setting up the machine](#setting-up-the-machine)
+- [Upgrading the system](#upgrading-the-system)
+- [Periodic jobs](#periodic-jobs)
+- [Logs](#logs)
+- [Troubleshooting](#troubleshooting)
+
 ## Development
 
 ### Getting Started
@@ -35,12 +49,13 @@ and
    or shiny new
    [`fish`](https://fishshell.com/).
 1. Install [Git](https://git-scm.com) by running
-   `sudo apt install git-all` on [Debian](https://www.debian.org)-based
+   `sudo apt update && sudo apt install git-all` on [Debian](https://www.debian.org)-based
    distributions like [Ubuntu](https://ubuntu.com), or
    `sudo dnf install git` on [Fedora](https://getfedora.org) and closely-related
    [RPM-Package-Manager](https://rpm.org)-based distributions like
    [CentOS](https://www.centos.org). For further information see
    [Installing Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git).
+1. Install `htpasswd` with `sudo apt install apache2-utils`.
 1. Install
    [Docker Engine](https://docs.docker.com/engine/)
    with the
@@ -50,6 +65,7 @@ and
    plugin by following the instructions on
    [Install Docker Engine](https://docs.docker.com/engine/install/)
    for your platform.
+1. Install [GNU Make](https://www.gnu.org/software/make/) with `sudo apt install make`.
 1. Create an empty directory and navigate into it. It is referred to as `${APP}`
    below.
 1. Clone the present repository into `${APP}/machine` by running
@@ -102,6 +118,8 @@ and
    - `ln --symbolic ./docker.mk ./Makefile`.
 1. Generate self-signed Transport Security Protocol (TLS) certificates
    used for HTTPS by running `./init-tls.sh`.
+1. Create a user who will have access to restricted areas like staging, email
+   and the Monit web interface for example with `./deploy.mk user NAME=jdoe`. Save the password.
 1. Start all services by running `make dotenv pull up`.
 1. Drop into `bash` with the working directory `/app/machine`, which is mounted
    to the host's `.` directory, inside a fresh Docker container based on the
@@ -112,6 +130,9 @@ and
    example, `./tools.mk check` to lint, syntax-check, and validate config files.
    Never run `./deploy.mk setup` or `./deploy.mk do` on the host as this would
    make changes to your operating system.
+1. Create a user for restricted areas like staging, email and the Monit web 
+   interface for example with `./deploy.mk user NAME=jdoe`. Save the
+   credentials.
 1. Drop out of the container by running `exit` or pressing `Ctrl-D`.
 1. Continue with the second step of
    [Getting Started with the metabase](https://github.com/building-envelope-data/metabase?tab=readme-ov-file#getting-started)
@@ -158,12 +179,11 @@ and
    [scsitools](https://packages.debian.org/trixie/scsitools),
    [GNU Parted](https://www.gnu.org/software/parted/manual/parted.html), and
    [e2fsprogs](https://packages.debian.org/trixie/e2fsprogs)
-   by running `sudo apt-get install make git pipx scsitools parted e2fsprogs`, and
-   install
+   by running `sudo apt-get update && sudo apt-get install make git pipx scsitools parted e2fsprogs curl`. Install
    [Ansible](https://www.ansible.com) and
    [Ansible Development Tools](https://github.com/ansible/ansible-dev-tools)
    by running
-   `pipx ensurepath && pipx install --include-deps ansible && pipx inject --include-deps --include-apps ansible python-debian ansible-dev-tools`.
+   `pipx ensurepath && pipx install --include-deps ansible && pipx inject --include-deps --include-apps ansible python-debian ansible-dev-tools && export PATH="$HOME/.local/bin:$PATH"`.
 1. Create a symbolic link from `/app` to `~` by running
    `sudo ln --symbolic ~ /app`.
 1. Change into the app directory by running `cd /app`.
@@ -173,6 +193,55 @@ and
 1. Format and mount hard disk for data to the directory `/app/data` as follows:
    1. Create the directory `/app/data` by running `mkdir /app/data`.
    1. Scan for the data disk by running `sudo rescan-scsi-bus.sh`.
+   1. Prepare the machine environment by running
+      `cp ./.env.production.sample /app/data/.env.machine` (or
+      `cp ./.env.production.buildingenvelopedata.sample /app/data/.env.machine` or
+      `cp ./.env.production.solarbuildingenvelopes.sample /app/data/.env.machine`)
+      and `chmod 600 /app/data/.env.machine && ln --symbolic /app/data/.env.machine ./.env`
+      and adapt the dotenv file as needed for example inside `vi ./.env` or
+      `nano ./.env`. The `.env` variables
+      - `ENVIRONMENT` is the environment type, either `development` or `production`;
+      - `HOST` is the domain name without sub-domain;
+      - `PRODUCTION_SUBDOMAIN`, `STAGING_SUBDOMAIN`, `TELEMETRY_SUBDOMAIN` are the
+      sub-domains of the production instance `/app/production`, staging instance
+      `/app/staging`, and the telemetry services `logs`, and `metrics`. Note
+      that none of these sub-domains can be empty. The reverse proxy NGINX
+      redirects requests to `${HOST}` without a sub-domain to such with the
+      sub-domain `${PRODUCTION_SUBDOMAIN}`. If the domain name is too long, then
+      NGINX will fail to start, for example, with the error message `"Could not build the server_names_hash. You should increase server_names_hash_bucket_size."` and it becomes necessary to [tune the
+      `server_names_hash_max_size` or `server_names_hash_bucket_size`
+      directives](https://nginx.org/en/docs/http/server_names.html#optimization),
+      in the above example just increase `server_names_hash_bucket_size` to the
+      next power of two;
+      - `EXTRA_HOST` is an extra domain name for which the TLS certificate fetched
+      from [Let's Encrypt](https://letsencrypt.org) shall also be valid apart
+      from `${HOST}`, `${PRODUCTION_SUBDOMAIN}.${HOST}`,
+      `${STAGING_SUBDOMAIN}.${HOST}`, and `${TELEMETRY_SUBDOMAIN}.${HOST}` (it
+      is used in `./init-tls.sh`);
+      - `HTTP_PORT` and `HTTPS_PORT` are the HTTP and HTTPS ports on which the
+      NGINX reverse proxy is listening;
+      - `PRODUCTION_HTTP_PORT` or `STAGING_HTTP_PORT` is the HTTP port on which the
+      production instance `/app/production` or staging instance `/app/staging`
+      is listening;
+      - `MONITOR_HTTP_PORT`, `LOGS_HTTP_PORT`, or `METRICS_HTTP_PORT` is the HTTP
+      port on which the monitoring utility [Monit](https://mmonit.com/monit/),
+      the logs service
+      [VictoriaLogs](https://github.com/VictoriaMetrics/VictoriaLogs), and the
+      metrics service
+      [VictoriaMetrics](https://github.com/VictoriaMetrics/VictoriaMetrics) is
+      listening;
+      - `TELEMETRY_GPRC_PORT` or `TELEMETRY_HTTP_PORT` is the
+      [gPRC](https://grpc.io) and HTTP port on which the observability pipelines
+      tool [Vector](https://vector.dev) listens for [OpenTelemetry
+      Protocol](https://opentelemetry.io/docs/specs/otlp/) data;
+      - `EMAIL_ADDRESS` is the email address of the person to be notified when
+      there is some system-administration issue (for example
+      [Monit](https://mmonit.com/monit/) sends such notifications)
+      - `SMTP_HOST` and `SMTP_PORT` are host and port of the message transfer
+      agent to be used to send emails through the Simple Mail Transfer
+      Protocol (SMTP);
+      - `NETWORK_INTERFACE` is the network interface to monitor with Monit (list
+      all with `./tools.mk network-interfaces` or simply `ip link`);
    1. Figure out its name and size by running `lsblk`, for example, `sdb` and
       `50G`, and set them to `DISK` and `SIZE`, for example by running
       `DISK=sdb` and `SIZE=50G` in a POSIX-compatible shell.
@@ -201,55 +270,6 @@ and
       running `sudo chown cloud:cloud /app/data`.
    1. Create the directory `/app/data/backups` by running
       `mkdir /app/data/backups`.
-1. Prepare the machine environment by running
-   `cp ./.env.production.sample /app/data/.env.machine` (or
-   `cp ./.env.production.buildingenvelopedata.sample /app/data/.env.machine` or
-   `cp ./.env.production.solarbuildingenvelopes.sample /app/data/.env.machine`)
-   and `chmod 600 /app/data/.env && ln --symbolic /app/data/.env.machine ./.env`
-   and adapt the dotenv file as needed for example inside `vi ./.env` or
-   `nano ./.env`. The `.env` variables
-   - `ENVIRONMENT` is the environment type, either `development` or `production`;
-   - `HOST` is the domain name without sub-domain;
-   - `PRODUCTION_SUBDOMAIN`, `STAGING_SUBDOMAIN`, `TELEMETRY_SUBDOMAIN` are the
-     sub-domains of the production instance `/app/production`, staging instance
-     `/app/staging`, and the telemetry services `logs`, and `metrics`. Note
-     that none of these sub-domains can be empty. The reverse proxy NGINX
-     redirects requests to `${HOST}` without a sub-domain to such with the
-     sub-domain `${PRODUCTION_SUBDOMAIN}`. If the domain name is too long, then
-     NGINX will fail to start, for example, with the error message `"Could not build the server_names_hash. You should increase server_names_hash_bucket_size."` and it becomes necessary to [tune the
-     `server_names_hash_max_size` or `server_names_hash_bucket_size`
-     directives](https://nginx.org/en/docs/http/server_names.html#optimization),
-     in the above example just increase `server_names_hash_bucket_size` to the
-     next power of two;
-   - `EXTRA_HOST` is an extra domain name for which the TLS certificate fetched
-     from [Let's Encrypt](https://letsencrypt.org) shall also be valid apart
-     from `${HOST}`, `${PRODUCTION_SUBDOMAIN}.${HOST}`,
-     `${STAGING_SUBDOMAIN}.${HOST}`, and `${TELEMETRY_SUBDOMAIN}.${HOST}` (it
-     is used in `./init-tls.sh`);
-   - `HTTP_PORT` and `HTTPS_PORT` are the HTTP and HTTPS ports on which the
-     NGINX reverse proxy is listening;
-   - `PRODUCTION_HTTP_PORT` or `STAGING_HTTP_PORT` is the HTTP port on which the
-     production instance `/app/production` or staging instance `/app/staging`
-     is listening;
-   - `MONITOR_HTTP_PORT`, `LOGS_HTTP_PORT`, or `METRICS_HTTP_PORT` is the HTTP
-     port on which the monitoring utility [Monit](https://mmonit.com/monit/),
-     the logs service
-     [VictoriaLogs](https://github.com/VictoriaMetrics/VictoriaLogs), and the
-     metrics service
-     [VictoriaMetrics](https://github.com/VictoriaMetrics/VictoriaMetrics) is
-     listening;
-   - `TELEMETRY_GPRC_PORT` or `TELEMETRY_HTTP_PORT` is the
-     [gPRC](https://grpc.io) and HTTP port on which the observability pipelines
-     tool [Vector](https://vector.dev) listens for [OpenTelemetry
-     Protocol](https://opentelemetry.io/docs/specs/otlp/) data;
-   - `EMAIL_ADDRESS` is the email address of the person to be notified when
-     there is some system-administration issue (for example
-     [Monit](https://mmonit.com/monit/) sends such notifications)
-   - `SMTP_HOST` and `SMTP_PORT` are host and port of the message transfer
-     agent to be used to send emails through the Simple Mail Transfer
-     Protocol (SMTP);
-   - `NETWORK_INTERFACE` is the network interface to monitor with Monit (list
-     all with `./tools.mk network-interfaces` or simply `ip link`);
 1. Prepare your remote controls GNU Make and Docker Compose by running
    - `ln --symbolic ./docker-compose.production.yaml ./docker-compose.yaml` and
    - `ln --symbolic ./docker.mk ./Makefile`.
@@ -257,6 +277,34 @@ and
    it forwards the public ports 80 and 443 to the ports `${HTTP_PORT}` and
    `${HTTPS_PORT}` configured in the `.env` file and allows the protocol TCP
    for ports 80 and 443.
+1. Format and mount hard disk for data to the directory `/app/data` as follows:
+   1. Create the directory `/app/data` by running `mkdir /app/data`.
+   1. Scan for the data disk by running `./tools.mk rescan-disks`.
+   1. Figure out its name and size by running `lsblk`, for example, `sdb` and
+      `50G`, and use this name and size instead of `sdx` and `XG` below.
+   1. Partition the hard disk `/dev/sdx` by running
+      `sudo parted --align=opt /dev/sdx mklabel gpt`
+      and
+      `sudo parted --align=opt /dev/sdx mkpart primary 0 XG`
+      or, if the command warns you that resulting partition is not properly
+      aligned for best performance: 1s % 4096s != 0s,
+      `sudo parted --align=opt /dev/sdx mkpart primary 4096s XG`.
+      If the number of sectors, 4096 above, is not correct, consult
+      [How to align partitions for best performance using parted](https://rainbow.chard.org/2013/01/30/how-to-align-partitions-for-best-performance-using-parted/)
+      for details on how to compute that number.
+   1. Format the partition `/dev/sdx1` of hard disk `/dev/sdx` by running
+      `sudo mkfs.ext4 -L data /dev/sdx1`.
+   1. Run `sudo blkid | grep /dev/sdx1` and save the first UUID. Modify the
+      file `etc/fstab` for example with `sudo nano /etc/fstab` and add the line
+      `UUID=XXXX-XXXX-XXXX-XXXX-XXXX /app/data ext4 errors=remount-ro 0 1`
+      with the saved first UUID instead of `XXXX-XXXX-XXXX-XXXX-XXXX`. This mounts it permanently.
+      Note that to list block devices and whether and where they are
+      mounted run `lsblk` and you could mount partitions temporarily by running
+      `sudo mount /dev/sdx1 /app/data`.
+   1. Change owner and group of `/app/data` to user and group `cloud` by
+      running `sudo chown cloud:cloud /app/data`.
+   1. Create the directory `/app/data/backups` by running
+      `mkdir /app/data/backups`.
 1. Set-up everything else with Ansible by running `./deploy.mk setup`.
 1. Before you try to interact with Docker in any way, log-out and log-in again
    such that the system knows that the user `cloud` is in the group `docker`
@@ -267,7 +315,7 @@ and
    `./init-tls.sh` (if you are unsure whether the script will work, set the
    variable `staging` inside that script to `1` for a trial run).
 1. Create credentials to access the staging and telemetry sub-domains by running
-   `./docker.mk user NAME=${USER}`.
+   `./deploy.mk user NAME=${USER}`.
 1. Start all services by running `./deploy.mk dotenv services`. On subsequent
    deployments just run `./deploy.mk do` to also rerun `setup`.
 1. Continue with the second step of
