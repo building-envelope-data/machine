@@ -18,10 +18,10 @@ services="$(make --silent --directory=/app/machine --file=/app/machine/docker.mk
 echo "  project: '${project}'"
 echo "    Services: '${services}'"
 for service in ${services}; do
-  if echo "${running_containers}" | grep --quiet --extended-regexp "^${project}_[a-zA-Z]+-${service}-[0-9] [ a-zA-Z0-9]+ \(healthy\)$"; then
+  if echo "${running_containers}" | grep --quiet --extended-regexp "^${project}-${service}-[0-9] [ a-zA-Z0-9]+ \(healthy\)$"; then
     echo "    Service '${service}' is running and healthy"
   else
-    service_info="$(docker ps --no-trunc --all --filter name="${project}_^[a-zA-Z]+-${service}" --format '{{.ID}} {{.Image}} {{.Command}} {{.CreatedAt}} {{.Status}} {{.Ports}} {{.Names}}')"
+    service_info="$(docker ps --no-trunc --all --filter name="${project}-${service}" --format '{{.ID}} {{.Image}} {{.Command}} {{.CreatedAt}} {{.Status}} {{.Ports}} {{.Names}}')"
     echo "    Service '${service}' is not running and/or not healthy: ${service_info}" >&2
     exit_status=1
   fi
