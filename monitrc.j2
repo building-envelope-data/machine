@@ -35,8 +35,6 @@ set httpd
     port {{ monitor_http_port }}
     use address 127.0.0.1
     allow 127.0.0.1
-    # To run `sudo monit status` a cleartext password must be set but not known
-    allow monit:{{ lookup('pipe', 'openssl rand -base64 32') }}
 
 #----------------------------------------------------------------------------
 # System
