@@ -1,24 +1,55 @@
 <!doctype html>
 <title>Telemetry</title>
 <style>
-  body { text-align: center; padding: 150px; }
-  h1 { font-size: 50px; }
-  body { font: 20px Helvetica, sans-serif; color: #333; }
-  article { display: block; text-align: left; width: 650px; margin: 0 auto; }
-  a { color: #dc8100; text-decoration: none; }
-  a:hover { color: #333; text-decoration: none; }
+  body {
+    text-align: center;
+    padding: 150px;
+  }
+  h1 {
+    font-size: 50px;
+  }
+  body {
+    font:
+      20px Helvetica,
+      sans-serif;
+    color: #333;
+  }
+  article {
+    display: block;
+    text-align: left;
+    width: 650px;
+    margin: 0 auto;
+  }
+  a {
+    color: #dc8100;
+    text-decoration: none;
+  }
+  a:hover {
+    color: #333;
+    text-decoration: none;
+  }
 </style>
 
 <article>
-    <h1>Telemetry</h1>
-    <ul>
-      <li><a href="/monitor/">Monitor</a></li>
-      <li><a href="/logs/select/vmui/">Logs</a></li>
-      <li><a href="/metrics/vmui/">Metrics</a></li>
-    </ul>
-    <p>The query languages for logs and metrics are</p>
-    <ul>
-      <li><a href="https://docs.victoriametrics.com/victorialogs/logsql/">LogsQL</a></li>
-      <li><a href="https://docs.victoriametrics.com/victoriametrics/metricsql/">MetricsQL</a></li>
-    </ul>
+  <h1>Telemetry</h1>
+  <ul>
+    <li><a href="/logs/select/vmui/">Logs</a></li>
+    <li><a href="/metrics/vmui/">Metrics</a></li>
+    <li>
+      <a href="http://localhost:2812">Monitor</a> works after opening an SSH
+      tunnel to the server with the address binding
+      <code>ssh -L 2812:localhost:${MONITOR_HTTP_PORT} ...</code>
+    </li>
+  </ul>
+  <p>The query languages for logs and metrics are</p>
+  <ul>
+    <li>
+      <a href="https://docs.victoriametrics.com/victorialogs/logsql/">LogsQL</a>
+    </li>
+    <li>
+      <a href="https://docs.victoriametrics.com/victoriametrics/metricsql/"
+        >MetricsQL</a
+      >
+    </li>
+  </ul>
 </article>

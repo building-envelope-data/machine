@@ -65,11 +65,6 @@ upstream staging {
     keepalive 3;
 }
 
-upstream monitor {
-    server host.docker.internal:${MONITOR_HTTP_PORT} max_fails=0;
-    keepalive 3;
-}
-
 upstream logs {
     server host.docker.internal:${LOGS_HTTP_PORT} max_fails=0;
     keepalive 3;
@@ -273,13 +268,6 @@ server {
 
     location / {
         index /telemetry.html;
-    }
-
-    location /monitor/ {
-        proxy_pass http://monitor;
-        # Monit has its own basic authentication
-        auth_basic "off";
-        rewrite ^/monitor/(.*)$ /$1 break;
     }
 
     location /logs/ {
