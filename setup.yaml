@@ -109,6 +109,12 @@
         autoclean: true
 
   tasks:
+    - name: Install curl
+      become: true
+      ansible.builtin.package:
+        name: curl
+        state: present
+
     - name: Grant user `cloud` read-only access to journald
       become: true
       ansible.builtin.user:
