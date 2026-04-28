@@ -154,16 +154,19 @@ and
 1. Install
    [GNU Make](https://www.gnu.org/software/make/),
    [Git](https://git-scm.com),
+   [Git Large File Storage (LFS)](https://git-lfs.com),
    [pipx](https://github.com/pypa/pipx),
    [scsitools](https://packages.debian.org/trixie/scsitools),
    [GNU Parted](https://www.gnu.org/software/parted/manual/parted.html), and
    [e2fsprogs](https://packages.debian.org/trixie/e2fsprogs)
-   by running `sudo apt-get install make git pipx scsitools parted e2fsprogs`, and
+   by running `sudo apt-get install make git git-lfs pipx scsitools parted e2fsprogs`,
    install
    [Ansible](https://www.ansible.com) and
    [Ansible Development Tools](https://github.com/ansible/ansible-dev-tools)
    by running
-   `pipx ensurepath && pipx install --include-deps ansible && pipx inject --include-deps --include-apps ansible python-debian ansible-dev-tools`.
+   `pipx ensurepath && pipx install --include-deps ansible && pipx inject --include-deps --include-apps ansible python-debian ansible-dev-tools`,
+   and set up Git LFS for your user account by running
+   `git lfs install`.
 1. Create a symbolic link from `/app` to `~` by running
    `sudo ln --symbolic ~ /app`.
 1. Change into the app directory by running `cd /app`.
