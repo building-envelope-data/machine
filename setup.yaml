@@ -101,12 +101,17 @@
       tags: always
 
   post_tasks:
-    - name: Clean (Advanced Package Tool) APT cache and remove unused dependencies
+    - name: Clean-up Advanced Package Tool (APT) cache and remove unused dependencies
       become: true
-      ansible.builtin.apt:
-        clean: true
-        autoremove: true
-        autoclean: true
+      block:
+        - name: Remove unused dependencies (autoremove)
+          ansible.builtin.apt:
+            autoremove: true
+            update_cache: true
+
+        - name: Clear obsolete package files (autoclean)
+          ansible.builtin.apt:
+            autoclean: true
 
   tasks:
     - name: Install curl
