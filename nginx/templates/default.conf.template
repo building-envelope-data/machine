@@ -41,7 +41,7 @@ ssl_stapling off;
 include /etc/letsencrypt/options-ssl-nginx.conf;
 ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
 
-include ./security_headers.conf;
+include /etc/nginx/conf.d/security_headers.conf;
 # Prevent XSS attacks by restricting sources for scripts, styles, and images.
 # Includes 'unsafe-inline/eval' for Next.js hydration and ws/wss for WebSockets.
 add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' ws: wss:;" always;
@@ -122,7 +122,7 @@ server {
     location /graphql {
         proxy_pass http://production;
         # wipe out and reset the server-level 'add_header' directives for this path
-        include ./security_headers.conf;
+        include /etc/nginx/conf.d/security_headers.conf;
         # Prevent XSS attacks by restricting sources for scripts, styles, and images.
         # Includes 'unsafe-inline/eval' for Next.js hydration and ws/wss for WebSockets.
         # Allows [ChilliCream Nitro](https://chillicream.com/products/nitro/)
@@ -241,7 +241,7 @@ server {
         proxy_pass http://staging;
         auth_basic "off";
         # wipe out and reset the server-level 'add_header' directives for this path
-        include ./security_headers.conf;
+        include /etc/nginx/conf.d/security_headers.conf;
         # Prevent XSS attacks by restricting sources for scripts, styles, and images.
         # Includes 'unsafe-inline/eval' for Next.js hydration and ws/wss for WebSockets.
         # Allows [ChilliCream Nitro](https://chillicream.com/products/nitro/)
