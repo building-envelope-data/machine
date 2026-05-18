@@ -1,0 +1,12 @@
+# Distniguish through which proxies the request passed
+add_header X-Proxy-Layer "outer" always;
+# Enable HSTS
+add_header Strict-Transport-Security "max-age=63072000; includeSubdomains; preload" always;
+# Avoid click-jacking attacks: https://developer.mozilla.org/en-US/docs/Web/Security/Types_of_attacks#click-jacking
+add_header X-Frame-Options DENY;
+# Secure from MIME-type sniffing: https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/linux-nginx?view=aspnetcore-3.1#mime-type-sniffing
+add_header X-Content-Type-Options nosniff;
+# Send the full URL for internal links, only the domain for HTTPS-to-HTTPS external links, and nothing when moving from HTTPS to insecure HTTP
+add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+# Restrict access to sensitive browser features (location, hardware, sensors)
+add_header Permissions-Policy "geolocation=(), microphone=(), camera=(), magnetometer=(), gyroscope=(), payment=()" always;

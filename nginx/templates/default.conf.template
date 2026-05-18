@@ -41,21 +41,10 @@ ssl_stapling off;
 include /etc/letsencrypt/options-ssl-nginx.conf;
 ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
 
-# Distniguish through which proxies the request passed
-add_header X-Proxy-Layer "outer" always;
-# Enable HSTS
-add_header Strict-Transport-Security "max-age=63072000; includeSubdomains; preload" always;
-# Avoid click-jacking attacks: https://developer.mozilla.org/en-US/docs/Web/Security/Types_of_attacks#click-jacking
-add_header X-Frame-Options DENY;
-# Secure from MIME-type sniffing: https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/linux-nginx?view=aspnetcore-3.1#mime-type-sniffing
-add_header X-Content-Type-Options nosniff;
+include ./security_headers.conf;
 # Prevent XSS attacks by restricting sources for scripts, styles, and images.
 # Includes 'unsafe-inline/eval' for Next.js hydration and ws/wss for WebSockets.
 add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' ws: wss:;" always;
-# Send the full URL for internal links, only the domain for HTTPS-to-HTTPS external links, and nothing when moving from HTTPS to insecure HTTP
-add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-# Restrict access to sensitive browser features (location, hardware, sensors)
-add_header Permissions-Policy "geolocation=(), microphone=(), camera=(), magnetometer=(), gyroscope=(), payment=()" always;
 
 upstream production {
   server host.docker.internal:${PRODUCTION_HTTP_PORT} max_fails=0;
@@ -128,6 +117,20 @@ server {
         proxy_read_timeout 300s;
         proxy_send_timeout 300s;
         proxy_request_buffering off;
+    }
+
+    location /graphql {
+        proxy_pass http://production;
+        # wipe out and reset the server-level 'add_header' directives for this path
+        include ./security_headers.conf;
+        # Prevent XSS attacks by restricting sources for scripts, styles, and images.
+        # Includes 'unsafe-inline/eval' for Next.js hydration and ws/wss for WebSockets.
+        # Allows [ChilliCream Nitro](https://chillicream.com/products/nitro/)
+        # to load https://*.chillicream.com using script interfaces, in
+        # particular, https://identity.chillicream.com and
+        # https://api.chillicream.com are used for sign-in and for persisting
+        # documents.
+        add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' ws: wss: https://*.chillicream.com;" always;
     }
 
     location /email {
@@ -237,6 +240,16 @@ server {
     location /graphql {
         proxy_pass http://staging;
         auth_basic "off";
+        # wipe out and reset the server-level 'add_header' directives for this path
+        include ./security_headers.conf;
+        # Prevent XSS attacks by restricting sources for scripts, styles, and images.
+        # Includes 'unsafe-inline/eval' for Next.js hydration and ws/wss for WebSockets.
+        # Allows [ChilliCream Nitro](https://chillicream.com/products/nitro/)
+        # to load https://*.chillicream.com using script interfaces, in
+        # particular, https://identity.chillicream.com and
+        # https://api.chillicream.com are used for sign-in and for persisting
+        # documents.
+        add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' ws: wss: https://*.chillicream.com;" always;
     }
 
     location /.well-known {
