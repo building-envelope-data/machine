@@ -31,11 +31,11 @@
         state: restarted
       when: dotenv_environment != "development"
 
-    - name: Reload SSHGuard
+    - name: Restart SSHGuard
       become: true
       ansible.builtin.service:
         name: sshguard
-        state: reloaded
+        state: restarted
       when: dotenv_environment != "development"
 
     - name: Reload Vector
@@ -371,7 +371,7 @@
             group: root
             mode: "0644"
           notify:
-            - Reload SSHGuard
+            - Restart SSHGuard
 
         - name: Enable SSHGuard service to start on boot
           ansible.builtin.service:
@@ -419,7 +419,7 @@
           notify:
             - Restart SSH
 
-        - name: Flush handlers to restart SSH and reload SSHGuard
+        - name: Flush handlers to restart SSHGuard and SSH
           ansible.builtin.meta: flush_handlers
 
     - name: GnuPG
