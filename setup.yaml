@@ -31,6 +31,13 @@
         state: restarted
       when: dotenv_environment != "development"
 
+    - name: Reload SSHGuard
+      become: true
+      ansible.builtin.service:
+        name: sshguard
+        state: reloaded
+      when: dotenv_environment != "development"
+
     - name: Reload Vector
       become: true
       ansible.builtin.service:
@@ -354,6 +361,18 @@
               - sshguard
             state: present
 
+        - name: Configure SSHGuard whitelist
+          vars:
+            host: "{{ host }}"
+          ansible.builtin.template:
+            src: sshguard-whitelist.j2
+            dest: /etc/sshguard/whitelist
+            owner: root
+            group: root
+            mode: "0644"
+          notify:
+            - Reload SSHGuard
+
         - name: Enable SSHGuard service to start on boot
           ansible.builtin.service:
             name: sshguard
@@ -400,7 +419,7 @@
           notify:
             - Restart SSH
 
-        - name: Flush handlers to restart SSH
+        - name: Flush handlers to restart SSH and reload SSHGuard
           ansible.builtin.meta: flush_handlers
 
     - name: GnuPG
