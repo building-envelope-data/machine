@@ -9,8 +9,8 @@ map $http_upgrade $connection_upgrade {
 # inline scipts) and fast refresh (via WebSockets).
 # For /graphql, allow
 # [ChilliCream Nitro](https://chillicream.com/products/nitro/)
-# to load https://*.chillicream.com using script interfaces needed for signing
-# in and persisting documents.
+# to evaluate text as scripts and to load https://*.chillicream.com using
+# script interfaces needed for signing in and persisting documents.
 map ${ENVIRONMENT} $content_security_policy_base {
     default "default-src 'self'; worker-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';";
 }
@@ -19,7 +19,7 @@ map ${ENVIRONMENT} $content_security_policy_header {
     development "$content_security_policy_base script-src 'self' 'unsafe-eval' 'unsafe-inline'; connect-src 'self' wss://${PRODUCTION_SUBDOMAIN}.${HOST} wss://${STAGING_SUBDOMAIN}.${HOST};";
 }
 map ${ENVIRONMENT} $content_security_policy_header_graphql {
-    default "$content_security_policy_base script-src 'self'; connect-src 'self' https://identity.chillicream.com https://api.chillicream.com;";
+    default "$content_security_policy_base script-src 'self' 'unsafe-eval'; connect-src 'self' https://identity.chillicream.com https://api.chillicream.com;";
     development "$content_security_policy_base script-src 'self' 'unsafe-eval' 'unsafe-inline'; connect-src 'self' https://identity.chillicream.com https://api.chillicream.com wss://${PRODUCTION_SUBDOMAIN}.${HOST} wss://${STAGING_SUBDOMAIN}.${HOST};";
 }
 
