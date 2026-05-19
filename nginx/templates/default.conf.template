@@ -15,7 +15,7 @@ map ${ENVIRONMENT} $content_security_policy_base {
     default "default-src 'self'; worker-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';";
 }
 map ${ENVIRONMENT} $content_security_policy_header {
-    default "$content_security_policy_base script-src 'self'; self' 'unsafe-inline'; connect-src 'self';";
+    default "$content_security_policy_base script-src 'self'; connect-src 'self';";
     development "$content_security_policy_base script-src 'self' 'unsafe-eval' 'unsafe-inline'; connect-src 'self' wss://${PRODUCTION_SUBDOMAIN}.${HOST} wss://${STAGING_SUBDOMAIN}.${HOST};";
 }
 map ${ENVIRONMENT} $content_security_policy_header_graphql {
