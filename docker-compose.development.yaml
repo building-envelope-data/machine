@@ -29,6 +29,7 @@ services:
       - ../development:/app/production:ro
       - ../development:/app/staging:ro
     environment:
+      ENVIRONMENT: "${ENVIRONMENT:?required}"
       HOST: "${HOST:?required}"
       PRODUCTION_SUBDOMAIN: "${PRODUCTION_SUBDOMAIN:?required}"
       STAGING_SUBDOMAIN: "${STAGING_SUBDOMAIN:?required}"

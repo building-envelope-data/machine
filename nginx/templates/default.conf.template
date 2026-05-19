@@ -3,6 +3,26 @@ map $http_upgrade $connection_upgrade {
     ''      keep-alive;
 }
 
+# Prevent Cross-Site Scripting (XSS) attacks by restricting sources for
+# scripts, styles, images, objects, forms, frames, and network connections.
+# In development, include 'unsafe-*' and 'wss://*' for Next.js hydration (via
+# inline scipts) and fast refresh (via WebSockets).
+# For /graphql, allow
+# [ChilliCream Nitro](https://chillicream.com/products/nitro/)
+# to load https://*.chillicream.com using script interfaces needed for signing
+# in and persisting documents.
+map ${ENVIRONMENT} $content_security_policy_base {
+    default "default-src 'self'; worker-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';";
+}
+map ${ENVIRONMENT} $content_security_policy_header {
+    default "$content_security_policy_base script-src 'self'; style-src 'self'; connect-src 'self';";
+    development "$content_security_policy_base script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' wss://${PRODUCTION_SUBDOMAIN}.${HOST} wss://${STAGING_SUBDOMAIN}.${HOST};";
+}
+map ${ENVIRONMENT} $content_security_policy_header_graphql {
+    default "$content_security_policy_base script-src 'self'; style-src 'self'; connect-src 'self' https://identity.chillicream.com https://api.chillicream.com;";
+    development "$content_security_policy_base script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://identity.chillicream.com https://api.chillicream.com wss://${PRODUCTION_SUBDOMAIN}.${HOST} wss://${STAGING_SUBDOMAIN}.${HOST};";
+}
+
 proxy_redirect          off;
 proxy_set_header        Host $host;
 proxy_set_header        X-Real-IP $remote_addr;
@@ -42,9 +62,7 @@ include /etc/letsencrypt/options-ssl-nginx.conf;
 ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
 
 include /etc/nginx/conf.d/security_headers.conf;
-# Prevent XSS attacks by restricting sources for scripts, styles, and images.
-# Includes 'unsafe-inline/eval' for Next.js hydration and ws/wss for WebSockets.
-add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' ws: wss:;" always;
+add_header Content-Security-Policy $content_security_policy_header always;
 
 upstream production {
   server host.docker.internal:${PRODUCTION_HTTP_PORT} max_fails=0;
@@ -123,14 +141,7 @@ server {
         proxy_pass http://production;
         # wipe out and reset the server-level 'add_header' directives for this path
         include /etc/nginx/conf.d/security_headers.conf;
-        # Prevent XSS attacks by restricting sources for scripts, styles, and images.
-        # Includes 'unsafe-inline/eval' for Next.js hydration and ws/wss for WebSockets.
-        # Allows [ChilliCream Nitro](https://chillicream.com/products/nitro/)
-        # to load https://*.chillicream.com using script interfaces, in
-        # particular, https://identity.chillicream.com and
-        # https://api.chillicream.com are used for sign-in and for persisting
-        # documents.
-        add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' ws: wss: https://*.chillicream.com;" always;
+        add_header Content-Security-Policy $content_security_policy_header_graphql always;
     }
 
     location /email {
@@ -242,14 +253,7 @@ server {
         auth_basic "off";
         # wipe out and reset the server-level 'add_header' directives for this path
         include /etc/nginx/conf.d/security_headers.conf;
-        # Prevent XSS attacks by restricting sources for scripts, styles, and images.
-        # Includes 'unsafe-inline/eval' for Next.js hydration and ws/wss for WebSockets.
-        # Allows [ChilliCream Nitro](https://chillicream.com/products/nitro/)
-        # to load https://*.chillicream.com using script interfaces, in
-        # particular, https://identity.chillicream.com and
-        # https://api.chillicream.com are used for sign-in and for persisting
-        # documents.
-        add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' ws: wss: https://*.chillicream.com;" always;
+        add_header Content-Security-Policy $content_security_policy_header_graphql always;
     }
 
     location /.well-known {
