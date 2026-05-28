@@ -18,7 +18,7 @@ name: "${NAME}"
 services:
   # https://hub.docker.com/_/nginx
   reverse_proxy:
-    image: "nginx:1.29-trixie-otel"
+    image: "nginx:1.31-trixie-otel"
     volumes:
       - ./nginx/.htpasswd:/etc/apache2/.htpasswd:ro
       - ./nginx/templates:/etc/nginx/templates:ro
@@ -75,7 +75,7 @@ services:
 
   # https://hub.docker.com/r/victoriametrics/victoria-logs
   logs:
-    image: "victoriametrics/victoria-logs:v1.44.0"
+    image: "victoriametrics/victoria-logs:v1.50.0"
     volumes:
       - logs:/storage
     ports:
@@ -98,7 +98,7 @@ services:
 
   # https://hub.docker.com/r/victoriametrics/victoria-metrics
   metrics:
-    image: "victoriametrics/victoria-metrics:v1.135.0"
+    image: "victoriametrics/victoria-metrics:v1.144.0"
     volumes:
       - metrics:/storage
     ports:
@@ -121,7 +121,7 @@ services:
   # Fetch TLS certificates from Let's Encrypt
   # https://hub.docker.com/r/certbot/certbot
   certbot:
-    image: "certbot/certbot:v3.3.0"
+    image: "certbot/certbot:v5.6.0"
     volumes:
       - ./certbot/conf:/etc/letsencrypt # --config-dir
       - ./certbot/letsencrypt:/var/lib/letsencrypt # --work-dir
