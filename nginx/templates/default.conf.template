@@ -262,13 +262,36 @@ server {
         proxy_read_timeout 86400s;
     }
 
-    location /api/upload-file {
+    location /api/resources/ {
+        # Route POST requests to the dedicated upload location
+        if ($request_method = POST) {
+            error_page 418 = @resource_post;
+            return 418;
+        }
+        # Route GET requests to the dedicated download location
+        if ($request_method = GET) {
+            error_page 418 = @resource_get;
+            return 418;
+        }
+        # Fallback for other HTTP methods (PUT, DELETE, etc.)
         proxy_pass http://production;
-        client_max_body_size 0;
+    }
+
+    location @resource_post {
+        # Optimize for multi-gigabyte POST uploads
+        proxy_pass http://production;
+        client_max_body_size 10G;
         client_body_timeout 300s;
         proxy_read_timeout 300s;
         proxy_send_timeout 300s;
-        proxy_request_buffering off;
+        proxy_request_buffering off; 
+    }
+
+    location @resource_get {
+        # Optimize for multi-gigabyte GET streaming downloads
+        proxy_pass http://production;
+        proxy_buffering off;
+        proxy_read_timeout 300s;
     }
 
     location /graphql {
