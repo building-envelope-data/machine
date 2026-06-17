@@ -129,39 +129,15 @@ server {
     }
 
     location /api/resources/ {
-        # Accept up to 10 gigabyte and 12 minute requests (needed for uploads via
-        # `POST`). Keep it here instead of within `@resource_post` because the
-        # branching happens after the body size is checked.
+        # Accept up to 10 gigabyte and 12 minute requests (for uploads via `POST`)
         client_max_body_size 10G;
         client_body_timeout 1200s;
-
-        # Route POST requests to the dedicated upload location
-        if ($request_method = POST) {
-            error_page 418 = @resource_post;
-            return 418;
-        }
-        # Route GET requests to the dedicated download location
-        if ($request_method = GET) {
-            error_page 418 = @resource_get;
-            return 418;
-        }
-        # Fallback for other HTTP methods (PUT, DELETE, etc.)
-        proxy_pass http://production;
-    }
-
-    location @resource_post {
-        # Optimize for multi-gigabyte POST uploads
-        proxy_pass http://production;
-        proxy_read_timeout 300s;
-        proxy_send_timeout 300s;
-        proxy_request_buffering off; 
-    }
-
-    location @resource_get {
-        # Optimize for multi-gigabyte GET streaming downloads
-        proxy_pass http://production;
+        proxy_read_timeout 1200s;
+        proxy_send_timeout 1200s;
+        proxy_request_buffering off;
         proxy_buffering off;
-        proxy_read_timeout 300s;
+        proxy_cache off;
+        proxy_pass http://backend;
     }
 
     location /graphql {
@@ -267,39 +243,15 @@ server {
     }
 
     location /api/resources/ {
-        # Accept up to 10 gigabyte and 12 minute requests (needed for uploads via
-        # `POST`). Keep it here instead of within `@resource_post` because the
-        # branching happens after the body size is checked.
+        # Accept up to 10 gigabyte and 12 minute requests (for uploads via `POST`)
         client_max_body_size 10G;
         client_body_timeout 1200s;
-
-        # Route POST requests to the dedicated upload location
-        if ($request_method = POST) {
-            error_page 418 = @resource_post;
-            return 418;
-        }
-        # Route GET requests to the dedicated download location
-        if ($request_method = GET) {
-            error_page 418 = @resource_get;
-            return 418;
-        }
-        # Fallback for other HTTP methods (PUT, DELETE, etc.)
-        proxy_pass http://production;
-    }
-
-    location @resource_post {
-        # Optimize for multi-gigabyte POST uploads
-        proxy_pass http://production;
-        proxy_read_timeout 300s;
-        proxy_send_timeout 300s;
-        proxy_request_buffering off; 
-    }
-
-    location @resource_get {
-        # Optimize for multi-gigabyte GET streaming downloads
-        proxy_pass http://production;
+        proxy_read_timeout 1200s;
+        proxy_send_timeout 1200s;
+        proxy_request_buffering off;
         proxy_buffering off;
-        proxy_read_timeout 300s;
+        proxy_cache off;
+        proxy_pass http://backend;
     }
 
     location /graphql {

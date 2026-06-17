@@ -1,0 +1,16 @@
+[Unit]
+Description=Crontab Guru Dashboard
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=root
+ExecStart=cronitor dash --port 11000
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
