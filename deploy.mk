@@ -68,7 +68,7 @@ services : ## (Re)create and (re)start services
 
 symlink : ## Confirm that ./docker-compose.yaml links to the correct ./docker-compose.*.yaml
 	if [[ ! -L "./Makefile" ]] || [[ ! "./Makefile" -ef "./docker.mk" ]]; then \
-		echo "./docker-compose.yaml does not link to $${file}" >&2 ; \
+		echo "./Makefile does not link to ./docker.mk" >&2 ; \
 		exit 1 ; \
 	fi
 	if [[ "${ENVIRONMENT}" == "staging" ]]; then \
