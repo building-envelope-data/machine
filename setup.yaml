@@ -260,7 +260,7 @@
             - Send test email as root
             - Send test email as cloud
 
-        - name: Copy system-wide `mstprc` configuration file
+        - name: Copy system-wide `msmtprc` configuration file
           become: true
           ansible.builtin.template:
             src: msmtprc.j2

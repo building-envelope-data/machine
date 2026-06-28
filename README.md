@@ -139,6 +139,20 @@ sub-domain `telemetry` to the services
 and
 [VictoriaLogs](https://victoriametrics.com/products/victorialogs/).
 
+Beware that the Ansible playbook `./setup.yaml` overwrites the
+`./setup.yaml`
+
+- containerd config `/etc/containerd/config.toml`
+- Docker daemon config `/etc/docker/daemon.json`
+- mail, msmtp, transfer agents configs `/etc/mail.rc`, `/etc/msmtprc`,
+  `/home/cloud/.msmtprc`, and `/etc/aliases`
+- Monit config `/etc/monit/monitrc`
+- SSH config `/etc/ssh/sshd_config`
+- SSHGuard whitelist `/etc/sshguard/whitelist`
+- Vector config `/etc/vector/vector.yaml`
+
+Make sure that the conservative SSH config does not lock you out.
+
 1. If the machine runs behind a proxy with a firewall, configure it such that it
    forwards the public port 22 to port 22 and allows secure shell (SSH) access
    on port 22.
