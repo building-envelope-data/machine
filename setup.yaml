@@ -307,17 +307,25 @@
             value: /usr/local/bin/:/usr/bin:/bin
             state: present
 
-        - name: Backup database and prune backups
+        - name: Backup database
           ansible.builtin.cron:
             name: database-backup
             minute: 0
             hour: 3
-            job: "chronic make --directory=/app/machine --file=/app/machine/maintenance.mk backup prune-backups"
+            job: "chronic make --directory=/app/machine --file=/app/machine/maintenance.mk backup"
+
+        - name: Prune backups
+          become: true
+          ansible.builtin.cron:
+            name: database-backup
+            minute: 15
+            hour: 3
+            job: "chronic make --directory=/app/machine --file=/app/machine/maintenance.mk prune-backups"
 
         - name: Renew Transport Layer Security (TLS) certificates needed for the `S` in `HTTPS`
           ansible.builtin.cron:
             name: tls-renewal
-            minute: 5
+            minute: 20
             hour: 3
             job: "chronic make --directory=/app/machine --file=/app/machine/maintenance.mk renew-tls"
 
@@ -325,21 +333,21 @@
           # See https://docs.docker.com/config/pruning/#prune-everything
           ansible.builtin.cron:
             name: docker-prune
-            minute: 10
+            minute: 25
             hour: 3
             job: "chronic make --directory=/app/machine --file=/app/machine/maintenance.mk prune-docker"
 
         - name: Restart Docker backend service in production to reload rotated JWT certificates
           ansible.builtin.cron:
             name: restart-backend-service-in-production
-            minute: 15
+            minute: 30
             hour: 3
             job: "chronic make --directory=/app/machine --file=/app/machine/maintenance.mk restart SERVICE=backend ENV=production"
 
         - name: Restart Docker backend service in staging to reload rotated JWT certificates
           ansible.builtin.cron:
             name: restart-backend-service-in-staging
-            minute: 15
+            minute: 30
             hour: 3
             job: "chronic make --directory=/app/machine --file=/app/machine/maintenance.mk restart SERVICE=backend ENV=staging"
 
@@ -347,7 +355,7 @@
           become: true
           ansible.builtin.cron:
             name: journald-vacuuming
-            minute: 20
+            minute: 35
             hour: 3
             job: "chronic make --directory=/app/machine --file=/app/machine/logs.mk rotate vacuum clean-up"
 
