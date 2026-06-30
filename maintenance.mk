@@ -52,30 +52,43 @@ prune-docker : ## Prune docker
 		--filter "label=com.docker.compose.service=frontend"
 .PHONY : prune-docker
 
+backups_dir=/app/data/backups
+content_addressable_storage=/app/data/backups/.content-addressable-storage
+
 backup : ## Backup production database
-	mkdir --parents /app/data/backups
+	mkdir --parents \
+		${backups_dir} \
+		${content_addressable_storage}
 	$(MAKE) \
 		--directory=/app/production \
 		--file=/app/production/database.mk \
 		backup \
-		DIR="/app/data/backups/$(shell date +"%Y-%m-%d_%H_%M_%S")"
+		DIR="${backups_dir}/$(shell date +"%Y-%m-%d_%H_%M_%S")" \
+		CONTENT_ADDRESSABLE_STORAGE=${content_addressable_storage}
 .PHONY : backup
 
 # Inspired by https://stackoverflow.com/questions/25785/delete-all-but-the-most-recent-x-files-in-bash/34862475#34862475
-prune-backups : ## Keep the most recent 7 backups, delete the rest
-	find /app/data/backups \
+prune-backups : ## Keep the most recent 30 backups, delete the rest
+	find ${backups_dir} \
 		-mindepth 1 \
 		-maxdepth 1 \
 		-type d \
+		-not -path '.*' \
 		-execdir rmdir --ignore-fail-on-non-empty '{}' \;
-	cd /app/data/backups && \
+	cd ${backups_dir} && \
 		ls -t --indicator-style=slash \
 		| grep '/$$' \
-		| tail --lines=+8 \
+		| tail --lines=+31 \
 		| xargs \
 			--delimiter='\n' \
 			--no-run-if-empty \
 			rm --recursive --dir --
+	find ${content_addressable_storage} -mindepth 1 -maxdepth 1 -type f -printf "%f\n" | while read -r hash_value; do \
+		if [[ -z "$$(find ${backups_dir} -type l -lname "*/$${hash_value}" -print -quit)" ]]; then \
+			echo "No symbolic link within ${backups_dir} links to ${content_addressable_storage}/$${hash_value}. Removing it..." ; \
+			rm "${content_addressable_storage}/$${hash_value}" ; \
+		fi \
+	done
 .PHONY : prune-backups
 
 restart : ## Restart service `${SERVICE}` in environment `${ENV}`, for example, `./maintenance.mk restart SERVICE=backend ENV=staging`
