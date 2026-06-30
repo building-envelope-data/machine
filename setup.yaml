@@ -317,7 +317,7 @@
         - name: Prune backups
           become: true
           ansible.builtin.cron:
-            name: database-backup
+            name: prune-backups
             minute: 15
             hour: 3
             job: "chronic make --directory=/app/machine --file=/app/machine/maintenance.mk prune-backups"
