@@ -206,7 +206,7 @@ Make sure that the conservative SSH config does not lock you out.
    1. Format the partition `/dev/${DISK}1` of hard disk `/dev/${DISK}` by running
       `sudo mkfs.ext4 -L data /dev/${DISK}1`
       and mount it permanently by adding
-      `UUID=XXXX-XXXX-XXXX-XXXX-XXXX /app/data ext4 errors=remount-ro 0 1`
+      `UUID=XXXX-XXXX-XXXX-XXXX-XXXX /app/data ext4 defaults,nofail,errors=remount-ro 0 2`
       to the file `/etc/fstab` and running
       `sudo mount --all && sudo systemctl daemon-reload`,
       where the UUID is the one reported by
