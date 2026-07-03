@@ -69,6 +69,9 @@ backup : ## Backup production database
 
 # Inspired by https://stackoverflow.com/questions/25785/delete-all-but-the-most-recent-x-files-in-bash/34862475#34862475
 prune-backups : ## Keep the most recent 30 backups, delete the rest
+	mkdir --parents \
+		${backups_dir} \
+		${content_addressable_storage}
 	find ${backups_dir} \
 		-mindepth 1 \
 		-maxdepth 1 \
