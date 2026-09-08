@@ -76,7 +76,7 @@ prune-backups : ## Keep the most recent 30 backups, delete the rest
 		-mindepth 1 \
 		-maxdepth 1 \
 		-type d \
-		-not -path '.*' \
+		-not -name '.*' \
 		-execdir rmdir --ignore-fail-on-non-empty '{}' \;
 	cd ${backups_dir} && \
 		ls -t --indicator-style=slash \

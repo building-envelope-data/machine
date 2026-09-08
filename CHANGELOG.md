@@ -15,5 +15,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Switch to [containerd image store](https://docs.docker.com/engine/storage/containerd/) --- you need to pull and build all images after the switch and run `sudo rm -rf /var/lib/docker/overlay2` to delete the legacy images.
 - Upgrade to Debian "Trixie" --- follow the instructions on [Upgrades from Debian 12 (bookworm)](https://www.debian.org/releases/stable/release-notes/upgrading.html) and then reinstall Ansible for the new Python version `pipx uninstall-all && pipx ensurepath && pipx install --include-deps ansible && pipx inject --include-deps --include-apps ansible python-debian ansible-dev-tools`
 - Move containerd files to /app/data and /app/run --- surround `./deploy.mk setup` as in `sudo systemctl stop docker docker.socket containerd && sudo mv /var/lib/containerd/ /app/data/ && mkdir /app/run && sudo mv /run/containerd /app/run && ./deploy.mk setup && sudo systemctl start docker docker.socket containerd`
+- Content-addressable storage for backups is introduced to backup files so that there is at most one copy of each file [#32](https://github.com/building-envelope-data/machine/pull/32), [+35](https://github.com/building-envelope-data/machine/pull/35).
 
 [Unreleased]: https://github.com/building-envelope-data/database/compare/v1.0.0...HEAD
