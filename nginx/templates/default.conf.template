@@ -8,6 +8,8 @@ map $http_upgrade $connection_upgrade {
 
 # Prevent Cross-Site Scripting (XSS) attacks by restricting sources for
 # scripts, styles, images, objects, forms, frames, and network connections.
+# Include https://dsi-generator.fraunhofer.de for the legal notice and the data
+# protection information.
 # In development, include 'unsafe-eval' and 'wss://*' for Next.js hydration (via
 # inline scipts) and fast refresh (via WebSockets).
 # For /graphql, allow
@@ -19,8 +21,8 @@ map ${ENVIRONMENT} $content_security_policy_base {
     default "default-src 'self'; worker-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';";
 }
 map ${ENVIRONMENT} $content_security_policy_header {
-    default "$content_security_policy_base font-src 'self'; script-src 'self'; connect-src 'self';";
-    development "$content_security_policy_base font-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; connect-src 'self' wss://${PRODUCTION_SUBDOMAIN}.${HOST} wss://${STAGING_SUBDOMAIN}.${HOST};";
+    default "$content_security_policy_base font-src 'self'; script-src 'self'; connect-src 'self' https://dsi-generator.fraunhofer.de;";
+    development "$content_security_policy_base font-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; connect-src 'self' https://dsi-generator.fraunhofer.de wss://${PRODUCTION_SUBDOMAIN}.${HOST} wss://${STAGING_SUBDOMAIN}.${HOST};";
 }
 map ${ENVIRONMENT} $content_security_policy_header_graphql {
     default "$content_security_policy_base font-src 'self'; script-src 'self' 'unsafe-eval'; connect-src 'self' https://identity.chillicream.com https://api.chillicream.com;";
